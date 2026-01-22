@@ -1,0 +1,116 @@
+/* ===== WALLET HEADER COMPONENT ===== */
+.wallet-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.wallet-header__balance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: rgba(89, 183, 255, 0.1);
+  border: 1px solid rgba(89, 183, 255, 0.3);
+  font-family: var(--font-mono);
+}
+
+.wallet-header__icon {
+  width: 18px;
+  height: 18px;
+}
+
+.wallet-header__value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #59b7ff;
+}
+
+.wallet-header__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #7eb8e8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Loading Skeleton */
+.wallet-header__skeleton {
+  display: inline-block;
+  width: 40px;
+  height: 14px;
+  background: linear-gradient(
+    90deg,
+    rgba(89, 183, 255, 0.2) 0%,
+    rgba(89, 183, 255, 0.4) 50%,
+    rgba(89, 183, 255, 0.2) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Connect Button Override */
+.wallet-header button {
+  font-family: var(--font-mono) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  padding: 12px 20px !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, #59b7ff, #3d8fd1) !important;
+  border: 2px solid #59b7ff !important;
+  color: #0a1929 !important;
+  box-shadow: 
+    0 4px 20px rgba(89, 183, 255, 0.4),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2) !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+}
+
+.wallet-header button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 
+    0 8px 30px rgba(89, 183, 255, 0.5),
+    inset 0 2px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .wallet-header {
+    gap: 10px;
+  }
+  
+  .wallet-header__balance {
+    padding: 6px 10px;
+  }
+  
+  .wallet-header__icon {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .wallet-header__value {
+    font-size: 12px;
+  }
+  
+  .wallet-header__label {
+    font-size: 9px;
+  }
+  
+  .wallet-header button {
+    padding: 8px 14px !important;
+    font-size: 10px !important;
+  }
+}
