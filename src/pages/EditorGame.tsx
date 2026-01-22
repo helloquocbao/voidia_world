@@ -12,6 +12,7 @@ import {
   WORLD_REGISTRY_ID,
   REWARD_VAULT_ID,
   REWARD_COIN_TYPE,
+  POWER_STONE_VAULT_ID,
 } from "../chain/config";
 import { suiClient } from "../chain/suiClient";
 import {
@@ -1146,9 +1147,9 @@ export default function EditorGame() {
           arguments: [
             tx.object(worldIdValue),
             tx.object(REWARD_VAULT_ID),
+            tx.object(POWER_STONE_VAULT_ID),
             tx.object(characterId),
             feeCoin,
-            tx.pure.vector("u8", sealArray),
           ],
         });
       },
@@ -1194,8 +1195,8 @@ export default function EditorGame() {
           arguments: [
             tx.object(worldIdValue),
             tx.object(REWARD_VAULT_ID),
+            tx.object(POWER_STONE_VAULT_ID),
             tx.object(characterId),
-            tx.pure.vector("u8", sealArray),
           ],
         });
       },
@@ -1227,10 +1228,6 @@ export default function EditorGame() {
       return;
     }
 
-    // Convert hex key back to bytes
-    const keyBytes =
-      playKey.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) ?? [];
-
     await runTx(
       "Claim reward",
       (tx) => {
@@ -1239,10 +1236,10 @@ export default function EditorGame() {
           arguments: [
             tx.object(worldIdValue),
             tx.object(REWARD_VAULT_ID),
+            tx.object(POWER_STONE_VAULT_ID),
             tx.object(characterId),
             tx.object(RANDOM_OBJECT_ID),
             tx.pure.u64(parseInt(playId)),
-            tx.pure.vector("u8", keyBytes),
           ],
         });
       },

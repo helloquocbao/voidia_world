@@ -9,6 +9,7 @@ import { bcs } from "@mysten/sui/bcs";
 import {
   PACKAGE_ID,
   RANDOM_OBJECT_ID,
+  POWER_STONE_VAULT_ID,
   REWARD_COIN_TYPE,
   REWARD_VAULT_ID,
   WORLD_REGISTRY_ID,
@@ -792,8 +793,8 @@ export default function GamePage() {
       setPlayError("Connect wallet first.");
       return;
     }
-    if (!PACKAGE_ID || !REWARD_VAULT_ID) {
-      setPlayError("Missing package or reward vault id.");
+    if (!PACKAGE_ID || !REWARD_VAULT_ID || !POWER_STONE_VAULT_ID) {
+      setPlayError("Missing package, reward vault id, or stone vault id.");
       return;
     }
     if (!worldId) {
@@ -840,6 +841,7 @@ export default function GamePage() {
           arguments: [
             tx.object(worldId),
             tx.object(REWARD_VAULT_ID),
+            tx.object(POWER_STONE_VAULT_ID),
             tx.object(characterId),
           ],
         });
@@ -850,6 +852,7 @@ export default function GamePage() {
           arguments: [
             tx.object(worldId),
             tx.object(REWARD_VAULT_ID),
+            tx.object(POWER_STONE_VAULT_ID),
             tx.object(characterId),
             tx.object(playableCoin.coinObjectId),
           ],
@@ -1028,7 +1031,7 @@ export default function GamePage() {
       setClaimError("Connect wallet first.");
       return;
     }
-    if (!PACKAGE_ID || !REWARD_VAULT_ID || !RANDOM_OBJECT_ID) {
+    if (!PACKAGE_ID || !REWARD_VAULT_ID || !POWER_STONE_VAULT_ID || !RANDOM_OBJECT_ID) {
       setClaimError("Missing chain config for claim.");
       return;
     }
@@ -1071,6 +1074,7 @@ export default function GamePage() {
         arguments: [
           tx.object(worldId),
           tx.object(REWARD_VAULT_ID),
+          tx.object(POWER_STONE_VAULT_ID),
           tx.object(characterId),
           tx.object(RANDOM_OBJECT_ID),
           tx.pure.u64(BigInt(playId)),

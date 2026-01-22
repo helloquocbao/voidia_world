@@ -13,6 +13,8 @@ export const WORLD_REGISTRY_ID =
 export const REWARD_VAULT_ID =
   import.meta.env.VITE_REWARD_VAULT ??
   "0x9b58af962b5e8e5009779f4af7bb0717c626f7e120a8e2c4b4eedbb431b84a62";
+export const POWER_STONE_VAULT_ID =
+  import.meta.env.VITE_POWER_STONE_VAULT ?? "";
 export const TREASURY_CAP_ID =
   import.meta.env.VITE_TREASURY_CAP ??
   "0x9c65fe112eab5919b889e7444736c3e018a4c6c3cee984b42cd439af2f9947d3";
