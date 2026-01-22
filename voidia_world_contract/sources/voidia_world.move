@@ -21,18 +21,20 @@ module voidia_world::world {
     const MAX_URL_BYTES: u64 = 2048;
 
     const U32_MAX: u32 = 4294967295;
-    const PLAY_FEE: u64 = 5;
+    const PLAY_FEE: u64 = 8;
     // Reward token range for play_v2
     const MIN_REWARD_V2: u64 = 1;
     const MAX_REWARD_V2: u64 = 9;
     // Power stone reward range
-    const STONE_MIN_V1: u64 = 1;
-    const STONE_MAX_V1: u64 = 3;
+    const STONE_MIN_V1: u64 = 0;
+    const STONE_MAX_V1: u64 = 2;
     const STONE_MIN_V2: u64 = 2;
     const STONE_MAX_V2: u64 = 5;
+    const STONE_BONUS_V1: u64 = 3; // bonus stones possible on claim, based on difficulty% (play_v1)
+    const STONE_BONUS_V2: u64 = 5; // bonus stones possible on claim, based on difficulty% (play_v2)
     const PLOT_PRICE_INCREMENT: u64 = 5; // price grows by 5 per plot until 20 plots
-    const DAILY_PLAY_LIMIT: u64 = 3;      // play_v2 limit per epoch
-    const FREE_DAILY_PLAY_LIMIT: u64 = 2; // play_v1 free limit per epoch
+    const DAILY_PLAY_LIMIT: u64 = 8;      // play_v2 limit per epoch
+    const FREE_DAILY_PLAY_LIMIT: u64 = 3; // play_v1 free limit per epoch
 
     /* ================= ERRORS ================= */
 
@@ -60,9 +62,7 @@ module voidia_world::world {
     const E_WORLD_MISMATCH: u64 = 25;
     const E_NO_PROCEEDS: u64 = 26;
     const E_INVALID_WITHDRAW_AMOUNT: u64 = 27;
-    const E_NOT_ADMIN: u64 = 28;
     const E_INSUFFICIENT_PAYMENT: u64 = 29;
-    const E_INVALID_BREAK_CONFIG: u64 = 30;
 
     /* ================= ADMIN / REGISTRY ================= */
 
@@ -109,15 +109,6 @@ module voidia_world::world {
         difficulty: u8,
         required_power: u64,
         plots: vector<PlotKey>,
-        break_configs: vector<BreakConfig>,
-    }
-
-    /// Breakthrough config per tier
-    public struct BreakConfig has copy, drop, store {
-        max_power: u64,
-        stone_cost: u64,
-        potential_cost: u64,
-        success_bps: u64, // 1-10000 (0.01% - 100%)
     }
 
     /* ================= PLOT NFT (OWNED) ================= */
@@ -245,11 +236,6 @@ module voidia_world::world {
         recipient: address,
     }
 
-    public struct BreakConfigUpdatedEvent has copy, drop {
-        world_id: ID,
-        count: u64,
-    }
-
     public struct CharacterCreatedEvent has copy, drop {
         character_id: ID,
         owner: address,
@@ -344,7 +330,6 @@ module voidia_world::world {
             difficulty,
             required_power,
             plots: vector[],
-            break_configs: default_break_configs(),
         };
 
         let world_id = object::uid_to_inner(&world.id);
@@ -358,40 +343,6 @@ module voidia_world::world {
     /// Read helper
     public fun get_world_ids(registry: &WorldRegistry): &vector<ID> {
         &registry.world_ids
-    }
-
-    /// Admin updates dynamic breakthrough table
-    entry fun update_break_configs(
-        world: &mut WorldMap,
-        _cap: &AdminCap,
-        configs_bcs: vector<u8>,
-        ctx: &tx_context::TxContext
-    ) {
-        let sender = tx_context::sender(ctx);
-        assert!(sender == world.admin, E_NOT_ADMIN);
-
-        let mut reader = bcs::new(configs_bcs);
-        let total = bcs::peel_vec_length(&mut reader);
-        let mut configs = vector[];
-        let mut i = 0;
-        while (i < total) {
-            let cfg = BreakConfig {
-                max_power: bcs::peel_u64(&mut reader),
-                stone_cost: bcs::peel_u64(&mut reader),
-                potential_cost: bcs::peel_u64(&mut reader),
-                success_bps: bcs::peel_u64(&mut reader),
-            };
-            assert!(cfg.success_bps >= 1 && cfg.success_bps <= 10_000, E_INVALID_BREAK_CONFIG);
-            vector::push_back(&mut configs, cfg);
-            i = i + 1;
-        };
-        let leftover = bcs::into_remainder_bytes(reader);
-        assert!(vector::is_empty(&leftover), E_INVALID_BREAK_CONFIG);
-
-        let len = vector::length(&configs);
-
-        world.break_configs = configs;
-        event::emit(BreakConfigUpdatedEvent { world_id: object::uid_to_inner(&world.id), count: len as u64 });
     }
 
     /* ================= CHARACTER ================= */
@@ -650,6 +601,8 @@ module voidia_world::world {
     ) {
         let sender = tx_context::sender(ctx);
         assert!(sender == character.owner, E_NOT_CHARACTER_OWNER);
+        // Require minimum power per world before allowing free play
+        assert!(character.power >= world.required_power, E_INSUFFICIENT_POWER);
 
         let current_epoch = tx_context::epoch(ctx);
         if (character.last_free_play_epoch != current_epoch) {
@@ -659,7 +612,7 @@ module voidia_world::world {
         assert!(character.free_daily_plays < FREE_DAILY_PLAY_LIMIT, E_FREE_DAILY_LIMIT_REACHED);
         character.free_daily_plays = character.free_daily_plays + 1;
 
-        power_stone::reserve(stones, STONE_MAX_V1);
+        power_stone::reserve(stones, STONE_MAX_V1 + STONE_BONUS_V1);
 
         let play_id = world.next_play_id;
         world.next_play_id = play_id + 1;
@@ -705,7 +658,7 @@ module voidia_world::world {
         };
 
         voidia_coin::reserve(vault, MAX_REWARD_V2);
-        power_stone::reserve(stones, STONE_MAX_V2);
+        power_stone::reserve(stones, STONE_MAX_V2 + STONE_BONUS_V2);
 
         let play_id = world.next_play_id;
         world.next_play_id = play_id + 1;
@@ -744,25 +697,44 @@ module voidia_world::world {
             random::generate_u64_in_range(&mut rng, min_reward, max_reward)
         } else { 0 };
         let stone_reward = random::generate_u64_in_range(&mut rng, stone_min, stone_max);
+        // Bonus stones based on world difficulty: difficulty% chance to add extra stones
+        let bonus_roll = random::generate_u64_in_range(&mut rng, 1, 100);
+        let bonus_stones = if (bonus_roll <= (world.difficulty as u64)) {
+            if (max_reward > 0) { STONE_BONUS_V2 } else { STONE_BONUS_V1 }
+        } else { 0 };
+        let total_stones = stone_reward + bonus_stones;
 
         if (max_reward > 0) {
             voidia_coin::unreserve(vault, max_reward);
         };
-        power_stone::unreserve(stones, stone_max);
+        power_stone::unreserve(
+            stones,
+            stone_max + if (max_reward > 0) { STONE_BONUS_V2 } else { STONE_BONUS_V1 }
+        );
 
         if (reward > 0) {
             let coin_out = voidia_coin::withdraw(vault, reward, ctx);
             transfer::public_transfer(coin_out, sender);
         };
-        if (stone_reward > 0) {
-            let stones_coin = power_stone::withdraw(stones, stone_reward, ctx);
+        if (total_stones > 0) {
+            let stones_coin = power_stone::withdraw(stones, total_stones, ctx);
             transfer::public_transfer(stones_coin, sender);
         };
 
         let difficulty = world.difficulty as u64;
-        let power_gained = reward * difficulty;
-        let potential_gained = difficulty;
-        character.power = clamp_power(world, character.power_tier, character.power + power_gained);
+        // Scaling gains by tier and current power:
+        // - base_gain = 2 * difficulty
+        // - tier_multiplier = 1 + power_tier
+        // - bonus_pct = +10% per 10_000 power (capped at +500%)
+        let base_gain = 2 * difficulty;
+        let tier_multiplier = 1 + (character.power_tier as u64);
+        let bonus_pct = {
+            let raw = (character.power / 10_000) * 10;
+            if (raw > 500) { 500 } else { raw }
+        };
+        let power_gained = base_gain * tier_multiplier * (100 + bonus_pct) / 100;
+        let potential_gained = base_gain * tier_multiplier;
+        character.power = character.power + power_gained;
         character.potential = character.potential + potential_gained;
 
         let world_id = object::uid_to_inner(&world.id);
@@ -770,7 +742,7 @@ module voidia_world::world {
             world_id,
             play_id,
             reward,
-            stones: stone_reward,
+            stones: total_stones,
             power_gained,
             potential_gained,
             recipient: sender,
@@ -910,27 +882,4 @@ module voidia_world::world {
         }
     }
 
-    /* ================= BREAKTHROUGH HELPERS ================= */
-
-    fun default_break_configs(): vector<BreakConfig> {
-        vector[
-            BreakConfig { max_power: 300, stone_cost: 5, potential_cost: 5, success_bps: 4000 },
-            BreakConfig { max_power: 1000, stone_cost: 10, potential_cost: 10, success_bps: 3500 },
-            BreakConfig { max_power: 8000, stone_cost: 15, potential_cost: 15, success_bps: 3000 },
-            BreakConfig { max_power: 20000, stone_cost: 20, potential_cost: 20, success_bps: 2500 },
-            BreakConfig { max_power: 30000, stone_cost: 25, potential_cost: 25, success_bps: 2000 },
-            BreakConfig { max_power: 50000, stone_cost: 30, potential_cost: 30, success_bps: 1500 },
-        ]
-    }
-
-    fun clamp_power(world: &WorldMap, tier: u8, desired: u64): u64 {
-        let t = tier as u64;
-        let total = vector::length(&world.break_configs) as u64;
-        if (t >= total) {
-            desired
-        } else {
-            let cfg = *vector::borrow(&world.break_configs, t);
-            if (desired > cfg.max_power) { cfg.max_power } else { desired }
-        }
-    }
 }
