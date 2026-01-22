@@ -1,14 +1,14 @@
-# Chunk World - Hackathon Game
+# Voidia World - Hackathon Game
 
-A blockchain-based chunk world game built on **Sui Network** with **Kaboom.js** game engine.
+A blockchain-based Voidia World game built on **Sui Network** with **Kaboom.js** game engine.
 
 ## 🎮 Features
 
-- Chunk-based world editor (5x5 tiles per chunk)
+- Plot-based world editor (5x5 tiles per plot)
 - 2-layer tile system (base tiles + decorations)
 - On-chain world storage via Sui Move smart contracts
 - Character NFT system
-- Play-to-earn rewards with CHUNK tokens
+- Play-to-earn rewards with PLOT tokens
 
 ## 🛠️ Tech Stack
 
@@ -77,12 +77,12 @@ The app will be available at `http://localhost:5173`
 
 ## 🔗 Smart Contract (Move)
 
-The Move smart contract is located in the `chunk_world/` directory.
+The Move smart contract (package name `voidia_world`) is located in the `voidia_world_contract/` directory.
 
 ### Build contract
 
 ```bash
-cd chunk_world
+cd voidia_world_contract
 sui move build
 ```
 
@@ -103,7 +103,7 @@ After deployment, update `VITE_PACKAGE_ID` in your `.env` file with the publishe
 ## 📁 Project Structure
 
 ```
-├── chunk_world/          # Sui Move smart contracts
+├── voidia_world/          # Sui Move smart contracts
 │   ├── sources/          # Move source files
 │   └── tests/            # Move test files
 ├── public/
@@ -135,7 +135,7 @@ After deployment, update `VITE_PACKAGE_ID` in your `.env` file with the publishe
 ### Tile Size
 
 - `TILE_SIZE`: 32px
-- `CHUNK_SIZE`: 5x5 tiles (160x160 pixels per chunk)
+- `PLOT_SIZE`: 5x5 tiles (160x160 pixels per PLOT)
 
 ### Camera
 
@@ -152,3 +152,7 @@ After deployment, update `VITE_PACKAGE_ID` in your `.env` file with the publishe
 ## 📄 License
 
 This project is private and created for hackathon purposes.
+
+
+
+

@@ -476,7 +476,7 @@
   box-shadow: none;
 }
 
-.btn--primary, .btn-active-chunk {
+.btn--primary, .btn-active-PLOT {
   background: linear-gradient(135deg, var(--land-accent), #3d8fd1);
   border: 2px solid var(--land-accent);
   color: var(--land-bg-dark);
@@ -485,7 +485,7 @@
     inset 0 2px 0 rgba(255, 255, 255, 0.2);
 }
 
-.btn-save-chunk {
+.btn-save-PLOT {
   background: linear-gradient(135deg, #59b7ff, #5aa0e6);
   color: var(--land-bg-dark);
   box-shadow:
@@ -642,7 +642,7 @@
   animation: owned-glow 2s ease-in-out infinite alternate;
 }
 
-/* Owned chunk edge borders - permanent yellow/orange */
+/* Owned PLOT edge borders - permanent yellow/orange */
 .editor-tile.is-owned.owned-edge-top {
   border-top: 2px solid rgba(246, 164, 75, 0.9);
 }
@@ -659,7 +659,7 @@
   border-right: 2px solid rgba(246, 164, 75, 0.9);
 }
 
-/* Corner glow for owned chunks */
+/* Corner glow for owned PLOTs */
 .editor-tile.is-owned.owned-edge-top.owned-edge-left {
   box-shadow: -2px -2px 8px rgba(246, 164, 75, 0.5);
 }
@@ -685,7 +685,7 @@
   }
 }
 
-/* Other users' chunks - subtle blue */
+/* Other users' PLOTs - subtle blue */
 .editor-tile.is-other-owned {
   box-shadow: inset 0 0 0 1px rgba(89, 183, 255, 0.4);
 }
@@ -711,41 +711,41 @@
   z-index: 1;
 }
 
-/* Chunk border highlight on hover */
-.editor-tile.is-hovered.chunk-edge-top {
+/* PLOT border highlight on hover */
+.editor-tile.is-hovered.PLOT-edge-top {
   border-top: 2px solid rgba(89, 183, 255, 0.95);
   box-shadow: 0 -2px 8px rgba(89, 183, 255, 0.5);
 }
 
-.editor-tile.is-hovered.chunk-edge-bottom {
+.editor-tile.is-hovered.PLOT-edge-bottom {
   border-bottom: 2px solid rgba(89, 183, 255, 0.95);
   box-shadow: 0 2px 8px rgba(89, 183, 255, 0.5);
 }
 
-.editor-tile.is-hovered.chunk-edge-left {
+.editor-tile.is-hovered.PLOT-edge-left {
   border-left: 2px solid rgba(89, 183, 255, 0.95);
   box-shadow: -2px 0 8px rgba(89, 183, 255, 0.5);
 }
 
-.editor-tile.is-hovered.chunk-edge-right {
+.editor-tile.is-hovered.PLOT-edge-right {
   border-right: 2px solid rgba(89, 183, 255, 0.95);
   box-shadow: 2px 0 8px rgba(89, 183, 255, 0.5);
 }
 
 /* Corner tiles need combined shadows */
-.editor-tile.is-hovered.chunk-edge-top.chunk-edge-left {
+.editor-tile.is-hovered.PLOT-edge-top.PLOT-edge-left {
   box-shadow: -2px -2px 8px rgba(89, 183, 255, 0.5);
 }
 
-.editor-tile.is-hovered.chunk-edge-top.chunk-edge-right {
+.editor-tile.is-hovered.PLOT-edge-top.PLOT-edge-right {
   box-shadow: 2px -2px 8px rgba(89, 183, 255, 0.5);
 }
 
-.editor-tile.is-hovered.chunk-edge-bottom.chunk-edge-left {
+.editor-tile.is-hovered.PLOT-edge-bottom.PLOT-edge-left {
   box-shadow: -2px 2px 8px rgba(89, 183, 255, 0.5);
 }
 
-.editor-tile.is-hovered.chunk-edge-bottom.chunk-edge-right {
+.editor-tile.is-hovered.PLOT-edge-bottom.PLOT-edge-right {
   box-shadow: 2px 2px 8px rgba(89, 183, 255, 0.5);
 }
 
@@ -823,12 +823,12 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-.editor-chunk-grid {
+.editor-PLOT-grid {
   display: grid;
   gap: 2px;
 }
 
-.editor-tile--chunk {
+.editor-tile--PLOT {
   width: 32px;
   height: 32px;
 }
@@ -1040,3 +1040,4 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(89, 183, 255, 0.4);
 }
+

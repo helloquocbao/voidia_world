@@ -21,7 +21,7 @@ import { soundManager } from "./soundManager";
 let started = false;
 let kaboomInstance: ReturnType<typeof kaboom> | null = null;
 const TILE = 32;
-const CHUNK_SIZE = 5;
+const PLOT_SIZE = 5;
 const PLAY_STATE_KEY = "PLAY_STATE";
 const PLAY_TARGET_KEY = "PLAY_TARGET";
 const PLAY_CHESTS_KEY = "PLAY_CHESTS";
@@ -33,7 +33,7 @@ type GameMapData = {
   worldId?: string;
   characterHealth?: number;
   difficulty?: number; // 1-9 from WorldMap
-  chunkCount?: number; // Number of chunks
+  PLOTCount?: number; // Number of PLOTs
 };
 
 // Reset game state - call this when unmounting GamePage component
@@ -884,19 +884,19 @@ export function startGame(mapData?: GameMapData) {
     const mapWidth = resolvedMap.grid[0]?.length ?? 0;
     const mapHeight = resolvedMap.grid.length;
     const baseDifficulty = resolvedMap.difficulty ?? 1;
-    const chunkCount =
-      resolvedMap.chunkCount ??
+    const PLOTCount =
+      resolvedMap.PLOTCount ??
       Math.max(
         1,
-        Math.ceil((mapWidth * mapHeight) / (CHUNK_SIZE * CHUNK_SIZE)),
+        Math.ceil((mapWidth * mapHeight) / (PLOT_SIZE * PLOT_SIZE)),
       );
 
     // Số quái ban đầu dựa trên difficulty (giảm để game dễ hơn lúc đầu)
     // Difficulty 1: chỉ 1 quái, Difficulty 9: nhiều hơn
-    const enemiesPerChunk = 0.3 + (baseDifficulty - 1) * 0.15; // 0.3 -> 1.5
+    const enemiesPerPLOT = 0.3 + (baseDifficulty - 1) * 0.15; // 0.3 -> 1.5
     const initialGoblinCount = Math.max(
       1,
-      Math.floor(chunkCount * enemiesPerChunk),
+      Math.floor(PLOTCount * enemiesPerPLOT),
     );
     const goblinCount = Math.max(1, initialGoblinCount);
     const yodCount = Math.max(0, Math.floor(goblinCount / 2));
@@ -980,7 +980,7 @@ export function startGame(mapData?: GameMapData) {
     const maintainer = initEnemyMaintainer({
       rpcUrl: RPC_URL,
       baseDifficulty,
-      chunkCount,
+      PLOTCount,
       onSpawnEnemy: spawnGoblinFromMaintainer,
       onDifficultyUpdate: (info: DifficultyInfo) => {
         const aliveGoblins = goblins.filter((goblin) => goblin.exists());
@@ -1565,3 +1565,5 @@ function markKeyFound(target: { x: number; y: number }, playId?: string) {
     new CustomEvent("game:key-found", { detail: { playId } }),
   );
 }
+
+

@@ -5,7 +5,7 @@ import "./LandingPage.css";
 
 const features = [
   {
-    title: "🏔️ Stone Chunks",
+    title: "🏔️ Stone Plots",
     description:
       "Mint 5×5 rock tiles as NFTs. Build floating islands in the sky.",
   },
@@ -17,7 +17,7 @@ const features = [
   {
     title: "⚔️ Play & Earn",
     description:
-      "Explore on-chain worlds. Find hidden keys and claim CHUNK rewards.",
+      "Explore on-chain worlds. Find hidden keys and claim plot rewards.",
   },
 ];
 
@@ -26,7 +26,7 @@ const gameFeatures = [
     icon: "🌍",
     title: "On-Chain Worlds",
     description:
-      "Every map chunk lives permanently on Sui blockchain. Trade or expand your territory.",
+      "Every map plot lives permanently on Sui blockchain. Trade or expand your territory.",
   },
   {
     icon: "🎮",
@@ -38,7 +38,7 @@ const gameFeatures = [
     icon: <img src="https://ik.imagekit.io/huubao/chunk_coin.png" alt="logo" className="w-12 h-12 mt-3" />,
     title: "Token Rewards",
     description:
-      "Find hidden keys, claim CHUNK tokens, and earn while you play.",
+      "Find hidden keys, claim PLOT tokens, and earn while you play.",
   },
   {
     icon: "🔧",
@@ -69,7 +69,7 @@ export default function LandingPage() {
           <div className="brand">
             <img src="https://ik.imagekit.io/huubao/chunk_coin.png" alt="logo" className="w-12 h-12" />
             <div>
-              <div className="brand__name">Chunk World</div>
+              <div className="brand__name">Voidia World</div>
               <div className="brand__tag">Sky Adventures on Sui</div>
             </div>
           </div>
@@ -99,14 +99,14 @@ export default function LandingPage() {
               style={{ "--delay": "0.15s" }}
             >
               Build your <span className="hero__accent">sky world</span>, one
-              chunk at a time.
+              plot at a time.
             </h1>
 
             <p
               className="hero__subtitle landing__reveal"
               style={{ "--delay": "0.2s" }}
             >
-              Claim rocky chunks, carve tiles, and trade them as NFTs. Every
+              Claim rocky plots, carve tiles, and trade them as NFTs. Every
               update lands on Sui and appears instantly in the game loop. Your
               creativity, permanently on-chain.
             </p>
@@ -155,7 +155,7 @@ export default function LandingPage() {
             <div className="panel__highlights">
               <div className="panel__highlight">
                 <span className="highlight__icon">⛏️</span>
-                <span>5×5 Chunk Tiles</span>
+                <span>5×5 PLOT Tiles</span>
               </div>
               <div className="panel__highlight">
                 <span className="highlight__icon">🔗</span>
@@ -163,7 +163,7 @@ export default function LandingPage() {
               </div>
               <div className="panel__highlight">
                 <span className="highlight__icon">💰</span>
-                <span>Earn CHUNK Tokens</span>
+                <span>Earn PLOT Tokens</span>
               </div>
             </div>
           </div>
@@ -175,7 +175,7 @@ export default function LandingPage() {
           style={{ "--delay": "0.35s" }}
         >
           <div className="features__header">
-            <h2 className="features__title">Why Chunk World?</h2>
+            <h2 className="features__title">Why Voidia World?</h2>
             <p className="features__subtitle">
               A new kind of gaming experience where players truly own their
               world.
@@ -230,3 +230,7 @@ export default function LandingPage() {
     </div>
   );
 }
+
+
+
+

@@ -9,7 +9,7 @@ export interface EnemyConfig {
 export interface MaintainerConfig {
   rpcUrl: string;
   baseDifficulty: number; // 1-9 từ WorldMap
-  chunkCount: number; // Số chunks trên map
+  PLOTCount: number; // Số PLOTs trên map
   onSpawnEnemy: (config: EnemyConfig) => void; // Callback spawn 1 quái
   onDifficultyUpdate?: (info: DifficultyInfo) => void;
 }
@@ -31,7 +31,7 @@ interface BaseStats {
   hp: number;
   damage: number;
   speed: number;
-  enemiesPerChunk: number;
+  enemiesPerPLOT: number;
 }
 
 export class EnemyMaintainer {
@@ -59,9 +59,9 @@ export class EnemyMaintainer {
 
   private calculateTargetCount() {
     const stats = this.getBaseStats();
-    // Target = chunks × enemiesPerChunk (cơ bản, sẽ được điều chỉnh theo network)
+    // Target = PLOTs × enemiesPerPLOT (cơ bản, sẽ được điều chỉnh theo network)
     this.targetEnemyCount = Math.ceil(
-      this.config.chunkCount * stats.enemiesPerChunk,
+      this.config.PLOTCount * stats.enemiesPerPLOT,
     );
   }
 
@@ -72,7 +72,7 @@ export class EnemyMaintainer {
       hp: 2 + Math.round(normalized * 12),
       damage: 5 + Math.round(normalized * 18),
       speed: 30 + Math.round(normalized * 25),
-      enemiesPerChunk: 0.5 + normalized * 3.5,
+      enemiesPerPLOT: 0.5 + normalized * 3.5,
     };
   }
 
@@ -143,7 +143,7 @@ export class EnemyMaintainer {
       );
 
       // Fixed target count
-      this.targetEnemyCount = this.config.chunkCount * 2;
+      this.targetEnemyCount = this.config.PLOTCount * 2;
 
       this.targetEnemyCount = Math.max(1, this.targetEnemyCount);
 
@@ -261,3 +261,5 @@ export function stopEnemyMaintainer() {
     maintainerInstance = null;
   }
 }
+
+

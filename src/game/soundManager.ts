@@ -61,3 +61,4 @@ class SoundManager {
 
 // Export singleton instance
 export const soundManager = new SoundManager();
+

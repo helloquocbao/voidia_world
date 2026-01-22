@@ -1,4 +1,4 @@
-module chunk_world::reward_coin;
+module voidia_world::voidia_coin;
 
 use std::string;
 use sui::balance::{Self, Balance};
@@ -13,11 +13,12 @@ const E_INSUFFICIENT_AVAILABLE: u64 = 0;
 const E_INVALID_AMOUNT: u64 = 1;
 const E_INVALID_RESERVED: u64 = 2;
 
-public struct REWARD_COIN has drop {}
+/// Coin type + one-time witness (uppercase module name)
+public struct VOIDIA_COIN has drop {}
 
 public struct RewardVault has key, store {
     id: UID,
-    balance: Balance<REWARD_COIN>,
+    balance: Balance<VOIDIA_COIN>,
     reserved: u64,
 }
 
@@ -27,15 +28,16 @@ public struct RewardVaultCreatedEvent has copy, drop {
     decimals: u8,
 }
 
-fun init(otw: REWARD_COIN, ctx: &mut TxContext) {
+fun init(otw: VOIDIA_COIN, ctx: &mut TxContext) {
     let admin = tx_context::sender(ctx);
 
-    let (builder, mut treasury_cap) = coin_registry::new_currency_with_otw<REWARD_COIN>(
+    let (builder, mut treasury_cap) = coin_registry::new_currency_with_otw<VOIDIA_COIN>(
         otw,
         DECIMALS,
-        string::utf8(b"CHUNK"),
-        string::utf8(b"Chunk Reward"),
-        string::utf8(b"Chunk World reward token"),
+        string::utf8(b"VOIDIA"),
+        string::utf8(b"Voidia World"),
+        string::utf8(b"Voidia World coin"),
+        // Reuse existing coin artwork until a Voidia-branded asset is ready
         string::utf8(b"https://ik.imagekit.io/huubao/chunk_coin.png"),
         ctx,
     );
@@ -44,7 +46,7 @@ fun init(otw: REWARD_COIN, ctx: &mut TxContext) {
     let metadata_cap = coin_registry::finalize(builder, ctx); // hoặc builder.finalize(ctx) tùy version/import
 
     // mint + vault
-    let minted = coin::mint<REWARD_COIN>(&mut treasury_cap, TOTAL_SUPPLY, ctx);
+    let minted = coin::mint<VOIDIA_COIN>(&mut treasury_cap, TOTAL_SUPPLY, ctx);
     let balance = coin::into_balance(minted);
 
     let vault = RewardVault { id: object::new(ctx), balance, reserved: 0 };
@@ -79,24 +81,24 @@ public fun available(vault: &RewardVault): u64 {
 }
 
 fun mint_internal(
-    treasury_cap: &mut coin::TreasuryCap<REWARD_COIN>,
+    treasury_cap: &mut coin::TreasuryCap<VOIDIA_COIN>,
     amount: u64,
     ctx: &mut TxContext,
-): Coin<REWARD_COIN> {
+): Coin<VOIDIA_COIN> {
     assert!(amount > 0, E_INVALID_AMOUNT);
     coin::mint(treasury_cap, amount, ctx)
 }
 
 public fun mint(
-    treasury_cap: &mut coin::TreasuryCap<REWARD_COIN>,
+    treasury_cap: &mut coin::TreasuryCap<VOIDIA_COIN>,
     amount: u64,
     ctx: &mut TxContext,
-): Coin<REWARD_COIN> {
+): Coin<VOIDIA_COIN> {
     mint_internal(treasury_cap, amount, ctx)
 }
 
 entry fun mint_token(
-    treasury_cap: &mut coin::TreasuryCap<REWARD_COIN>,
+    treasury_cap: &mut coin::TreasuryCap<VOIDIA_COIN>,
     amount: u64,
     ctx: &mut TxContext,
 ) {
@@ -106,7 +108,7 @@ entry fun mint_token(
 }
 
 entry fun mint_to_vault(
-    treasury_cap: &mut coin::TreasuryCap<REWARD_COIN>,
+    treasury_cap: &mut coin::TreasuryCap<VOIDIA_COIN>,
     vault: &mut RewardVault,
     amount: u64,
     ctx: &mut TxContext,
@@ -115,7 +117,7 @@ entry fun mint_to_vault(
     deposit(vault, coin);
 }
 
-public(package) fun deposit(vault: &mut RewardVault, coin: Coin<REWARD_COIN>) {
+public(package) fun deposit(vault: &mut RewardVault, coin: Coin<VOIDIA_COIN>) {
     let bal = coin::into_balance(coin);
     balance::join(&mut vault.balance, bal);
 }
@@ -137,14 +139,9 @@ public(package) fun withdraw(
     vault: &mut RewardVault,
     amount: u64,
     ctx: &mut TxContext,
-): Coin<REWARD_COIN> {
+): Coin<VOIDIA_COIN> {
     assert!(amount > 0, E_INVALID_AMOUNT);
     coin::take(&mut vault.balance, amount, ctx)
 }
 
-/// Simple faucet that sends a specified amount from the shared vault to caller
-entry fun faucet(vault: &mut RewardVault, amount: u64, ctx: &mut TxContext) {
-    let coin = withdraw(vault, amount, ctx);
-    let recipient = tx_context::sender(ctx);
-    transfer::public_transfer(coin, recipient);
-}
+

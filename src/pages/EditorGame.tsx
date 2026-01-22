@@ -39,13 +39,13 @@ import { getWalrusImageUrl } from "../lib/helper";
  */
 
 const TILE_SIZE = 32;
-const CHUNK_SIZE = 5;
+const PLOT_SIZE = 5;
 const DEFAULT_FLOOR = DEFAULT_GROUND_TILE_ID;
 const VOID_TILE_COLOR = "#0b0b0b";
 const USER_ID_KEY = "EDITOR_USER_ID";
 const RANDOM_OBJECT_ID = "0x8";
 
-type ChunkOwners = Record<string, string>;
+type plotOwners = Record<string, string>;
 
 export default function EditorGame() {
   const navigate = useNavigate();
@@ -65,10 +65,10 @@ export default function EditorGame() {
   const [decoGrid, setDecoGrid] = useState<number[][]>(() =>
     createDefaultDecoGrid(),
   );
-  const [chunkOwners, setChunkOwners] = useState<ChunkOwners>(() =>
+  const [plotOwners, setplotOwners] = useState<plotOwners>(() =>
     createOwnersForGrid(createDefaultGrid(), userId),
   );
-  const [activeChunkKey, setActiveChunkKey] = useState<string>("");
+  const [activePlotKey, setActivePlotKey] = useState<string>("");
   const [worldId, setWorldId] = useState<string>("");
   const [chainError, setChainError] = useState<string>("");
   const [txDigest, setTxDigest] = useState<string>("");
@@ -77,20 +77,20 @@ export default function EditorGame() {
   const [isDraggingGrid, setIsDraggingGrid] = useState(false);
   const [isMapLoading, setIsMapLoading] = useState(false);
   const [mapLoadError, setMapLoadError] = useState("");
-  const [loadedChunks, setLoadedChunks] = useState<number | null>(null);
+  const [loadedPLOTs, setLoadedPLOTs] = useState<number | null>(null);
 
-  // Default image URL for claimed chunks
-  const DEFAULT_CHUNK_IMAGE_URL =
-    "https://ik.imagekit.io/huubao/image_chunk.png";
-  const [isChunkModalOpen, setIsChunkModalOpen] = useState(false);
-  const [hoveredChunkKey, setHoveredChunkKey] = useState("");
-  const [hoveredChunkId, setHoveredChunkId] = useState("");
+  // Default image URL for claimed PLOTs
+  const DEFAULT_PLOT_IMAGE_URL =
+    "https://ik.imagekit.io/huubao/image_PLOT.png";
+  const [isPLOTModalOpen, setIsPLOTModalOpen] = useState(false);
+  const [hoveredPlotKey, setHoveredPlotKey] = useState("");
+  const [hoveredplotId, setHoveredplotId] = useState("");
   const [isHoverIdLoading, setIsHoverIdLoading] = useState(false);
   const [isClaimHelpOpen, setIsClaimHelpOpen] = useState(false);
 
-  // Compute current chunk price for UI display
-  const claimChunkPrice =
-    (loadedChunks ?? 0) < 20 ? (loadedChunks ?? 0) * 5 : 100;
+  // Compute current PLOT price for UI display
+  const claimPLOTPrice =
+    (loadedPLOTs ?? 0) < 20 ? (loadedPLOTs ?? 0) * 5 : 100;
 
   // World creation params
   const [worldName, setWorldName] = useState<string>("");
@@ -112,10 +112,10 @@ export default function EditorGame() {
   // Admin check
   const [adminCapOwner, setAdminCapOwner] = useState<string>("");
 
-  const chunkIdCacheRef = useRef<Record<string, string>>({});
+  const plotIdCacheRef = useRef<Record<string, string>>({});
   const hoverRequestRef = useRef(0);
   const gridWrapRef = useRef<HTMLDivElement | null>(null);
-  const chunkGridRef = useRef<HTMLDivElement | null>(null);
+  const plotGridRef = useRef<HTMLDivElement | null>(null);
 
   const clickTileRef = useRef<{ x: number; y: number } | null>(null);
   const dragRef = useRef({
@@ -175,120 +175,120 @@ export default function EditorGame() {
       owner && (owner === userId || (walletAddress && owner === walletAddress)),
     );
 
-  const myChunks = useMemo(() => {
-    return Object.entries(chunkOwners)
+  const myPLOTs = useMemo(() => {
+    return Object.entries(plotOwners)
       .filter(
         ([key, owner]) =>
           owner &&
           (owner === userId || (walletAddress && owner === walletAddress)),
       )
       .map(([key]) => key);
-  }, [chunkOwners, userId, walletAddress]);
+  }, [plotOwners, userId, walletAddress]);
 
-  function flyToChunk(chunkKey: string) {
-    const [cx, cy] = chunkKey.split(",").map(Number);
+  function flyToPLOT(PlotKey: string) {
+    const [cx, cy] = PlotKey.split(",").map(Number);
     const wrap = gridWrapRef.current;
     if (!wrap) return;
 
-    const chunkSizePx = CHUNK_SIZE * TILE_SIZE;
-    const x = cx * chunkSizePx;
-    const y = cy * chunkSizePx;
+    const PLOTSizePx = PLOT_SIZE * TILE_SIZE;
+    const x = cx * PLOTSizePx;
+    const y = cy * PLOTSizePx;
 
     const viewportWidth = wrap.clientWidth;
     const viewportHeight = wrap.clientHeight;
 
     wrap.scrollTo({
-      left: x - viewportWidth / 2 + chunkSizePx / 2,
-      top: y - viewportHeight / 2 + chunkSizePx / 2,
+      left: x - viewportWidth / 2 + PLOTSizePx / 2,
+      top: y - viewportHeight / 2 + PLOTSizePx / 2,
       behavior: "smooth",
     });
 
-    setHoveredChunkKey(chunkKey);
+    setHoveredPlotKey(PlotKey);
   }
 
   useEffect(() => {
-    chunkIdCacheRef.current = {};
+    plotIdCacheRef.current = {};
     hoverRequestRef.current = 0;
-    setHoveredChunkKey("");
-    setHoveredChunkId("");
+    setHoveredPlotKey("");
+    setHoveredplotId("");
     setIsHoverIdLoading(false);
   }, [worldIdValue]);
 
   useEffect(() => {
-    if (!hoveredChunkKey) {
-      setHoveredChunkId("");
+    if (!hoveredPlotKey) {
+      setHoveredplotId("");
       setIsHoverIdLoading(false);
       return;
     }
     if (!worldIdValue || !PACKAGE_ID) {
-      setHoveredChunkId("");
+      setHoveredplotId("");
       setIsHoverIdLoading(false);
       return;
     }
 
-    const cached = chunkIdCacheRef.current[hoveredChunkKey];
+    const cached = plotIdCacheRef.current[hoveredPlotKey];
     if (cached !== undefined) {
-      setHoveredChunkId(cached);
+      setHoveredplotId(cached);
       setIsHoverIdLoading(false);
       return;
     }
 
-    const [cxRaw, cyRaw] = hoveredChunkKey.split(",");
+    const [cxRaw, cyRaw] = hoveredPlotKey.split(",");
     const cx = parseCoord(cxRaw ?? "0");
     const cy = parseCoord(cyRaw ?? "0");
     const requestId = (hoverRequestRef.current += 1);
     setIsHoverIdLoading(true);
 
     void (async () => {
-      const resolved = await fetchChunkObjectId(cx, cy, { silent: true });
+      const resolved = await fetchplotObjectId(cx, cy, { silent: true });
       if (requestId !== hoverRequestRef.current) return;
-      chunkIdCacheRef.current[hoveredChunkKey] = resolved;
-      setHoveredChunkId(resolved);
+      plotIdCacheRef.current[hoveredPlotKey] = resolved;
+      setHoveredplotId(resolved);
       setIsHoverIdLoading(false);
     })();
-  }, [hoveredChunkKey, worldIdValue]);
+  }, [hoveredPlotKey, worldIdValue]);
 
-  const activeChunkLabel = activeChunkKey
-    ? activeChunkKey.replace(",", ", ")
+  const activePLOTLabel = activePlotKey
+    ? activePlotKey.replace(",", ", ")
     : "none";
-  const activeChunkOwner = activeChunkKey
-    ? chunkOwners[activeChunkKey]
+  const activePLOTOwner = activePlotKey
+    ? plotOwners[activePlotKey]
     : undefined;
-  const canSaveActiveChunk =
-    Boolean(activeChunkKey) && isOwnerMatch(activeChunkOwner);
+  const canSaveActivePLOT =
+    Boolean(activePlotKey) && isOwnerMatch(activePLOTOwner);
 
-  const activeChunkCoords = useMemo(() => {
-    if (!activeChunkKey) return null;
-    const [cxRaw, cyRaw] = activeChunkKey.split(",");
+  const activePLOTCoords = useMemo(() => {
+    if (!activePlotKey) return null;
+    const [cxRaw, cyRaw] = activePlotKey.split(",");
     return { cx: parseCoord(cxRaw ?? "0"), cy: parseCoord(cyRaw ?? "0") };
-  }, [activeChunkKey]);
-  const hoveredChunkLabel = hoveredChunkKey
-    ? hoveredChunkKey.replace(",", ", ")
+  }, [activePlotKey]);
+  const hoveredPLOTLabel = hoveredPlotKey
+    ? hoveredPlotKey.replace(",", ", ")
     : "none";
-  const hoveredChunkIdDisplay = !hoveredChunkKey
+  const hoveredplotIdDisplay = !hoveredPlotKey
     ? "-"
     : !worldIdValue || !PACKAGE_ID
       ? "not available"
       : isHoverIdLoading
         ? "loading..."
-        : hoveredChunkId || "not found";
-  const activeChunkIdDisplay =
-    activeChunkKey && activeChunkKey === hoveredChunkKey
-      ? hoveredChunkIdDisplay
+        : hoveredplotId || "not found";
+  const activeplotIdDisplay =
+    activePlotKey && activePlotKey === hoveredPlotKey
+      ? hoveredplotIdDisplay
       : "-";
 
   /* ================= EDIT ================= */
 
-  function handleTilePointerEnter(chunkKey: string, isOwned: boolean) {
+  function handleTilePointerEnter(PlotKey: string, isOwned: boolean) {
     if (isDraggingGrid) return;
     if (!isOwned) {
-      if (hoveredChunkKey) {
-        setHoveredChunkKey("");
+      if (hoveredPlotKey) {
+        setHoveredPlotKey("");
       }
       return;
     }
-    if (hoveredChunkKey !== chunkKey) {
-      setHoveredChunkKey(chunkKey);
+    if (hoveredPlotKey !== PlotKey) {
+      setHoveredPlotKey(PlotKey);
     }
   }
 
@@ -302,36 +302,36 @@ export default function EditorGame() {
   }
 
   function paint(x: number, y: number) {
-    const cx = Math.floor(x / CHUNK_SIZE);
-    const cy = Math.floor(y / CHUNK_SIZE);
-    const chunkKey = makeChunkKey(cx, cy);
-    const owner = chunkOwners[chunkKey];
+    const cx = Math.floor(x / PLOT_SIZE);
+    const cy = Math.floor(y / PLOT_SIZE);
+    const PlotKey = makePlotKey(cx, cy);
+    const owner = plotOwners[PlotKey];
     const isOwned = isOwnerMatch(owner);
-    setActiveChunkKey(chunkKey);
+    setActivePlotKey(PlotKey);
     if (!isOwned) {
       const ownerLabel = owner ? shortAddress(owner) : "no owner";
-      setNotice(`Chunk owned by ${ownerLabel}.`);
+      setNotice(`PLOT owned by ${ownerLabel}.`);
       return;
     }
-    setNotice(`Editing chunk (${cx}, ${cy}).`);
-    setIsChunkModalOpen(true);
+    setNotice(`Editing PLOT (${cx}, ${cy}).`);
+    setIsPLOTModalOpen(true);
   }
 
-  function closeChunkModal() {
-    setIsChunkModalOpen(false);
+  function closePLOTModal() {
+    setIsPLOTModalOpen(false);
   }
 
-  async function captureAndUploadChunkImage() {
-    if (!chunkGridRef.current || !activeChunkCoords) {
-      setNotice("No chunk grid to capture.");
+  async function captureAndUploadplotImage() {
+    if (!plotGridRef.current || !activePLOTCoords) {
+      setNotice("No PLOT grid to capture.");
       return;
     }
 
-    setNotice("Capturing chunk image...");
+    setNotice("Capturing PLOT image...");
 
     try {
-      // Create a canvas from the chunk grid
-      const gridElement = chunkGridRef.current;
+      // Create a canvas from the PLOT grid
+      const gridElement = plotGridRef.current;
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       if (!ctx) {
@@ -339,16 +339,16 @@ export default function EditorGame() {
         return;
       }
 
-      // Set canvas size to match chunk grid
-      const canvasSize = CHUNK_SIZE * TILE_SIZE;
+      // Set canvas size to match PLOT grid
+      const canvasSize = PLOT_SIZE * TILE_SIZE;
       canvas.width = canvasSize;
       canvas.height = canvasSize;
 
       // Draw each tile onto the canvas
-      for (let y = 0; y < CHUNK_SIZE; y++) {
-        for (let x = 0; x < CHUNK_SIZE; x++) {
-          const gx = activeChunkCoords.cx * CHUNK_SIZE + x;
-          const gy = activeChunkCoords.cy * CHUNK_SIZE + y;
+      for (let y = 0; y < PLOT_SIZE; y++) {
+        for (let x = 0; x < PLOT_SIZE; x++) {
+          const gx = activePLOTCoords.cx * PLOT_SIZE + x;
+          const gy = activePLOTCoords.cy * PLOT_SIZE + y;
           const tileId = grid[gy]?.[gx] ?? 0;
           const decoId = decoGrid[gy]?.[gx] ?? 0;
 
@@ -394,15 +394,15 @@ export default function EditorGame() {
       console.log("Image URL:", getWalrusImageUrl(patchId));
       console.log("Full result:", patchId);
 
-      // Get the chunk object ID to update image URL on-chain
-      const chunkObjectId = await fetchChunkObjectId(
-        activeChunkCoords.cx,
-        activeChunkCoords.cy,
+      // Get the PLOT object ID to update image URL on-chain
+      const plotObjectId = await fetchplotObjectId(
+        activePLOTCoords.cx,
+        activePLOTCoords.cy,
       );
 
-      if (!chunkObjectId) {
+      if (!plotObjectId) {
         setNotice(
-          `Image uploaded to Walrus but chunk not found on-chain. URL: ${getWalrusImageUrl(patchId)}`,
+          `Image uploaded to Walrus but PLOT not found on-chain. URL: ${getWalrusImageUrl(patchId)}`,
         );
         return;
       }
@@ -415,28 +415,28 @@ export default function EditorGame() {
           tx.moveCall({
             target: `${PACKAGE_ID}::world::set_image_url`,
             arguments: [
-              tx.object(chunkObjectId),
+              tx.object(plotObjectId),
               tx.pure.string(getWalrusImageUrl(patchId)),
             ],
           });
         },
         () => {
           setNotice(
-            `Chunk image updated on-chain! URL: ${getWalrusImageUrl(patchId)}`,
+            `PLOT image updated on-chain! URL: ${getWalrusImageUrl(patchId)}`,
           );
         },
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error("Failed to upload chunk image:", error);
+      console.error("Failed to upload PLOT image:", error);
       setNotice(`Upload failed: ${message}`);
     }
   }
 
   function paintModalTile(localX: number, localY: number) {
-    if (!activeChunkCoords || !canSaveActiveChunk) return;
-    const gx = activeChunkCoords.cx * CHUNK_SIZE + localX;
-    const gy = activeChunkCoords.cy * CHUNK_SIZE + localY;
+    if (!activePLOTCoords || !canSaveActivePLOT) return;
+    const gx = activePLOTCoords.cx * PLOT_SIZE + localX;
+    const gy = activePLOTCoords.cy * PLOT_SIZE + localY;
 
     if (paintLayer === "base") {
       setGrid((prev) => {
@@ -522,8 +522,8 @@ export default function EditorGame() {
 
   function handleGridPointerLeave(event: React.PointerEvent<HTMLDivElement>) {
     handleGridPointerEnd(event);
-    setHoveredChunkKey("");
-    setHoveredChunkId("");
+    setHoveredPlotKey("");
+    setHoveredplotId("");
     setIsHoverIdLoading(false);
   }
 
@@ -652,16 +652,16 @@ export default function EditorGame() {
       
       const result = await loadWorldMap(worldIdValue);
       
-      // Fly to newest chunk if requested
-      if (flyToNewest && result.newestChunkKey) {
-        const owner = result.owners[result.newestChunkKey];
-        const isMyChunk = owner && (owner === userId || (walletAddress && owner === walletAddress));
+      // Fly to newest PLOT if requested
+      if (flyToNewest && result.newestPlotKey) {
+        const owner = result.owners[result.newestPlotKey];
+        const isMyPLOT = owner && (owner === userId || (walletAddress && owner === walletAddress));
         
-        if (isMyChunk) {
-          console.log("Flying to newest chunk:", result.newestChunkKey);
-          setNotice(`Chunk claimed successfully! Flying to ${result.newestChunkKey}...`);
+        if (isMyPLOT) {
+          console.log("Flying to newest PLOT:", result.newestPlotKey);
+          setNotice(`PLOT claimed successfully! Flying to ${result.newestPlotKey}...`);
           // Small delay to ensure UI is updated
-          setTimeout(() => flyToChunk(result.newestChunkKey!), 300);
+          setTimeout(() => flyToPLOT(result.newestPlotKey!), 300);
         }
       }
     } else {
@@ -669,11 +669,11 @@ export default function EditorGame() {
     }
   }
 
-  async function loadWorldMap(targetWorldId: string): Promise<{ owners: ChunkOwners; newestChunkKey?: string }> {
+  async function loadWorldMap(targetWorldId: string): Promise<{ owners: plotOwners; newestPlotKey?: string }> {
     setMapLoadError("");
     setIsMapLoading(true);
-    setLoadedChunks(null);
-    setActiveChunkKey("");
+    setLoadedPLOTs(null);
+    setActivePlotKey("");
 
     try {
       console.log("Loading world map for:", targetWorldId);
@@ -681,33 +681,33 @@ export default function EditorGame() {
       console.log("Dynamic field entries:", fieldEntries);
 
       if (fieldEntries.length === 0) {
-        setNotice("World has no chunks yet.");
-        setLoadedChunks(0);
+        setNotice("World has no PLOTs yet.");
+        setLoadedPLOTs(0);
         return { owners: {} };
       }
 
-      const chunkEntries = await resolveChunkEntries(
+      const PLOTEntries = await resolvePLOTEntries(
         targetWorldId,
         fieldEntries,
       );
-      console.log("Resolved chunk entries:", chunkEntries);
+      console.log("Resolved PLOT entries:", PLOTEntries);
 
-      if (chunkEntries.length === 0) {
-        setNotice("No chunk entries found.");
-        setLoadedChunks(0);
+      if (PLOTEntries.length === 0) {
+        setNotice("No PLOT entries found.");
+        setLoadedPLOTs(0);
         return { owners: {} };
       }
 
-      const chunkIds = chunkEntries.map((entry) => entry.chunkId);
-      const chunkObjects = await suiClient.multiGetObjects({
-        ids: chunkIds,
+      const plotIds = PLOTEntries.map((entry) => entry.plotId);
+      const PLOTObjects = await suiClient.multiGetObjects({
+        ids: plotIds,
         options: { showContent: true, showOwner: true },
       });
 
-      const maxCx = Math.max(...chunkEntries.map((entry) => entry.cx));
-      const maxCy = Math.max(...chunkEntries.map((entry) => entry.cy));
-      const width = (maxCx + 1) * CHUNK_SIZE;
-      const height = (maxCy + 1) * CHUNK_SIZE;
+      const maxCx = Math.max(...PLOTEntries.map((entry) => entry.cx));
+      const maxCy = Math.max(...PLOTEntries.map((entry) => entry.cy));
+      const width = (maxCx + 1) * PLOT_SIZE;
+      const height = (maxCy + 1) * PLOT_SIZE;
 
       const newGrid = Array(height)
         .fill(0)
@@ -715,19 +715,19 @@ export default function EditorGame() {
       const newDecoGrid = Array(height)
         .fill(0)
         .map(() => Array(width).fill(0));
-      const newOwners: ChunkOwners = {};
+      const newOwners: plotOwners = {};
       
-      // Track newest chunk by version
+      // Track newest PLOT by version
       let newestVersion = 0;
-      let newestChunkKey: string | undefined;
+      let newestPlotKey: string | undefined;
 
-      chunkEntries.forEach((entry, index) => {
-        const response = chunkObjects[index];
+      PLOTEntries.forEach((entry, index) => {
+        const response = PLOTObjects[index];
         const content = response.data?.content;
         if (!content || content.dataType !== "moveObject") return;
         const fields = normalizeMoveFields(content.fields);
 
-        console.log("Chunk fields:", { cx: entry.cx, cy: entry.cy, fields });
+        console.log("PLOT fields:", { cx: entry.cx, cy: entry.cy, fields });
 
         const tiles = normalizeMoveVector(fields.tiles).map((tile) =>
           normalizeTileId(clampU8(parseU32Value(tile) ?? 0, 255)),
@@ -741,39 +741,39 @@ export default function EditorGame() {
 
         console.log("Parsed decorations:", decorations);
 
-        for (let y = 0; y < CHUNK_SIZE; y++) {
-          for (let x = 0; x < CHUNK_SIZE; x++) {
-            const idx = y * CHUNK_SIZE + x;
-            newGrid[entry.cy * CHUNK_SIZE + y][entry.cx * CHUNK_SIZE + x] =
+        for (let y = 0; y < PLOT_SIZE; y++) {
+          for (let x = 0; x < PLOT_SIZE; x++) {
+            const idx = y * PLOT_SIZE + x;
+            newGrid[entry.cy * PLOT_SIZE + y][entry.cx * PLOT_SIZE + x] =
               tiles[idx] ?? 0;
-            newDecoGrid[entry.cy * CHUNK_SIZE + y][entry.cx * CHUNK_SIZE + x] =
+            newDecoGrid[entry.cy * PLOT_SIZE + y][entry.cx * PLOT_SIZE + x] =
               decorations[idx] ?? 0;
           }
         }
 
         const owner = extractOwnerAddress(response.data?.owner);
         if (owner) {
-          const chunkKey = makeChunkKey(entry.cx, entry.cy);
-          newOwners[chunkKey] = owner;
+          const PlotKey = makePlotKey(entry.cx, entry.cy);
+          newOwners[PlotKey] = owner;
           
-          // Track newest chunk by version
+          // Track newest PLOT by version
           if (entry.version > newestVersion) {
             newestVersion = entry.version;
-            newestChunkKey = chunkKey;
+            newestPlotKey = PlotKey;
           }
         }
       });
 
       console.log("Final decoGrid:", newDecoGrid);
-      console.log("Newest chunk:", newestChunkKey, "version:", newestVersion);
+      console.log("Newest PLOT:", newestPlotKey, "version:", newestVersion);
 
       setGrid(newGrid);
       setDecoGrid(newDecoGrid);
-      setChunkOwners(newOwners);
-      setLoadedChunks(chunkEntries.length);
-      setNotice(`Loaded ${chunkEntries.length} chunks from chain.`);
+      setplotOwners(newOwners);
+      setLoadedPLOTs(PLOTEntries.length);
+      setNotice(`Loaded ${PLOTEntries.length} PLOTs from chain.`);
       
-      return { owners: newOwners, newestChunkKey };
+      return { owners: newOwners, newestPlotKey };
     } catch (error) {
       setMapLoadError(error instanceof Error ? error.message : String(error));
       return { owners: {} };
@@ -782,7 +782,7 @@ export default function EditorGame() {
     }
   }
 
-  async function fetchChunkObjectId(
+  async function fetchplotObjectId(
     cx: number,
     cy: number,
     options?: { silent?: boolean },
@@ -798,13 +798,13 @@ export default function EditorGame() {
       return "";
     }
 
-    console.log("fetchChunkObjectId:", { cx, cy, worldIdValue, PACKAGE_ID });
+    console.log("fetchplotObjectId:", { cx, cy, worldIdValue, PACKAGE_ID });
 
     try {
       const result = await suiClient.getDynamicFieldObject({
         parentId: worldIdValue,
         name: {
-          type: `${PACKAGE_ID}::world::ChunkKey`,
+          type: `${PACKAGE_ID}::world::PlotKey`,
           value: { cx, cy },
         },
       });
@@ -814,15 +814,15 @@ export default function EditorGame() {
       const content = result.data?.content;
       if (!content || content.dataType !== "moveObject") {
         if (!silent)
-          setTxError("Chunk not found on-chain. Did you claim it first?");
+          setTxError("PLOT not found on-chain. Did you claim it first?");
         return "";
       }
 
       const fields = content.fields as Record<string, unknown>;
-      console.log("Chunk fields:", fields);
+      console.log("PLOT fields:", fields);
       const resolved = extractObjectId(fields.value);
       if (!resolved) {
-        if (!silent) setTxError("Could not parse chunk id.");
+        if (!silent) setTxError("Could not parse PLOT id.");
         return "";
       }
 
@@ -897,8 +897,8 @@ export default function EditorGame() {
     );
   }
 
-  async function claimChunkOnChain() {
-    console.log("Claim chunk on chain", worldIdValue, activeChunkKey);
+  async function claimPLOTOnChain() {
+    console.log("Claim PLOT on chain", worldIdValue, activePlotKey);
     if (!worldIdValue) {
       setTxError("World id missing.");
       return;
@@ -909,16 +909,16 @@ export default function EditorGame() {
     }
 
     // Default tiles: all land tiles (DEFAULT_FLOOR)
-    const tiles = Array(CHUNK_SIZE * CHUNK_SIZE).fill(DEFAULT_FLOOR);
+    const tiles = Array(PLOT_SIZE * PLOT_SIZE).fill(DEFAULT_FLOOR);
     // Default decorations: no decorations
-    const decorations = Array(CHUNK_SIZE * CHUNK_SIZE).fill(0);
-    const imageUrl = DEFAULT_CHUNK_IMAGE_URL;
+    const decorations = Array(PLOT_SIZE * PLOT_SIZE).fill(0);
+    const imageUrl = DEFAULT_PLOT_IMAGE_URL;
 
-    // Calculate chunk price:
-    // - If chunks < 20: fee = chunks * 5 (chunk 0 = free, chunk 1 = 5, ...)
-    // - From chunk 21 onwards (index >= 20): fee = 100 (fixed)
-    const currentChunkCount = loadedChunks ?? 0;
-    const chunkPrice = currentChunkCount < 20 ? currentChunkCount * 5 : 100;
+    // Calculate PLOT price:
+    // - If PLOTs < 20: fee = PLOTs * 5 (PLOT 0 = free, PLOT 1 = 5, ...)
+    // - From PLOT 21 onwards (index >= 20): fee = 100 (fixed)
+    const currentPLOTCount = loadedPLOTs ?? 0;
+    const PLOTPrice = currentPLOTCount < 20 ? currentPLOTCount * 5 : 100;
 
     // Check if user has enough coins before proceeding
     const coins = await suiClient.getCoins({
@@ -931,16 +931,16 @@ export default function EditorGame() {
       BigInt(0),
     );
 
-    if (chunkPrice > 0 && totalBalance < BigInt(chunkPrice)) {
+    if (PLOTPrice > 0 && totalBalance < BigInt(PLOTPrice)) {
       setTxError(
-        `Insufficient REWARD_COIN. Need ${chunkPrice} coins but you have ${totalBalance}. ` +
-          `Chunk #${currentChunkCount + 1} costs ${chunkPrice} coins.`,
+        `Insufficient REWARD_COIN. Need ${PLOTPrice} coins but you have ${totalBalance}. ` +
+          `PLOT #${currentPLOTCount + 1} costs ${PLOTPrice} coins.`,
       );
       return;
     }
 
     await runTx(
-      "Claim chunk",
+      "Claim PLOT",
       async (tx) => {
         let paymentCoin;
 
@@ -958,7 +958,7 @@ export default function EditorGame() {
             paymentCoin = tx.object(allCoinIds[0]);
           }
         } else {
-          // No coins - create a zero coin (only works for first chunk which is free)
+          // No coins - create a zero coin (only works for first PLOT which is free)
           paymentCoin = tx.moveCall({
             target: "0x2::coin::zero",
             typeArguments: [REWARD_COIN_TYPE],
@@ -966,7 +966,7 @@ export default function EditorGame() {
         }
 
         tx.moveCall({
-          target: `${PACKAGE_ID}::world::claim_chunk`,
+          target: `${PACKAGE_ID}::world::claim_plot`,
           arguments: [
             tx.object(worldIdValue),
             tx.object(REWARD_VAULT_ID),
@@ -986,15 +986,15 @@ export default function EditorGame() {
     );
   }
 
-  async function saveActiveChunkOnChain() {
-    if (!activeChunkKey) {
-      setNotice("Select a chunk first.");
+  async function saveActivePLOTOnChain() {
+    if (!activePlotKey) {
+      setNotice("Select a PLOT first.");
       return;
     }
 
-    const owner = chunkOwners[activeChunkKey];
-    console.log("Save chunk debug:", {
-      activeChunkKey,
+    const owner = plotOwners[activePlotKey];
+    console.log("Save PLOT debug:", {
+      activePlotKey,
       owner,
       walletAddress,
       userId,
@@ -1004,28 +1004,28 @@ export default function EditorGame() {
     if (!isOwnerMatch(owner)) {
       setNotice(
         owner
-          ? `Chunk owned by ${owner}. Your wallet: ${walletAddress}`
-          : "Chunk has no owner on-chain.",
+          ? `PLOT owned by ${owner}. Your wallet: ${walletAddress}`
+          : "PLOT has no owner on-chain.",
       );
       return;
     }
 
-    const [cxRaw, cyRaw] = activeChunkKey.split(",");
+    const [cxRaw, cyRaw] = activePlotKey.split(",");
     const cx = parseCoord(cxRaw ?? "0");
     const cy = parseCoord(cyRaw ?? "0");
-    const resolved = await fetchChunkObjectId(cx, cy);
+    const resolved = await fetchplotObjectId(cx, cy);
 
     if (!resolved) {
       setNotice(
-        "Chunk not found on-chain. Please claim it first using 'Claim chunk' button.",
+        "PLOT not found on-chain. Please claim it first using 'Claim PLOT' button.",
       );
       return;
     }
 
-    const tiles = buildChunkTiles(grid, cx, cy);
-    const decorations = buildChunkDecorations(decoGrid, cx, cy);
+    const tiles = buildPLOTTiles(grid, cx, cy);
+    const decorations = buildPLOTDecorations(decoGrid, cx, cy);
     await runTx(
-      "Save chunk",
+      "Save PLOT",
       (tx) => {
         tx.moveCall({
           target: `${PACKAGE_ID}::world::set_tiles_and_decorations`,
@@ -1039,7 +1039,7 @@ export default function EditorGame() {
       async () => {
         setNotice("Tiles saved! Now capturing and uploading image...");
         // After tiles saved, capture and upload image
-        await captureAndUploadChunkImage();
+        await captureAndUploadplotImage();
       },
     );
   }
@@ -1272,7 +1272,7 @@ export default function EditorGame() {
           <Link to="/" className="brand">
             <img src="https://ik.imagekit.io/huubao/chunk_coin.png" alt="logo" className="w-12 h-12" />
             <div>
-              <div className="brand__name">Chunk World</div>
+              <div className="brand__name">Voidia World</div>
               <div className="brand__tag">Sky Adventures on Sui</div>
             </div>
           </Link>
@@ -1294,30 +1294,30 @@ export default function EditorGame() {
                 <div>
                   Size: {gridWidth} x {gridHeight}
                 </div>
-                <div>Editing: {activeChunkLabel}</div>
+                <div>Editing: {activePLOTLabel}</div>
               </div>
 
               <div className="panel__rows text-nowrap overflow-hidden">
                 <div className="flex flex-col gap-1">
                   <div className="flex justify-between items-center">
-                    <span>My chunks</span>
+                    <span>My PLOTs</span>
                     <span className="panel__value text-white">
-                      {myChunks.length}
+                      {myPLOTs.length}
                     </span>
                   </div>
-                  {myChunks.length > 0 && (
+                  {myPLOTs.length > 0 && (
                     <div className="flex gap-2 flex-wrap mt-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
-                      {myChunks.map((key) => (
+                      {myPLOTs.map((key) => (
                         <button
                           key={key}
-                          onClick={() => flyToChunk(key)}
+                          onClick={() => flyToPLOT(key)}
                           className={`
                             relative group flex flex-col items-center justify-center cursor-pointer
                             bg-[#131b26] border border-[#2a3b55] rounded-lg p-2 
                             hover:border-[#59b7ff] hover:bg-[#1a2636] transition-all
-                            ${activeChunkKey === key ? "border-[#59b7ff] bg-[#1a2636] ring-1 ring-[#59b7ff]" : ""}
+                            ${activePlotKey === key ? "border-[#59b7ff] bg-[#1a2636] ring-1 ring-[#59b7ff]" : ""}
                           `}
-                          title={`Fly to chunk ${key}`}
+                          title={`Fly to PLOT ${key}`}
                         >
                           <div className="w-6 h-6 mb-1 text-[#59b7ff] opacity-80 group-hover:opacity-100 flex items-center justify-center">
                             <svg
@@ -1342,22 +1342,22 @@ export default function EditorGame() {
                   )}
                 </div>
                 <div>
-                  <span>Hover chunk</span>
-                  <span>{hoveredChunkLabel}</span>
+                  <span>Hover PLOT</span>
+                  <span>{hoveredPLOTLabel}</span>
                 </div>
                 <div className="w-full truncate">
-                  <span>Chunk id</span>
+                  <span>PLOT id</span>
                   <span
                     className="panel__value panel__value--wrap"
-                    title={hoveredChunkId || ""}
+                    title={hoveredplotId || ""}
                   >
-                    {hoveredChunkIdDisplay}
+                    {hoveredplotIdDisplay}
                   </span>
                 </div>
               </div>
 
               <p className="panel__desc">
-                Hover your chunk to preview the id, click to edit in a modal.
+                Hover your PLOT to preview the id, click to edit in a modal.
               </p>
 
               {notice && <div className="panel__notice">{notice}</div>}
@@ -1368,7 +1368,7 @@ export default function EditorGame() {
               <div className="flex gap-2">
                 <button
                   className={`btn ${
-                    paintLayer === "base" ? "btn-active-chunk" : "btn--outline"
+                    paintLayer === "base" ? "btn-active-PLOT" : "btn--outline"
                   }`}
                   onClick={() => setPaintLayer("base")}
                 >
@@ -1376,7 +1376,7 @@ export default function EditorGame() {
                 </button>
                 <button
                   className={`btn ${
-                    paintLayer === "decor" ? "btn-active-chunk" : "btn--outline"
+                    paintLayer === "decor" ? "btn-active-PLOT" : "btn--outline"
                   }`}
                   onClick={() => setPaintLayer("decor")}
                 >
@@ -1444,7 +1444,7 @@ export default function EditorGame() {
               <div className="flex justify-between items-center">
                 <div>
                   <div className="panel__eyebrow">Stone canvas</div>
-                  <div className="panel__title">Select your chunk to edit</div>
+                  <div className="panel__title">Select your PLOT to edit</div>
                 </div>
                 <button
                   className="btn btn--dark"
@@ -1483,25 +1483,25 @@ export default function EditorGame() {
                 >
                   {grid.map((row, y) =>
                     row.map((cell, x) => {
-                      const chunkKey = getChunkKeyFromTile(x, y);
-                      const owner = chunkOwners[chunkKey];
+                      const PlotKey = getPlotKeyFromTile(x, y);
+                      const owner = plotOwners[PlotKey];
                       const isOwned = isOwnerMatch(owner);
                       const isOtherOwned = Boolean(owner) && !isOwned;
-                      const isSelected = isOwned && chunkKey === activeChunkKey;
+                      const isSelected = isOwned && PlotKey === activePlotKey;
                       const isLocked =
-                        isChunkModalOpen &&
-                        Boolean(activeChunkKey) &&
-                        chunkKey !== activeChunkKey;
-                      const isHovered = isOwned && chunkKey === hoveredChunkKey;
+                        isPLOTModalOpen &&
+                        Boolean(activePlotKey) &&
+                        PlotKey !== activePlotKey;
+                      const isHovered = isOwned && PlotKey === hoveredPlotKey;
                       const decoId = decoGrid[y]?.[x] ?? 0;
 
-                      // Chunk edge detection for border highlight
-                      const localX = x % CHUNK_SIZE;
-                      const localY = y % CHUNK_SIZE;
+                      // PLOT edge detection for border highlight
+                      const localX = x % PLOT_SIZE;
+                      const localY = y % PLOT_SIZE;
                       const isTopEdge = localY === 0;
-                      const isBottomEdge = localY === CHUNK_SIZE - 1;
+                      const isBottomEdge = localY === PLOT_SIZE - 1;
                       const isLeftEdge = localX === 0;
-                      const isRightEdge = localX === CHUNK_SIZE - 1;
+                      const isRightEdge = localX === PLOT_SIZE - 1;
 
                       return (
                         <button
@@ -1512,10 +1512,10 @@ export default function EditorGame() {
                             isSelected ? "is-selected" : ""
                           } ${isLocked ? "is-locked" : ""} ${
                             isHovered ? "is-hovered" : ""
-                          } ${isHovered && isTopEdge ? "chunk-edge-top" : ""} ${
-                            isHovered && isBottomEdge ? "chunk-edge-bottom" : ""
-                          } ${isHovered && isLeftEdge ? "chunk-edge-left" : ""} ${
-                            isHovered && isRightEdge ? "chunk-edge-right" : ""
+                          } ${isHovered && isTopEdge ? "PLOT-edge-top" : ""} ${
+                            isHovered && isBottomEdge ? "PLOT-edge-bottom" : ""
+                          } ${isHovered && isLeftEdge ? "PLOT-edge-left" : ""} ${
+                            isHovered && isRightEdge ? "PLOT-edge-right" : ""
                           } ${isOwned && isTopEdge ? "owned-edge-top" : ""} ${
                             isOwned && isBottomEdge ? "owned-edge-bottom" : ""
                           } ${isOwned && isLeftEdge ? "owned-edge-left" : ""} ${
@@ -1525,7 +1525,7 @@ export default function EditorGame() {
                             handleTilePointerDown(event, x, y)
                           }
                           onPointerEnter={() =>
-                            handleTilePointerEnter(chunkKey, isOwned)
+                            handleTilePointerEnter(PlotKey, isOwned)
                           }
                           title={`Owner: ${owner ?? "none"}`}
                           style={{
@@ -1566,8 +1566,8 @@ export default function EditorGame() {
                   <span>{shortAddress(worldId) || "not created"}</span>
                 </div>
                 <div>
-                  <span>Chunks</span>
-                  <span>{loadedChunks === null ? "-" : loadedChunks}</span>
+                  <span>PLOTs</span>
+                  <span>{loadedPLOTs === null ? "-" : loadedPLOTs}</span>
                 </div>
               </div> */}
 
@@ -1581,8 +1581,8 @@ export default function EditorGame() {
                     </span>
                   </div>
                   <div>
-                    <span>Chunks</span>
-                    <span>{loadedChunks === null ? "-" : loadedChunks}</span>
+                    <span>PLOTs</span>
+                    <span>{loadedPLOTs === null ? "-" : loadedPLOTs}</span>
                   </div>
                 </div>
               </div>
@@ -1605,7 +1605,7 @@ export default function EditorGame() {
 
             <div className="panel">
               <div className="panel__header-row">
-                <div className="panel__title">Claim chunk</div>
+                <div className="panel__title">Claim PLOT</div>
                 <button
                   className="panel__help-btn"
                   onClick={() => setIsClaimHelpOpen(true)}
@@ -1616,28 +1616,28 @@ export default function EditorGame() {
               </div>
               <div className="panel__rows">
                 <div>
-                  <span>Selected chunk</span>
-                  <span>{activeChunkLabel}</span>
+                  <span>Selected PLOT</span>
+                  <span>{activePLOTLabel}</span>
                 </div>
                 <div>
-                  <span>Current chunks</span>
-                  <span>{loadedChunks ?? 0}</span>
+                  <span>Current PLOTs</span>
+                  <span>{loadedPLOTs ?? 0}</span>
                 </div>
                 <div>
-                  <span>Next chunk price</span>
-                  <span>{claimChunkPrice} CHUNK</span>
+                  <span>Next PLOT price</span>
+                  <span>{claimPLOTPrice} PLOT</span>
                 </div>
               </div>
               <button
                 className="btn btn--dark"
-                onClick={claimChunkOnChain}
+                onClick={claimPLOTOnChain}
                 disabled={isBusy || !isConnected}
               >
-                {busyAction === "Claim chunk"
+                {busyAction === "Claim PLOT"
                   ? "Claiming..."
-                  : claimChunkPrice === 0
-                    ? "Claim chunk (Free)"
-                    : `Claim chunk (${claimChunkPrice} CHUNK)`}
+                  : claimPLOTPrice === 0
+                    ? "Claim PLOT (Free)"
+                    : `Claim PLOT (${claimPLOTPrice} PLOT)`}
               </button>
               {txError && <div className="panel__error">{txError}</div>}
             </div>
@@ -1699,7 +1699,7 @@ export default function EditorGame() {
           </aside>
         </div>
 
-        {/* Claim Chunk Help Modal */}
+        {/* Claim PLOT Help Modal */}
         {isClaimHelpOpen && (
           <div className="editor-modal">
             <div
@@ -1710,12 +1710,12 @@ export default function EditorGame() {
               className="editor-modal__panel editor-modal__panel--sm"
               role="dialog"
               aria-modal="true"
-              aria-label="Chunk pricing help"
+              aria-label="PLOT pricing help"
             >
               <div className="editor-modal__header">
                 <div>
                   <div className="panel__eyebrow">Help</div>
-                  <div className="editor-modal__title">Chunk Pricing</div>
+                  <div className="editor-modal__title">PLOT Pricing</div>
                 </div>
                 <button
                   className="btn btn--outline editor-modal__close"
@@ -1726,16 +1726,16 @@ export default function EditorGame() {
               </div>
               <div className="help-modal__body">
                 <p>
-                  Claiming chunks expands the world! Each chunk gives you a{" "}
-                  {CHUNK_SIZE}×{CHUNK_SIZE} tile area to customize.
+                  Claiming PLOTs expands the world! Each PLOT gives you a{" "}
+                  {PLOT_SIZE}×{PLOT_SIZE} tile area to customize.
                 </p>
                 <div className="help-modal__pricing">
                   <div className="help-modal__pricing-title">Pricing Table</div>
                   <table className="help-modal__table">
                     <thead>
                       <tr>
-                        <th>Chunk #</th>
-                        <th>Price (CHUNK)</th>
+                        <th>PLOT #</th>
+                        <th>Price (PLOT)</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1767,33 +1767,33 @@ export default function EditorGame() {
                   </table>
                 </div>
                 <p className="help-modal__note">
-                  <strong>Formula:</strong> Chunks 1-19 cost (chunk# - 1) × 5.
-                  From chunk 20 onward, price stays fixed at 95 CHUNK.
+                  <strong>Formula:</strong> PLOTs 1-19 cost (PLOT# - 1) × 5.
+                  From PLOT 20 onward, price stays fixed at 95 PLOT.
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {isChunkModalOpen && activeChunkCoords && (
+        {isPLOTModalOpen && activePLOTCoords && (
           <div className="editor-modal">
-            <div className="editor-modal__backdrop" onClick={closeChunkModal} />
+            <div className="editor-modal__backdrop" onClick={closePLOTModal} />
             <div
               className="editor-modal__panel"
               role="dialog"
               aria-modal="true"
-              aria-label="Chunk editor"
+              aria-label="PLOT editor"
             >
               <div className="editor-modal__header">
                 <div>
-                  <div className="panel__eyebrow">Chunk editor</div>
+                  <div className="panel__eyebrow">PLOT editor</div>
                   <div className="editor-modal__title">
-                    Chunk {activeChunkLabel}
+                    PLOT {activePLOTLabel}
                   </div>
                 </div>
                 <button
                   className="btn btn--outline editor-modal__close"
-                  onClick={closeChunkModal}
+                  onClick={closePLOTModal}
                 >
                   Close
                 </button>
@@ -1803,12 +1803,12 @@ export default function EditorGame() {
 
               <div className="panel__rows">
                 <div>
-                  <span>Chunk id</span>
+                  <span>PLOT id</span>
                   <span
                     className="panel__value panel__value--wrap truncate"
-                    title={activeChunkIdDisplay}
+                    title={activeplotIdDisplay}
                   >
-                    {activeChunkIdDisplay}
+                    {activeplotIdDisplay}
                   </span>
                 </div>
               </div>
@@ -1816,23 +1816,23 @@ export default function EditorGame() {
               <div className="editor-modal__body">
                 <div className="editor-modal__canvas">
                   <div
-                    ref={chunkGridRef}
-                    className="editor-chunk-grid"
+                    ref={plotGridRef}
+                    className="editor-PLOT-grid"
                     style={{
-                      gridTemplateColumns: `repeat(${CHUNK_SIZE}, ${TILE_SIZE}px)`,
+                      gridTemplateColumns: `repeat(${PLOT_SIZE}, ${TILE_SIZE}px)`,
                     }}
                   >
-                    {Array.from({ length: CHUNK_SIZE }, (_, y) =>
-                      Array.from({ length: CHUNK_SIZE }, (_, x) => {
-                        const gx = activeChunkCoords.cx * CHUNK_SIZE + x;
-                        const gy = activeChunkCoords.cy * CHUNK_SIZE + y;
+                    {Array.from({ length: PLOT_SIZE }, (_, y) =>
+                      Array.from({ length: PLOT_SIZE }, (_, x) => {
+                        const gx = activePLOTCoords.cx * PLOT_SIZE + x;
+                        const gy = activePLOTCoords.cy * PLOT_SIZE + y;
                         const cell = grid[gy]?.[gx] ?? 0;
                         const decoId = decoGrid[gy]?.[gx] ?? 0;
 
                         return (
                           <button
                             key={`${x}-${y}`}
-                            className="editor-tile editor-tile--chunk"
+                            className="editor-tile editor-tile--PLOT"
                             onClick={() => paintModalTile(x, y)}
                             style={{
                               ...getTileStyle(cell, decoId),
@@ -1851,7 +1851,7 @@ export default function EditorGame() {
                     <button
                       className={`btn ${
                         paintLayer === "base"
-                          ? "btn-active-chunk"
+                          ? "btn-active-PLOT"
                           : "btn--outline"
                       }`}
                       onClick={() => setPaintLayer("base")}
@@ -1861,7 +1861,7 @@ export default function EditorGame() {
                     <button
                       className={`btn ${
                         paintLayer === "decor"
-                          ? "btn-active-chunk"
+                          ? "btn-active-PLOT"
                           : "btn--outline"
                       }`}
                       onClick={() => setPaintLayer("decor")}
@@ -1915,13 +1915,13 @@ export default function EditorGame() {
 
               <div className="editor-modal__actions">
                 <button
-                  className="btn btn-save-chunk"
-                  onClick={saveActiveChunkOnChain}
-                  disabled={isBusy || !isConnected || !canSaveActiveChunk}
+                  className="btn btn-save-PLOT"
+                  onClick={saveActivePLOTOnChain}
+                  disabled={isBusy || !isConnected || !canSaveActivePLOT}
                 >
-                  {busyAction === "Save chunk" || isUploading ? "Saving..." : "Save Chunk"}
+                  {busyAction === "Save PLOT" || isUploading ? "Saving..." : "Save PLOT"}
                 </button>
-                <button className="btn btn--outline" onClick={closeChunkModal}>
+                <button className="btn btn--outline" onClick={closePLOTModal}>
                   Cancel
                 </button>
               </div>
@@ -1944,30 +1944,30 @@ function getOrCreateUserId() {
   return generated;
 }
 
-function makeChunkKey(cx: number, cy: number) {
+function makePlotKey(cx: number, cy: number) {
   return `${cx},${cy}`;
 }
 
-function getChunkKeyFromTile(x: number, y: number) {
-  const cx = Math.floor(x / CHUNK_SIZE);
-  const cy = Math.floor(y / CHUNK_SIZE);
-  return makeChunkKey(cx, cy);
+function getPlotKeyFromTile(x: number, y: number) {
+  const cx = Math.floor(x / PLOT_SIZE);
+  const cy = Math.floor(y / PLOT_SIZE);
+  return makePlotKey(cx, cy);
 }
 
-function getChunkOwnerAt(owners: ChunkOwners, x: number, y: number) {
-  return owners[getChunkKeyFromTile(x, y)];
+function getPLOTOwnerAt(owners: plotOwners, x: number, y: number) {
+  return owners[getPlotKeyFromTile(x, y)];
 }
 
-function createOwnersForGrid(grid: number[][], ownerId: string): ChunkOwners {
-  const owners: ChunkOwners = {};
+function createOwnersForGrid(grid: number[][], ownerId: string): plotOwners {
+  const owners: plotOwners = {};
   if (grid.length === 0 || grid[0].length === 0) return owners;
 
-  const cols = Math.ceil(grid[0].length / CHUNK_SIZE);
-  const rows = Math.ceil(grid.length / CHUNK_SIZE);
+  const cols = Math.ceil(grid[0].length / PLOT_SIZE);
+  const rows = Math.ceil(grid.length / PLOT_SIZE);
 
   for (let cy = 0; cy < rows; cy++) {
     for (let cx = 0; cx < cols; cx++) {
-      owners[makeChunkKey(cx, cy)] = ownerId;
+      owners[makePlotKey(cx, cy)] = ownerId;
     }
   }
 
@@ -1975,15 +1975,15 @@ function createOwnersForGrid(grid: number[][], ownerId: string): ChunkOwners {
 }
 
 function createDefaultGrid() {
-  return Array(CHUNK_SIZE)
+  return Array(PLOT_SIZE)
     .fill(0)
-    .map(() => Array(CHUNK_SIZE).fill(DEFAULT_FLOOR));
+    .map(() => Array(PLOT_SIZE).fill(DEFAULT_FLOOR));
 }
 
 function createDefaultDecoGrid() {
-  return Array(CHUNK_SIZE)
+  return Array(PLOT_SIZE)
     .fill(0)
-    .map(() => Array(CHUNK_SIZE).fill(0));
+    .map(() => Array(PLOT_SIZE).fill(0));
 }
 
 /**
@@ -2040,13 +2040,13 @@ function getTileStyle(tileId: number, decoId: number = 0) {
   };
 }
 
-function buildChunkTiles(grid: number[][], cx: number, cy: number) {
+function buildPLOTTiles(grid: number[][], cx: number, cy: number) {
   const tiles: number[] = [];
-  const startX = cx * CHUNK_SIZE;
-  const startY = cy * CHUNK_SIZE;
+  const startX = cx * PLOT_SIZE;
+  const startY = cy * PLOT_SIZE;
 
-  for (let y = 0; y < CHUNK_SIZE; y++) {
-    for (let x = 0; x < CHUNK_SIZE; x++) {
+  for (let y = 0; y < PLOT_SIZE; y++) {
+    for (let x = 0; x < PLOT_SIZE; x++) {
       const value = grid[startY + y]?.[startX + x];
       tiles.push(typeof value === "number" ? value : 0);
     }
@@ -2055,13 +2055,13 @@ function buildChunkTiles(grid: number[][], cx: number, cy: number) {
   return tiles;
 }
 
-function buildChunkDecorations(decoGrid: number[][], cx: number, cy: number) {
+function buildPLOTDecorations(decoGrid: number[][], cx: number, cy: number) {
   const decorations: number[] = [];
-  const startX = cx * CHUNK_SIZE;
-  const startY = cy * CHUNK_SIZE;
+  const startX = cx * PLOT_SIZE;
+  const startY = cy * PLOT_SIZE;
 
-  for (let y = 0; y < CHUNK_SIZE; y++) {
-    for (let x = 0; x < CHUNK_SIZE; x++) {
+  for (let y = 0; y < PLOT_SIZE; y++) {
+    for (let x = 0; x < PLOT_SIZE; x++) {
       const value = decoGrid[startY + y]?.[startX + x];
       decorations.push(typeof value === "number" ? value : 0);
     }
@@ -2135,7 +2135,7 @@ function parseU32Value(value: unknown): number | null {
   return null;
 }
 
-function extractChunkCoords(value: unknown): { cx: number; cy: number } | null {
+function extractPLOTCoords(value: unknown): { cx: number; cy: number } | null {
   const fields = normalizeMoveFields(value);
   const cx = parseU32Value(fields.cx);
   const cy = parseU32Value(fields.cy);
@@ -2179,18 +2179,18 @@ async function fetchAllDynamicFields(parentId: string) {
   return all;
 }
 
-async function resolveChunkEntries(
+async function resolvePLOTEntries(
   worldId: string,
   fields: Array<{ name: { type?: string; value?: unknown } }>,
 ) {
   const results = await Promise.allSettled(
     fields.map(async (field) => {
-      // Skip if no type or not a ChunkKey
+      // Skip if no type or not a PlotKey
       const fieldType = field.name?.type;
       if (!fieldType) return null;
-      if (!fieldType.includes("ChunkKey")) return null;
+      if (!fieldType.includes("PlotKey")) return null;
 
-      const coords = extractChunkCoords(field.name?.value);
+      const coords = extractPLOTCoords(field.name?.value);
       if (!coords) return null;
 
       const fieldObject = await suiClient.getDynamicFieldObject({
@@ -2203,14 +2203,14 @@ async function resolveChunkEntries(
       const content = fieldObject.data?.content;
       if (!content || content.dataType !== "moveObject") return null;
       const fieldFields = normalizeMoveFields(content.fields);
-      const chunkId = extractObjectId(fieldFields.value);
-      if (!chunkId) return null;
+      const plotId = extractObjectId(fieldFields.value);
+      if (!plotId) return null;
       
       // Get version from object metadata
       const version = fieldObject.data?.version;
       const versionNumber = typeof version === 'string' ? parseInt(version, 10) : 0;
       
-      return { ...coords, chunkId, version: versionNumber };
+      return { ...coords, plotId, version: versionNumber };
     }),
   );
 
@@ -2221,12 +2221,12 @@ async function resolveChunkEntries(
       ): result is PromiseFulfilledResult<{
         cx: number;
         cy: number;
-        chunkId: string;
+        plotId: string;
         version: number;
       }> => result.status === "fulfilled",
     )
     .map((result) => result.value)
-    .filter((entry): entry is { cx: number; cy: number; chunkId: string; version: number } =>
+    .filter((entry): entry is { cx: number; cy: number; plotId: string; version: number } =>
       Boolean(entry),
     );
 }
@@ -2290,3 +2290,7 @@ function DecoButton({
     </button>
   );
 }
+
+
+
+

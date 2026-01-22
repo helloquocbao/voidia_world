@@ -1,6 +1,6 @@
 # Lu?ng choi v?i Seal và claim reward
 
-Mô t? l?i flow trong `chunk_world.move` sau khi dùng Seal (luu `policy_id` thay vì hash key).
+Mô t? l?i flow trong `voidia_world.move` sau khi dùng Seal (luu `policy_id` thay vì hash key).
 
 ## D? li?u luu trong on-chain
 - `PlayTicket`: `player`, `policy_id` (BCS encode `play_id`), `min_reward`, `max_reward`.

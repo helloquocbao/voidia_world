@@ -1,4 +1,4 @@
-module chunk_world::world {
+module voidia_world::world {
 
     use std::string::{Self, String};
     use sui::bcs;
@@ -12,8 +12,8 @@ module chunk_world::world {
 
  
 
-    use chunk_world::reward_coin;
-    use chunk_world::reward_coin::RewardVault;
+    use voidia_world::voidia_coin;
+    use voidia_world::voidia_coin::{RewardVault, VOIDIA_COIN};
 
     // NFT Display
     use sui::package;
@@ -21,7 +21,7 @@ module chunk_world::world {
 
     /* ================= CONFIG ================= */
 
-    const CHUNK_SIZE: u64 = 5;
+    const PLOT_SIZE: u64 = 5;
     const TILES_LEN: u64 = 25; // 5*5
     const MAX_URL_BYTES: u64 = 2048;
 
@@ -29,8 +29,8 @@ module chunk_world::world {
     const PLAY_FEE: u64 = 5;
     const MIN_REWARD: u64 = 2;
     const MAX_REWARD: u64 = 15;
-    // const MAX_CHUNKS: u64 = 20;
-    const CHUNK_PRICE_INCREMENT: u64 = 5; // mỗi chunk sau mắc hơn 5 coin
+    // const MAX_PLOTS: u64 = 20;
+    const PLOT_PRICE_INCREMENT: u64 = 5; // mỗi plot sau mắc hơn 5 coin
     const DAILY_PLAY_LIMIT: u64 = 3;      // giới hạn 3 lần chơi mỗi epoch (~24h) cho play_v2
     const FREE_DAILY_PLAY_LIMIT: u64 = 2; // giới hạn 2 lần chơi miễn phí mỗi epoch cho play_v1
 
@@ -41,9 +41,9 @@ module chunk_world::world {
     const E_INVALID_TILE_CODE: u64 = 2;
     const E_OUT_OF_BOUNDS: u64 = 3;
     const E_URL_TOO_LONG: u64 = 4;
-    const E_CHUNK_ALREADY_EXISTS: u64 = 5;
-    const E_FIRST_CHUNK_MUST_BE_ORIGIN: u64 = 6;
-    const E_NO_ADJACENT_CHUNK: u64 = 7;
+    const E_PLOT_ALREADY_EXISTS: u64 = 5;
+    const E_FIRST_PLOT_MUST_BE_ORIGIN: u64 = 6;
+    const E_NO_ADJACENT_PLOT: u64 = 7;
     const E_INVALID_FEE: u64 = 8;
     const E_INVALID_REWARD_RANGE: u64 = 9;
     const E_PLAY_NOT_FOUND: u64 = 10;
@@ -78,8 +78,8 @@ module chunk_world::world {
 
     /* ================= WORLD (SHARED) ================= */
 
-    /// Key cho dynamic field: (cx, cy) -> chunk_id
-    public struct ChunkKey has copy, drop, store {
+    /// Key cho dynamic field: (cx, cy) -> plot_id
+    public struct PlotKey has copy, drop, store {
         cx: u32,
         cy: u32,
     }
@@ -100,18 +100,18 @@ module chunk_world::world {
     public struct WorldMap has key, store {
         id: UID,
         name: String,          // tên thế giới
-        chunk_count: u64,
+        plot_count: u64,
         next_play_id: u64,
         admin: address,
         difficulty: u8,        // 1-9
         required_power: u64,   // sức mạnh yêu cầu để tham gia
-        chunks: vector<ChunkKey>,
+        plots: vector<PlotKey>,
     }
 
-    /* ================= CHUNK NFT (OWNED) ================= */
+    /* ================= plot NFT (OWNED) ================= */
 
-    /// Mỗi chunk = 1 NFT owned. Owner mới edit được.
-    public struct ChunkNFT has key, store {
+    /// Mỗi plot = 1 NFT owned. Owner mới edit được.
+    public struct PlotNFT has key, store {
         id: UID,
         world_id: ID,
         cx: u32,
@@ -121,15 +121,15 @@ module chunk_world::world {
         decorations: vector<u8>, // decor layer: length=25, 0 = none
     }
 
-    /// Key to store chunk listings: chunk_id -> ChunkListing
+    /// Key to store plot listings: plot_id -> PlotListing
     public struct ListingKey has copy, drop, store {
-        chunk_id: ID,
+        plot_id: ID,
     }
 
-    /// Chunk listing object stores NFT + sale price
-    public struct ChunkListing has key, store {
+    /// plot listing object stores NFT + sale price
+    public struct PlotListing has key, store {
         id: UID,
-        chunk: ChunkNFT,
+        plot: PlotNFT,
         seller: address,
         price: u64,
     }
@@ -141,7 +141,7 @@ module chunk_world::world {
     public struct SellerPayout has key, store {
         id: UID,
         owner: address,
-        balance: Balance<reward_coin::REWARD_COIN>,
+        balance: Balance<VOIDIA_COIN>,
     }
 
     /* ================= CHARACTER NFT (SOULBOUND) ================= */
@@ -179,44 +179,44 @@ module chunk_world::world {
         admin: address,
     }
 
-    public struct ChunkClaimedEvent has copy, drop {
+    public struct PlotClaimedEvent has copy, drop {
         world_id: ID,
-        chunk_id: ID,
+        plot_id: ID,
         cx: u32,
         cy: u32,
         owner: address,
     }
 
-    public struct ChunkListedEvent has copy, drop {
+    public struct PlotListedEvent has copy, drop {
         world_id: ID,
-        chunk_id: ID,
+        plot_id: ID,
         seller: address,
         price: u64,
     }
 
-    public struct ChunkSoldEvent has copy, drop {
+    public struct PlotSoldEvent has copy, drop {
         world_id: ID,
-        chunk_id: ID,
+        plot_id: ID,
         seller: address,
         buyer: address,
         price: u64,
     }
 
-    public struct ChunkDelistedEvent has copy, drop {
+    public struct PlotDelistedEvent has copy, drop {
         world_id: ID,
-        chunk_id: ID,
+        plot_id: ID,
         seller: address,
     }
 
-    public struct ChunkTileUpdatedEvent has copy, drop {
-        chunk_id: ID,
+    public struct PlotTileUpdatedEvent has copy, drop {
+        plot_id: ID,
         x: u8,
         y: u8,
         tile: u8,
     }
 
-    public struct ChunkImageUpdatedEvent has copy, drop {
-        chunk_id: ID,
+    public struct PlotImageUpdatedEvent has copy, drop {
+        plot_id: ID,
     }
 
     public struct PlayCreatedEvent has copy, drop {
@@ -254,13 +254,13 @@ module chunk_world::world {
     public struct WORLD has drop {}
 
     /// init chạy khi publish package:
-    /// - set Display cho ChunkNFT
+    /// - set Display cho PlotNFT
     /// - tạo WorldRegistry (shared)
     /// - tạo AdminCap cho deployer
     fun init(otw: WORLD, ctx: &mut TxContext) {
         let admin = tx_context::sender(ctx);
 
-        // 1) Display template cho ChunkNFT (wallet/explorer sẽ đọc các field này)
+        // 1) Display template cho PlotNFT (wallet/explorer sẽ đọc các field này)
         let publisher = package::claim(otw, ctx);
 
         let keys = vector[
@@ -275,16 +275,16 @@ module chunk_world::world {
 
         // Bạn đổi domain theo project của bạn
         let values = vector[
-            string::utf8(b"Chunk ({cx},{cy})"),
-            string::utf8(b"Chunk in World {world_id}"),
+            string::utf8(b"plot ({cx},{cy})"),
+            string::utf8(b"plot in World {world_id}"),
             string::utf8(b"{image_url}"),
             string::utf8(b"{image_url}"),
-            string::utf8(b"https://your-game.com/chunk/{id}"),
+            string::utf8(b"https://your-game.com/plot/{id}"),
             string::utf8(b"https://your-game.com"),
-            string::utf8(b"Chunk World"),
+            string::utf8(b"Voidia World"),
         ];
 
-        let mut disp = display::new_with_fields<ChunkNFT>(&publisher, keys, values, ctx);
+        let mut disp = display::new_with_fields<PlotNFT>(&publisher, keys, values, ctx);
         display::update_version(&mut disp);
 
         transfer::public_transfer(publisher, admin);
@@ -328,12 +328,12 @@ module chunk_world::world {
         let world = WorldMap {
             id: object::new(ctx),
             name,
-            chunk_count: 0,
+            plot_count: 0,
             next_play_id: 0,
             admin,
             difficulty,
             required_power,
-            chunks: vector[],
+            plots: vector[],
         };
 
         let world_id = object::uid_to_inner(&world.id);
@@ -403,46 +403,46 @@ module chunk_world::world {
         }
     }
 
-    /* ================= USER: CLAIM / MINT CHUNK NFT ================= */
+    /* ================= USER: CLAIM / MINT plot NFT ================= */
 
-    /// User claim chunk NFT. Coordinates are chosen randomly among adjacent slots.
+    /// User claim plot NFT. Coordinates are chosen randomly among adjacent slots.
     /// Rule:
-    /// - Chunk đầu tiên của world bắt buộc (0,0) và miễn phí
-    /// - Chunk sau phải kề 1 chunk đã tồn tại (4 hướng)
-    /// - Giá chunk = chunk_count * 5 (chunk 1 = 0, chunk 2 = 5, chunk 3 = 10, ...)
-    entry fun claim_chunk(
+    /// - plot đầu tiên của world bắt buộc (0,0) và miễn phí
+    /// - plot sau phải kề 1 plot đã tồn tại (4 hướng)
+    /// - Giá plot = plot_count * 5 (plot 1 = 0, plot 2 = 5, plot 3 = 10, ...)
+    entry fun claim_plot(
         world: &mut WorldMap,
         vault: &mut RewardVault,
         randomness: &random::Random,
         image_url: String,
         tiles: vector<u8>,
         decorations: vector<u8>,
-        mut payment: Coin<reward_coin::REWARD_COIN>,
+        mut payment: Coin<VOIDIA_COIN>,
         ctx: &mut TxContext
     ) {
-        // assert!(world.chunk_count < MAX_CHUNKS, E_MAX_CHUNKS_REACHED);
+        // assert!(world.plot_count < MAX_PLOTS, E_MAX_PLOTS_REACHED);
         
-        // Tính giá chunk: chunk đầu = 0, chunk sau mắc hơn 5 coin, từ chunk 20 trở đi giá giữ nguyên
-        let chunk_price = if (world.chunk_count < 20) {
-            world.chunk_count * CHUNK_PRICE_INCREMENT
+        // Tính giá plot: plot đầu = 0, plot sau mắc hơn 5 coin, từ plot 20 trở đi giá giữ nguyên
+        let plot_price = if (world.plot_count < 20) {
+            world.plot_count * PLOT_PRICE_INCREMENT
         } else {
-            20 * CHUNK_PRICE_INCREMENT
+            20 * PLOT_PRICE_INCREMENT
         };
         let payment_value = coin::value(&payment);
-        assert!(payment_value >= chunk_price, E_INVALID_FEE);
+        assert!(payment_value >= plot_price, E_INVALID_FEE);
         
         // Xử lý thanh toán
         let sender = tx_context::sender(ctx);
-        if (chunk_price > 0) {
-            if (payment_value > chunk_price) {
-                let pay_coin = coin::split(&mut payment, chunk_price, ctx);
-                reward_coin::deposit(vault, pay_coin);
+        if (plot_price > 0) {
+            if (payment_value > plot_price) {
+                let pay_coin = coin::split(&mut payment, plot_price, ctx);
+                voidia_coin::deposit(vault, pay_coin);
                 transfer::public_transfer(payment, sender);
             } else {
-                reward_coin::deposit(vault, payment);
+                voidia_coin::deposit(vault, payment);
             };
         } else {
-            // Chunk đầu tiên miễn phí, trả lại coin
+            // plot đầu tiên miễn phí, trả lại coin
             transfer::public_transfer(payment, sender);
         };
         
@@ -452,26 +452,26 @@ module chunk_world::world {
         assert_tiles_valid(&tiles);
         assert_decorations_valid(&decorations);
 
-        let (cx, cy) = if (world.chunk_count == 0) {
+        let (cx, cy) = if (world.plot_count == 0) {
             (0, 0)
         } else {
             let mut generator = random::new_generator(randomness, ctx);
             pick_random_adjacent(world, &mut generator)
         };
         assert!(
-            !df::exists_(&world.id, ChunkKey { cx, cy }),
-            E_CHUNK_ALREADY_EXISTS
+            !df::exists_(&world.id, PlotKey { cx, cy }),
+            E_PLOT_ALREADY_EXISTS
         );
 
-        if (world.chunk_count == 0) {
-            assert!(cx == 0 && cy == 0, E_FIRST_CHUNK_MUST_BE_ORIGIN);
+        if (world.plot_count == 0) {
+            assert!(cx == 0 && cy == 0, E_FIRST_PLOT_MUST_BE_ORIGIN);
         } else {
-            assert!(has_adjacent(world, cx, cy), E_NO_ADJACENT_CHUNK);
+            assert!(has_adjacent(world, cx, cy), E_NO_ADJACENT_PLOT);
         };
 
         let world_id = object::uid_to_inner(&world.id);
 
-        let chunk = ChunkNFT {
+        let plot = PlotNFT {
             id: object::new(ctx),
             world_id,
             cx,
@@ -481,46 +481,46 @@ module chunk_world::world {
             decorations,
         };
 
-        let chunk_id = object::uid_to_inner(&chunk.id);
+        let plot_id = object::uid_to_inner(&plot.id);
 
-        // index (cx,cy) -> chunk_id
-        df::add(&mut world.id, ChunkKey { cx, cy }, chunk_id);
-        world.chunk_count = world.chunk_count + 1;
-        vector::push_back(&mut world.chunks, ChunkKey { cx, cy });
+        // index (cx,cy) -> plot_id
+        df::add(&mut world.id, PlotKey { cx, cy }, plot_id);
+        world.plot_count = world.plot_count + 1;
+        vector::push_back(&mut world.plots, PlotKey { cx, cy });
 
-        event::emit(ChunkClaimedEvent { world_id, chunk_id, cx, cy, owner: sender });
+        event::emit(PlotClaimedEvent { world_id, plot_id, cx, cy, owner: sender });
 
-        transfer::public_transfer(chunk, sender);
+        transfer::public_transfer(plot, sender);
     }
 
-    /// List owned chunk on market
-    entry fun list_chunk(
+    /// List owned plot on market
+    entry fun list_plot(
         world: &mut WorldMap,
-        chunk: ChunkNFT,
+        plot: PlotNFT,
         price: u64,
         ctx: &mut TxContext
     ) {
         assert!(price > 0, E_INVALID_PRICE);
         let world_id = object::uid_to_inner(&world.id);
-        assert!(chunk.world_id == world_id, E_WORLD_MISMATCH);
-        let chunk_id = object::uid_to_inner(&chunk.id);
+        assert!(plot.world_id == world_id, E_WORLD_MISMATCH);
+        let plot_id = object::uid_to_inner(&plot.id);
         assert!(
-            !df::exists_(&world.id, ListingKey { chunk_id }),
+            !df::exists_(&world.id, ListingKey { plot_id }),
             E_LISTING_ALREADY_EXISTS
         );
         let seller = tx_context::sender(ctx);
 
-        let listing = ChunkListing {
+        let listing = PlotListing {
             id: object::new(ctx),
-            chunk,
+            plot,
             seller,
             price,
         };
 
-        df::add(&mut world.id, ListingKey { chunk_id }, listing);
-        event::emit(ChunkListedEvent {
+        df::add(&mut world.id, ListingKey { plot_id }, listing);
+        event::emit(PlotListedEvent {
             world_id,
-            chunk_id,
+            plot_id,
             seller,
             price,
         });
@@ -529,7 +529,7 @@ module chunk_world::world {
     fun deposit_listing_proceeds(
         world: &mut WorldMap,
         owner: address,
-        amount: Balance<reward_coin::REWARD_COIN>,
+        amount: Balance<VOIDIA_COIN>,
         ctx: &mut TxContext
     ) {
         let key = SellerPayoutKey { owner };
@@ -546,23 +546,23 @@ module chunk_world::world {
         }
     }
 
-    /// Buy listed chunk (pays seller in reward coin)
-    entry fun buy_chunk(
+    /// Buy listed plot (pays seller in reward coin)
+    entry fun buy_plot(
         world: &mut WorldMap,
-        chunk_id: ID,
-        mut payment: Coin<reward_coin::REWARD_COIN>,
+        plot_id: ID,
+        mut payment: Coin<VOIDIA_COIN>,
         ctx: &mut TxContext
     ) {
         assert!(
-            df::exists_(&world.id, ListingKey { chunk_id }),
+            df::exists_(&world.id, ListingKey { plot_id }),
             E_LISTING_NOT_FOUND
         );
-        let ChunkListing {
+        let PlotListing {
             id: listing_id,
-            chunk,
+            plot,
             seller,
             price,
-        } = df::remove(&mut world.id, ListingKey { chunk_id });
+        } = df::remove(&mut world.id, ListingKey { plot_id });
         object::delete(listing_id);
         let buyer = tx_context::sender(ctx);
         assert!(buyer != seller, E_BUYER_IS_SELLER);
@@ -573,40 +573,40 @@ module chunk_world::world {
         let payout_balance = coin::into_balance(payout);
         deposit_listing_proceeds(world, seller, payout_balance, ctx);
         transfer::public_transfer(payment, buyer);
-        transfer::public_transfer(chunk, buyer);
-        event::emit(ChunkSoldEvent {
+        transfer::public_transfer(plot, buyer);
+        event::emit(PlotSoldEvent {
             world_id: object::uid_to_inner(&world.id),
-            chunk_id,
+            plot_id,
             seller,
             buyer,
             price,
         });
     }
 
-    /// Cancel listing and return chunk to seller
+    /// Cancel listing and return plot to seller
     entry fun cancel_listing(
         world: &mut WorldMap,
-        chunk_id: ID,
+        plot_id: ID,
         ctx: & TxContext
     ) {
-        let ChunkListing {
+        let PlotListing {
             id: listing_id,
-            chunk,
+            plot,
             seller,
             ..
-        } = df::remove(&mut world.id, ListingKey { chunk_id });
+        } = df::remove(&mut world.id, ListingKey { plot_id });
         assert!(seller == tx_context::sender(ctx), E_NOT_LISTING_OWNER);
 
         object::delete(listing_id);
-        transfer::public_transfer(chunk, seller);
-        event::emit(ChunkDelistedEvent {
+        transfer::public_transfer(plot, seller);
+        event::emit(PlotDelistedEvent {
             world_id: object::uid_to_inner(&world.id),
-            chunk_id,
+            plot_id,
             seller,
         });
     }
 
-    /// Withdraw pending proceeds accrued from chunk sales
+    /// Withdraw pending proceeds accrued from plot sales
     entry fun withdraw_proceeds(
         world: &mut WorldMap,
         amount: u64,
@@ -623,8 +623,8 @@ module chunk_world::world {
         transfer::public_transfer(coin, owner);
     }
 
-    public fun is_chunk_listed(world: &WorldMap, chunk_id: ID): bool {
-        df::exists_(&world.id, ListingKey { chunk_id })
+    public fun is_plot_listed(world: &WorldMap, plot_id: ID): bool {
+        df::exists_(&world.id, ListingKey { plot_id })
     }
 
     /* ================= GAME: PLAY / REWARD ================= */
@@ -655,7 +655,7 @@ module chunk_world::world {
         character.free_daily_plays = character.free_daily_plays + 1;
 
         // Reserve reward cho play miễn phí (dùng min reward)
-        reward_coin::reserve(vault, MIN_REWARD);
+        voidia_coin::reserve(vault, MIN_REWARD);
 
         let play_id = world.next_play_id;
         world.next_play_id = play_id + 1;
@@ -683,7 +683,7 @@ module chunk_world::world {
         world: &mut WorldMap,
         vault: &mut RewardVault,
         character: &mut CharacterNFT,
-        mut fee_coin: Coin<reward_coin::REWARD_COIN>,
+        mut fee_coin: Coin<VOIDIA_COIN>,
         ctx: &mut TxContext
     ) {
         assert!(MAX_REWARD >= MIN_REWARD && MIN_REWARD > 0, E_INVALID_REWARD_RANGE);
@@ -709,13 +709,13 @@ module chunk_world::world {
         let sender = tx_context::sender(ctx);
         if (fee_value > PLAY_FEE) {
             let pay_coin = coin::split(&mut fee_coin, PLAY_FEE, ctx);
-            reward_coin::deposit(vault, pay_coin);
+            voidia_coin::deposit(vault, pay_coin);
             transfer::public_transfer(fee_coin, sender);
         } else {
-            reward_coin::deposit(vault, fee_coin);
+            voidia_coin::deposit(vault, fee_coin);
         };
 
-        reward_coin::reserve(vault, MAX_REWARD);
+        voidia_coin::reserve(vault, MAX_REWARD);
 
         let play_id = world.next_play_id;
         world.next_play_id = play_id + 1;
@@ -755,8 +755,8 @@ module chunk_world::world {
         let mut rng = random::new_generator(randomness, ctx);
         let reward = random::generate_u64_in_range(&mut rng, min_reward, max_reward);
 
-        reward_coin::unreserve(vault, max_reward);
-        let coin = reward_coin::withdraw(vault, reward, ctx);
+        voidia_coin::unreserve(vault, max_reward);
+        let coin = voidia_coin::withdraw(vault, reward, ctx);
 
         let recipient = tx_context::sender(ctx);
         assert!(recipient == player, E_INVALID_SEAL);
@@ -803,48 +803,48 @@ module chunk_world::world {
         ticket.approved = true;
     }
 
-    /* ================= OWNER: EDIT CHUNK ================= */
+    /* ================= OWNER: EDIT plot ================= */
 
-     entry fun set_tile(chunk: &mut ChunkNFT, x: u8, y: u8, tile: u8) {
+     entry fun set_tile(plot: &mut PlotNFT, x: u8, y: u8, tile: u8) {
         assert!(x < 5u8 && y < 5u8, E_OUT_OF_BOUNDS);
         assert!(is_valid_tile(tile), E_INVALID_TILE_CODE);
 
-        let idx = (y as u64) * CHUNK_SIZE + (x as u64);
-        *vector::borrow_mut(&mut chunk.tiles, idx) = tile;
+        let idx = (y as u64) * PLOT_SIZE + (x as u64);
+        *vector::borrow_mut(&mut plot.tiles, idx) = tile;
 
-        event::emit(ChunkTileUpdatedEvent {
-            chunk_id: object::uid_to_inner(&chunk.id),
+        event::emit(PlotTileUpdatedEvent {
+            plot_id: object::uid_to_inner(&plot.id),
             x, y, tile
         });
     }
 
     /// Batch save 25 tiles (khuyên dùng để giảm tx)
-     entry fun set_tiles(chunk: &mut ChunkNFT, tiles: vector<u8>) {
+     entry fun set_tiles(plot: &mut PlotNFT, tiles: vector<u8>) {
         assert!(vector::length(&tiles) == TILES_LEN, E_INVALID_TILES_LEN);
         assert_tiles_valid(&tiles);
-        chunk.tiles = tiles;
+        plot.tiles = tiles;
     }
 
     /// Batch save 25 decorations
-     entry fun set_decorations(chunk: &mut ChunkNFT, decorations: vector<u8>) {
+     entry fun set_decorations(plot: &mut PlotNFT, decorations: vector<u8>) {
         assert!(vector::length(&decorations) == TILES_LEN, E_INVALID_TILES_LEN);
         assert_decorations_valid(&decorations);
-        chunk.decorations = decorations;
+        plot.decorations = decorations;
     }
 
     /// Batch save both tiles and decorations
-     entry fun set_tiles_and_decorations(chunk: &mut ChunkNFT, tiles: vector<u8>, decorations: vector<u8>) {
+     entry fun set_tiles_and_decorations(plot: &mut PlotNFT, tiles: vector<u8>, decorations: vector<u8>) {
         assert!(vector::length(&tiles) == TILES_LEN, E_INVALID_TILES_LEN);
         assert!(vector::length(&decorations) == TILES_LEN, E_INVALID_TILES_LEN);
         assert_tiles_valid(&tiles);
         assert_decorations_valid(&decorations);
-        chunk.tiles = tiles;
-        chunk.decorations = decorations;
+        plot.tiles = tiles;
+        plot.decorations = decorations;
     }
 
     /// Update tiles, decorations, and image URL together (one tx)
-     entry fun update_chunk(
-        chunk: &mut ChunkNFT,
+     entry fun update_plot(
+        plot: &mut PlotNFT,
         tiles: vector<u8>,
         decorations: vector<u8>,
         new_url: String,
@@ -855,24 +855,24 @@ module chunk_world::world {
         assert_decorations_valid(&decorations);
         assert!(string::length(&new_url) <= MAX_URL_BYTES, E_URL_TOO_LONG);
 
-        chunk.tiles = tiles;
-        chunk.decorations = decorations;
-        chunk.image_url = new_url;
+        plot.tiles = tiles;
+        plot.decorations = decorations;
+        plot.image_url = new_url;
 
-        event::emit(ChunkImageUpdatedEvent { chunk_id: object::uid_to_inner(&chunk.id) });
+        event::emit(PlotImageUpdatedEvent { plot_id: object::uid_to_inner(&plot.id) });
     }
 
-     entry fun set_image_url(chunk: &mut ChunkNFT, new_url: String) {
+     entry fun set_image_url(plot: &mut PlotNFT, new_url: String) {
         assert!(string::length(&new_url) <= MAX_URL_BYTES, E_URL_TOO_LONG);
-        chunk.image_url = new_url;
+        plot.image_url = new_url;
 
-        event::emit(ChunkImageUpdatedEvent { chunk_id: object::uid_to_inner(&chunk.id) });
+        event::emit(PlotImageUpdatedEvent { plot_id: object::uid_to_inner(&plot.id) });
     }
 
     /* ================= READ HELPERS (optional) ================= */
 
-    public fun get_chunk_id(world: &WorldMap, cx: u32, cy: u32): Option<ID> {
-        let key = ChunkKey { cx, cy };
+    public fun get_plot_id(world: &WorldMap, cx: u32, cy: u32): Option<ID> {
+        let key = PlotKey { cx, cy };
         if (!df::exists_(&world.id, key)) {
             option::none<ID>()
         } else {
@@ -887,40 +887,40 @@ module chunk_world::world {
         rng: &mut random::RandomGenerator
     ): (u32, u32) {
         let mut candidates = vector[];
-        let total = vector::length(&world.chunks);
+        let total = vector::length(&world.plots);
         let mut i = 0;
         while (i < total) {
-            let chunk = *vector::borrow(&world.chunks, i);
-            let cx = chunk.cx;
-            let cy = chunk.cy;
+            let plot = *vector::borrow(&world.plots, i);
+            let cx = plot.cx;
+            let cy = plot.cy;
 
             // left
             if (cx > 0) {
                 let nx = cx - 1;
-                if (!df::exists_(&world.id, ChunkKey { cx: nx, cy })) {
-                    vector::push_back(&mut candidates, ChunkKey { cx: nx, cy });
+                if (!df::exists_(&world.id, PlotKey { cx: nx, cy })) {
+                    vector::push_back(&mut candidates, PlotKey { cx: nx, cy });
                 };
             };
             // right (avoid overflow)
             if (cx < U32_MAX) {
                 let nx = cx + 1;
-                if (!df::exists_(&world.id, ChunkKey { cx: nx, cy })) {
-                    vector::push_back(&mut candidates, ChunkKey { cx: nx, cy });
+                if (!df::exists_(&world.id, PlotKey { cx: nx, cy })) {
+                    vector::push_back(&mut candidates, PlotKey { cx: nx, cy });
                 };
             };
 
             // top
             if (cy > 0) {
                 let ny = cy - 1;
-                if (!df::exists_(&world.id, ChunkKey { cx, cy: ny })) {
-                    vector::push_back(&mut candidates, ChunkKey { cx, cy: ny });
+                if (!df::exists_(&world.id, PlotKey { cx, cy: ny })) {
+                    vector::push_back(&mut candidates, PlotKey { cx, cy: ny });
                 };
             };
             // bottom (avoid overflow)
             if (cy < U32_MAX) {
                 let ny = cy + 1;
-                if (!df::exists_(&world.id, ChunkKey { cx, cy: ny })) {
-                    vector::push_back(&mut candidates, ChunkKey { cx, cy: ny });
+                if (!df::exists_(&world.id, PlotKey { cx, cy: ny })) {
+                    vector::push_back(&mut candidates, PlotKey { cx, cy: ny });
                 };
             };
 
@@ -928,7 +928,7 @@ module chunk_world::world {
         };
 
         let count = vector::length(&candidates);
-        assert!(count > 0, E_NO_ADJACENT_CHUNK);
+        assert!(count > 0, E_NO_ADJACENT_PLOT);
         let index = random::generate_u64_in_range(rng, 0, count - 1);
         let chosen = *vector::borrow(&candidates, index);
         (chosen.cx, chosen.cy)
@@ -939,20 +939,20 @@ module chunk_world::world {
 
         // left
         if (cx > 0) {
-            ok = ok || df::exists_(&world.id, ChunkKey { cx: cx - 1, cy });
+            ok = ok || df::exists_(&world.id, PlotKey { cx: cx - 1, cy });
         };
         // right (avoid overflow)
         if (cx < U32_MAX) {
-            ok = ok || df::exists_(&world.id, ChunkKey { cx: cx + 1, cy });
+            ok = ok || df::exists_(&world.id, PlotKey { cx: cx + 1, cy });
         };
 
         // top
         if (cy > 0) {
-            ok = ok || df::exists_(&world.id, ChunkKey { cx, cy: cy - 1 });
+            ok = ok || df::exists_(&world.id, PlotKey { cx, cy: cy - 1 });
         };
         // bottom (avoid overflow)
         if (cy < U32_MAX) {
-            ok = ok || df::exists_(&world.id, ChunkKey { cx, cy: cy + 1 });
+            ok = ok || df::exists_(&world.id, PlotKey { cx, cy: cy + 1 });
         };
 
         ok
@@ -988,3 +988,6 @@ module chunk_world::world {
         }
     }
 }
+
+
+

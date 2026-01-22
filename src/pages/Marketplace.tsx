@@ -32,7 +32,7 @@ import "./Marketplace.css";
 
 type ListingEventFields = {
   world_id?: string;
-  chunk_id?: string;
+  Plot_id?: string;
   seller?: string;
   price?: number | string;
 };
@@ -43,7 +43,7 @@ type SoldEventFields = ListingEventFields & {
 
 type Listing = {
   worldId: string;
-  chunkId: string;
+  PlotId: string;
   seller: string;
   price: number;
   timestamp: number;
@@ -51,16 +51,16 @@ type Listing = {
 
 type SoldEvent = {
   worldId: string;
-  chunkId: string;
+  PlotId: string;
   seller: string;
   buyer: string;
   price: number;
   timestamp: number;
 };
 
-type ChunkInfo = {
-  chunkId: string;
-  chunkObjectId: string;
+type PlotInfo = {
+  PlotId: string;
+  PlotObjectId: string;
   worldId: string;
   cx?: number;
   cy?: number;
@@ -98,7 +98,7 @@ export default function Marketplace() {
     useSignAndExecuteTransaction();
   const { refetch: refetchBalance } = useRewardBalance();
   const [listings, setListings] = useState<Listing[]>([]);
-  const [ownedChunks, setOwnedChunks] = useState<ChunkInfo[]>([]);
+  const [ownedPlots, setOwnedPlots] = useState<PlotInfo[]>([]);
   const [priceInputs, setPriceInputs] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState("");
@@ -110,13 +110,13 @@ export default function Marketplace() {
   const [withdrawStatus, setWithdrawStatus] = useState("");
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [recentSales, setRecentSales] = useState<SoldEvent[]>([]);
-  const [chunkImages, setChunkImages] = useState<Record<string, string>>({});
+  const [PlotImages, setPlotImages] = useState<Record<string, string>>({});
 
-  const chunkType = PACKAGE_ID ? `${PACKAGE_ID}::world::ChunkNFT` : "";
+  const PlotType = PACKAGE_ID ? `${PACKAGE_ID}::world::PlotNFT` : "";
 
   useEffect(() => {
     void refreshListings();
-    void loadOwnedChunks();
+    void loadOwnedPlots();
   }, [account?.address]);
 
   useEffect(() => {
@@ -129,14 +129,14 @@ export default function Marketplace() {
 
   useEffect(() => {
     if (worldId) return;
-    const fallbackWorld = ownedChunks[0]?.worldId || listings[0]?.worldId || "";
+    const fallbackWorld = ownedPlots[0]?.worldId || listings[0]?.worldId || "";
     if (fallbackWorld) {
       setWorldId(fallbackWorld);
     }
-  }, [worldId, ownedChunks, listings]);
+  }, [worldId, ownedPlots, listings]);
 
-  const listedChunkIds = useMemo(
-    () => new Set(listings.map((item) => item.chunkId)),
+  const listedPlotIds = useMemo(
+    () => new Set(listings.map((item) => item.PlotId)),
     [listings],
   );
   const hasListings = listings.length > 0;
@@ -149,9 +149,9 @@ export default function Marketplace() {
         worldId && worldId.length > 0
           ? await fetchListingsFromDynamicFields(worldId)
           : [];
-      const listedType = `${PACKAGE_ID}::world::ChunkListedEvent`;
-      const soldType = `${PACKAGE_ID}::world::ChunkSoldEvent`;
-      const delistedType = `${PACKAGE_ID}::world::ChunkDelistedEvent`;
+      const listedType = `${PACKAGE_ID}::world::PlotListedEvent`;
+      const soldType = `${PACKAGE_ID}::world::PlotSoldEvent`;
+      const delistedType = `${PACKAGE_ID}::world::PlotDelistedEvent`;
 
       const [listedPage, soldPage, delistedPage] = await Promise.all([
         suiClient.queryEvents({
@@ -175,11 +175,11 @@ export default function Marketplace() {
       const soldEvents = soldPage.data
         .map((event) => {
           const detail = event.parsedJson as SoldEventFields;
-          const chunkId =
-            typeof detail.chunk_id === "string"
-              ? detail.chunk_id
-              : typeof detail.chunkId === "string"
-                ? detail.chunkId
+          const PlotId =
+            typeof detail.Plot_id === "string"
+              ? detail.Plot_id
+              : typeof detail.PlotId === "string"
+                ? detail.PlotId
                 : "";
           const worldId =
             typeof detail.world_id === "string"
@@ -188,9 +188,9 @@ export default function Marketplace() {
                 ? detail.worldId
                 : "";
           const price = Number(detail.price ?? 0);
-          if (!chunkId || !worldId || !price) return null;
+          if (!PlotId || !worldId || !price) return null;
           return {
-            chunkId,
+            PlotId,
             worldId,
             price,
             seller: detail.seller || "",
@@ -201,16 +201,16 @@ export default function Marketplace() {
         .filter((item): item is SoldEvent => Boolean(item));
 
       [...soldEvents, ...delistedPage.data].forEach((event) => {
-        if (typeof event === "object" && event && "chunkId" in event) {
-          closedIds.add((event as SoldEvent).chunkId);
+        if (typeof event === "object" && event && "PlotId" in event) {
+          closedIds.add((event as SoldEvent).PlotId);
           return;
         }
         const parsed = event.parsedJson as Record<string, unknown>;
         const candidate =
-          typeof parsed.chunk_id === "string"
-            ? parsed.chunk_id
-            : typeof parsed.chunkId === "string"
-              ? parsed.chunkId
+          typeof parsed.Plot_id === "string"
+            ? parsed.Plot_id
+            : typeof parsed.PlotId === "string"
+              ? parsed.PlotId
               : "";
         if (candidate) {
           closedIds.add(candidate);
@@ -230,11 +230,11 @@ export default function Marketplace() {
       const parsed = listedPage.data
         .map((event) => {
           const detail = event.parsedJson as ListingEventFields;
-          const chunkId =
-            typeof detail.chunk_id === "string"
-              ? detail.chunk_id
-              : typeof detail.chunkId === "string"
-                ? detail.chunkId
+          const PlotId =
+            typeof detail.Plot_id === "string"
+              ? detail.Plot_id
+              : typeof detail.PlotId === "string"
+                ? detail.PlotId
                 : "";
           const worldId =
             typeof detail.world_id === "string"
@@ -243,9 +243,9 @@ export default function Marketplace() {
                 ? detail.worldId
                 : "";
           const price = Number(detail.price ?? 0);
-          if (!chunkId || !worldId || !price) return null;
+          if (!PlotId || !worldId || !price) return null;
           return {
-            chunkId,
+            PlotId,
             worldId,
             price,
             seller: detail.seller || "unknown",
@@ -253,11 +253,11 @@ export default function Marketplace() {
           } satisfies Listing;
         })
         .filter((item): item is Listing => Boolean(item))
-        .filter((item) => !closedIds.has(item.chunkId));
+        .filter((item) => !closedIds.has(item.PlotId));
       console.log(`parsed`, parsed);
       const merged = mergeListings(parsed, dynamicListings);
       setListings(merged);
-      void fetchChunkImages(merged);
+      void fetchPlotImages(merged);
     } catch (error) {
       console.error("Failed to load listings:", error);
       setStatus("Failed to load listings, please try again.");
@@ -266,16 +266,16 @@ export default function Marketplace() {
     }
   }
 
-  async function loadOwnedChunks() {
-    if (!account?.address || !chunkType) {
-      setOwnedChunks([]);
+  async function loadOwnedPlots() {
+    if (!account?.address || !PlotType) {
+      setOwnedPlots([]);
       return;
     }
 
     try {
       const response = await suiClient.getOwnedObjects({
         owner: account.address,
-        filter: { StructType: chunkType },
+        filter: { StructType: PlotType },
         options: { showContent: true },
       });
 
@@ -297,23 +297,23 @@ export default function Marketplace() {
             typeof fields.image_url === "string" ? fields.image_url : "";
           return {
             worldId,
-            chunkId: objectId,
-            chunkObjectId: objectId,
+            PlotId: objectId,
+            PlotObjectId: objectId,
             cx,
             cy,
             imageUrl,
-          } satisfies ChunkInfo;
+          } satisfies PlotInfo;
         })
-        .filter((chunk): chunk is ChunkInfo => Boolean(chunk));
+        .filter((Plot): Plot is PlotInfo => Boolean(Plot));
 
-      setOwnedChunks(parsed);
-      const defaults = parsed.reduce<Record<string, string>>((acc, chunk) => {
-        if (!acc[chunk.chunkId]) acc[chunk.chunkId] = "";
+      setOwnedPlots(parsed);
+      const defaults = parsed.reduce<Record<string, string>>((acc, Plot) => {
+        if (!acc[Plot.PlotId]) acc[Plot.PlotId] = "";
         return acc;
       }, {});
       setPriceInputs((prev) => ({ ...defaults, ...prev }));
     } catch (error) {
-      console.error("Failed to load chunks:", error);
+      console.error("Failed to load Plots:", error);
     }
   }
 
@@ -398,7 +398,7 @@ export default function Marketplace() {
         coinType: REWARD_COIN_TYPE,
       });
       if (coins.data.length === 0) {
-        setStatus("No CHUNK coins available. Please get CHUNK from faucet.");
+        setStatus("No Plot coins available. Please get Plot from faucet.");
         return;
       }
 
@@ -408,10 +408,10 @@ export default function Marketplace() {
 
       const tx = new Transaction();
       tx.moveCall({
-        target: `${PACKAGE_ID}::world::buy_chunk`,
+        target: `${PACKAGE_ID}::world::buy_Plot`,
         arguments: [
           tx.object(listing.worldId),
-          tx.object(listing.chunkId),
+          tx.object(listing.PlotId),
           tx.object(coin.coinObjectId),
         ],
       });
@@ -423,29 +423,29 @@ export default function Marketplace() {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       await refreshListings();
-      await loadOwnedChunks();
+      await loadOwnedPlots();
       // Delay to allow indexer to sync before refetching balance
       setTimeout(() => void refetchBalance(), 1500);
-      setStatus("✅ Purchase complete! Chunk added to your collection.");
+      setStatus("✅ Purchase complete! Plot added to your collection.");
     } catch (error) {
       console.error("Buy failed:", error);
-      setStatus("Failed to buy chunk. Check console for details.");
+      setStatus("Failed to buy Plot. Check console for details.");
     }
   }
 
-  async function handleListChunk(chunk: ChunkInfo) {
+  async function handleListPlot(Plot: PlotInfo) {
     if (!account?.address) {
       setListingStatus("Please connect wallet before listing.");
       return;
     }
 
-    const priceValue = Number(priceInputs[chunk.chunkId]);
+    const priceValue = Number(priceInputs[Plot.PlotId]);
     if (!priceValue || priceValue <= 0) {
       setListingStatus("Price must be greater than 0.");
       return;
     }
 
-    if (!chunk.worldId) {
+    if (!Plot.worldId) {
       setListingStatus("Cannot determine world ID.");
       return;
     }
@@ -454,25 +454,25 @@ export default function Marketplace() {
     try {
       const tx = new Transaction();
       tx.moveCall({
-        target: `${PACKAGE_ID}::world::list_chunk`,
+        target: `${PACKAGE_ID}::world::list_Plot`,
         arguments: [
-          tx.object(chunk.worldId),
-          tx.object(chunk.chunkObjectId),
+          tx.object(Plot.worldId),
+          tx.object(Plot.PlotObjectId),
           tx.pure("u64", priceValue),
         ],
       });
 
       await signAndExecute({ transaction: tx });
-      setListingStatus("✅ Chunk listed successfully!");
+      setListingStatus("✅ Plot listed successfully!");
 
       // Wait for transaction to be indexed
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       await refreshListings();
-      await loadOwnedChunks();
+      await loadOwnedPlots();
     } catch (error) {
       console.error("List failed:", error);
-      setListingStatus("Failed to list chunk. Check console.");
+      setListingStatus("Failed to list Plot. Check console.");
     }
   }
 
@@ -482,26 +482,26 @@ export default function Marketplace() {
       return;
     }
 
-    setStatus("Delisting chunk...");
+    setStatus("Delisting Plot...");
     try {
       const tx = new Transaction();
       tx.moveCall({
         target: `${PACKAGE_ID}::world::cancel_listing`,
-        arguments: [tx.object(listing.worldId), tx.object(listing.chunkId)],
+        arguments: [tx.object(listing.worldId), tx.object(listing.PlotId)],
       });
 
       await signAndExecute({ transaction: tx });
-      setStatus("✅ Chunk delisted successfully! Refreshing...");
+      setStatus("✅ Plot delisted successfully! Refreshing...");
 
       // Wait for transaction to be indexed
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       await refreshListings();
-      await loadOwnedChunks();
-      setStatus("✅ Chunk returned to your collection.");
+      await loadOwnedPlots();
+      setStatus("✅ Plot returned to your collection.");
     } catch (error) {
       console.error("Delist failed:", error);
-      setStatus("Failed to delist chunk. Check console for details.");
+      setStatus("Failed to delist Plot. Check console for details.");
     }
   }
 
@@ -551,10 +551,10 @@ export default function Marketplace() {
     }
   }
 
-  async function fetchChunkImages(items: Listing[]) {
+  async function fetchPlotImages(items: Listing[]) {
     const idsToFetch = items
-      .map((item) => item.chunkId)
-      .filter((id) => !chunkImages[id]);
+      .map((item) => item.PlotId)
+      .filter((id) => !PlotImages[id]);
     if (idsToFetch.length === 0) return;
 
     const results = await Promise.allSettled(
@@ -585,7 +585,7 @@ export default function Marketplace() {
     });
 
     if (Object.keys(nextImages).length > 0) {
-      setChunkImages((prev) => ({ ...prev, ...nextImages }));
+      setPlotImages((prev) => ({ ...prev, ...nextImages }));
     }
   }
 
@@ -612,24 +612,24 @@ export default function Marketplace() {
 
           // Filter only listing objects
           const type = content.type || "";
-          if (!type.includes("ChunkListing")) return null;
+          if (!type.includes("PlotListing")) return null;
 
-          const chunk = normalizeMoveFields(fields.chunk);
-          const chunkId = extractObjectId(fields.chunk) || extractObjectId(chunk);
+          const Plot = normalizeMoveFields(fields.Plot);
+          const PlotId = extractObjectId(fields.Plot) || extractObjectId(Plot);
           const price = Number(fields.price ?? 0);
           const seller =
             typeof fields.seller === "string" ? fields.seller : undefined;
-          const worldIdFromChunk =
-            typeof chunk.world_id === "string"
-              ? chunk.world_id
-              : typeof chunk.worldId === "string"
-                ? chunk.worldId
+          const worldIdFromPlot =
+            typeof Plot.world_id === "string"
+              ? Plot.world_id
+              : typeof Plot.worldId === "string"
+                ? Plot.worldId
                 : worldObjectId;
 
-          if (!chunkId || !price || !seller) return null;
+          if (!PlotId || !price || !seller) return null;
           return {
-            chunkId,
-            worldId: worldIdFromChunk,
+            PlotId,
+            worldId: worldIdFromPlot,
             seller,
             price,
             timestamp: object.data?.timestampMs ?? Date.now(),
@@ -644,8 +644,8 @@ export default function Marketplace() {
 
   function mergeListings(primary: Listing[], fallback: Listing[]) {
     const map = new Map<string, Listing>();
-    fallback.forEach((item) => map.set(item.chunkId, item));
-    primary.forEach((item) => map.set(item.chunkId, item));
+    fallback.forEach((item) => map.set(item.PlotId, item));
+    primary.forEach((item) => map.set(item.PlotId, item));
     return Array.from(map.values()).sort(
       (a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0),
     );
@@ -675,7 +675,7 @@ export default function Marketplace() {
           <Link to="/" className="brand">
             <img src="https://ik.imagekit.io/huubao/chunk_coin.png" alt="logo" className="w-12 h-12" />
             <div>
-              <div className="brand__name">Chunk World</div>
+              <div className="brand__name">Voidia World</div>
               <div className="brand__tag">Sky Adventures on Sui</div>
             </div>
           </Link>
@@ -699,13 +699,13 @@ export default function Marketplace() {
 
             <h1>
               Trade{" "}
-              <span className="marketplace-hero__accent">Chunk Lands</span> on
+              <span className="marketplace-hero__accent">Plot Lands</span> on
               Sui
             </h1>
 
             <p className="marketplace-hero__subtitle">
-              Every chunk is a unique NFT on Sui blockchain. List your lands,
-              discover new territories, and earn CHUNK tokens as payment.
+              Every Plot is a unique NFT on Sui blockchain. List your lands,
+              discover new territories, and earn Plot tokens as payment.
             </p>
 
             <div className="marketplace-hero__cta">
@@ -713,10 +713,10 @@ export default function Marketplace() {
                 className="btn btn--solid"
                 onClick={() => {
                   setIsModalOpen(true);
-                  void loadOwnedChunks();
+                  void loadOwnedPlots();
                 }}
               >
-                <Upload size={14} /> List Your Chunk
+                <Upload size={14} /> List Your Plot
               </button>
               <button
                 className="btn btn--ghost"
@@ -751,9 +751,9 @@ export default function Marketplace() {
                   </div>
                 </div>
                 <div className="marketplace-stat">
-                  <div className="marketplace-stat__label">Your Chunks</div>
+                  <div className="marketplace-stat__label">Your Plots</div>
                   <div className="marketplace-stat__value">
-                    {ownedChunks.length}
+                    {ownedPlots.length}
                   </div>
                 </div>
               </div>
@@ -829,11 +829,11 @@ export default function Marketplace() {
                 </div>
                 <div className="marketplace-payout-card__balance-value flex items-center">
                   <img
-                    alt="chunk"
+                    alt="Plot"
                     className="inline-block w-5 h-5 mr-1"
                     src="https://ik.imagekit.io/huubao/chunk_coin.png"
                   />
-                  {pendingProceeds} CHUNK
+                  {pendingProceeds} Plot
                 </div>
                 <div className="marketplace-payout-card__balance-meta">
                   World:{" "}
@@ -857,7 +857,7 @@ export default function Marketplace() {
                       Sale confirmed
                     </div>
                     <div className="marketplace-payout-step__text">
-                      On-chain ChunkSoldEvent recorded.
+                      On-chain PlotSoldEvent recorded.
                     </div>
                   </div>
                 </div>
@@ -901,7 +901,7 @@ export default function Marketplace() {
                     min="1"
                     value={withdrawInput}
                     onChange={(event) => setWithdrawInput(event.target.value)}
-                    placeholder="Withdraw amount (CHUNK)"
+                    placeholder="Withdraw amount (Plot)"
                   />
                   <button
                     className="btn--ghost"
@@ -941,7 +941,7 @@ export default function Marketplace() {
                     Recent sales
                   </div>
                   <h3 className="marketplace-payout-feed__title">
-                    Your latest sold chunks
+                    Your latest sold Plots
                   </h3>
                 </div>
                 <div className="marketplace-payout-feed__count">
@@ -952,25 +952,25 @@ export default function Marketplace() {
                 <div className="marketplace-payout-feed__list">
                   {recentSales.map((sale) => (
                     <div
-                      key={`${sale.chunkId}-${sale.timestamp}`}
+                      key={`${sale.PlotId}-${sale.timestamp}`}
                       className="marketplace-payout-feed__item"
                     >
                       <div className="marketplace-payout-feed__item-main">
                         <span className="marketplace-payout-feed__label">
-                          Chunk
+                          Plot
                         </span>
                         <span className="marketplace-payout-feed__value">
-                          {truncateAddress(sale.chunkId, 8, 6)}
+                          {truncateAddress(sale.PlotId, 8, 6)}
                         </span>
                       </div>
                       <div className="marketplace-payout-feed__item-meta flex items-center">
                         <span className="flex items-center gap-1">
                           <img
-                            alt="chunk"
+                            alt="Plot"
                             className="w-3 h-3"
                             src="https://ik.imagekit.io/huubao/chunk_coin.png"
                           />
-                          {sale.price} CHUNK
+                          {sale.price} Plot
                         </span>
                         <span>Buyer: {truncateAddress(sale.buyer, 6, 4)}</span>
                       </div>
@@ -983,7 +983,7 @@ export default function Marketplace() {
                     <Package size={28} />
                   </div>
                   <p className="marketplace-empty__text">
-                    No sales yet. List a chunk to start earning CHUNK.
+                    No sales yet. List a Plot to start earning Plot.
                   </p>
                 </div>
               )}
@@ -991,7 +991,7 @@ export default function Marketplace() {
           </div>
         </section>
 
-        {/* Your Chunks Modal */}
+        {/* Your Plots Modal */}
         {isModalOpen && (
           <div
             className="marketplace-modal-overlay"
@@ -1006,7 +1006,7 @@ export default function Marketplace() {
                   <span className="marketplace-section__title-icon">
                     <Mountain size={18} />
                   </span>
-                  Your Chunks
+                  Your Plots
                 </h2>
                 <button
                   className="marketplace-modal__close"
@@ -1022,18 +1022,18 @@ export default function Marketplace() {
 
               <div className="marketplace-modal__body">
                 {account?.address ? (
-                  ownedChunks.length > 0 ? (
+                  ownedPlots.length > 0 ? (
                     <div className="marketplace-grid marketplace-grid--modal">
-                      {ownedChunks.map((chunk) => (
+                      {ownedPlots.map((Plot) => (
                         <article
-                          key={chunk.chunkId}
+                          key={Plot.PlotId}
                           className="marketplace-owned-card"
                         >
                           <div className="marketplace-owned-card__preview">
-                            {chunk.imageUrl ? (
+                            {Plot.imageUrl ? (
                               <img
-                                src={chunk.imageUrl}
-                                alt={`Chunk ${truncateAddress(chunk.chunkId, 8, 4)}`}
+                                src={Plot.imageUrl}
+                                alt={`Plot ${truncateAddress(Plot.PlotId, 8, 4)}`}
                               />
                             ) : (
                               <div className="marketplace-owned-card__preview-placeholder">
@@ -1041,21 +1041,21 @@ export default function Marketplace() {
                               </div>
                             )}
                             <div className="marketplace-owned-card__coords">
-                              <MapPin size={12} /> ({chunk.cx ?? "?"},{" "}
-                              {chunk.cy ?? "?"})
+                              <MapPin size={12} /> ({Plot.cx ?? "?"},{" "}
+                              {Plot.cy ?? "?"})
                             </div>
                           </div>
                           <div className="marketplace-owned-card__body">
                             <div className="marketplace-owned-card__info">
                               <div className="marketplace-owned-card__row">
                                 <span className="marketplace-owned-card__label">
-                                  Chunk ID
+                                  Plot ID
                                 </span>
                                 <span
                                   className="marketplace-owned-card__value"
-                                  title={chunk.chunkId}
+                                  title={Plot.PlotId}
                                 >
-                                  {truncateAddress(chunk.chunkId, 8, 6)}
+                                  {truncateAddress(Plot.PlotId, 8, 6)}
                                 </span>
                               </div>
                               <div className="marketplace-owned-card__row">
@@ -1064,9 +1064,9 @@ export default function Marketplace() {
                                 </span>
                                 <span
                                   className="marketplace-owned-card__value"
-                                  title={chunk.worldId}
+                                  title={Plot.worldId}
                                 >
-                                  {truncateAddress(chunk.worldId, 8, 6)}
+                                  {truncateAddress(Plot.worldId, 8, 6)}
                                 </span>
                               </div>
                             </div>
@@ -1075,27 +1075,27 @@ export default function Marketplace() {
                                 className="marketplace-price-input"
                                 type="number"
                                 min="1"
-                                value={priceInputs[chunk.chunkId] ?? ""}
+                                value={priceInputs[Plot.PlotId] ?? ""}
                                 onChange={(event) =>
                                   setPriceInputs((prev) => ({
                                     ...prev,
-                                    [chunk.chunkId]: event.target.value,
+                                    [Plot.PlotId]: event.target.value,
                                   }))
                                 }
-                                placeholder="Price (CHUNK)"
+                                placeholder="Price (Plot)"
                               />
                               <button
                                 className={
-                                  `${listedChunkIds.has(chunk.chunkId)
+                                  `${listedPlotIds.has(Plot.PlotId)
                                     ? "btn--secondary"
                                     : "btn--primary"} flex items-center justify-center gap-2`
                                 }
-                                onClick={() => handleListChunk(chunk)}
+                                onClick={() => handleListPlot(Plot)}
                                 disabled={
-                                  isPending || listedChunkIds.has(chunk.chunkId)
+                                  isPending || listedPlotIds.has(Plot.PlotId)
                                 }
                               >
-                                {listedChunkIds.has(chunk.chunkId) ? (
+                                {listedPlotIds.has(Plot.PlotId) ? (
                                   <>
                                     <Check size={12} /> Listed
                                   </>
@@ -1116,8 +1116,8 @@ export default function Marketplace() {
                         <Package size={32} />
                       </div>
                       <p className="marketplace-empty__text">
-                        You don't have any chunks yet. Explore the game to mint
-                        your first chunk!
+                        You don't have any Plots yet. Explore the game to mint
+                        your first Plot!
                       </p>
                     </div>
                   )
@@ -1127,15 +1127,15 @@ export default function Marketplace() {
                       <Link2 size={32} />
                     </div>
                     <p className="marketplace-empty__text">
-                      Connect your wallet to view your chunks
+                      Connect your wallet to view your Plots
                     </p>
                   </div>
                 )}
               </div>
 
               <div className="marketplace-modal__footer">
-                <button className="btn--ghost" onClick={loadOwnedChunks}>
-                  <RefreshCw size={12} /> Reload Chunks
+                <button className="btn--ghost" onClick={loadOwnedPlots}>
+                  <RefreshCw size={12} /> Reload Plots
                 </button>
               </div>
             </div>
@@ -1176,17 +1176,17 @@ export default function Marketplace() {
             <div className="marketplace-grid marketplace-grid--listings">
               {listings.map((listing) => (
                 <article
-                  key={`${listing.chunkId}-${listing.timestamp}`}
+                  key={`${listing.PlotId}-${listing.timestamp}`}
                   className="marketplace-listing-card"
                 >
                   <div
                     className="marketplace-listing-card__preview"
-                    style={{ background: cardBackground(listing.chunkId) }}
+                    style={{ background: cardBackground(listing.PlotId) }}
                   >
-                    {chunkImages[listing.chunkId] ? (
+                    {PlotImages[listing.PlotId] ? (
                       <img
-                        src={chunkImages[listing.chunkId]}
-                        alt={`Chunk ${truncateAddress(listing.chunkId, 8, 4)}`}
+                        src={PlotImages[listing.PlotId]}
+                        alt={`Plot ${truncateAddress(listing.PlotId, 8, 4)}`}
                       />
                     ) : null}
                   </div>
@@ -1194,13 +1194,13 @@ export default function Marketplace() {
                     <div className="marketplace-listing-card__info">
                       <div className="marketplace-listing-card__row">
                         <span className="marketplace-listing-card__label">
-                          Chunk
+                          Plot
                         </span>
                         <span
                           className="marketplace-listing-card__value"
-                          title={listing.chunkId}
+                          title={listing.PlotId}
                         >
-                          {truncateAddress(listing.chunkId, 8, 6)}
+                          {truncateAddress(listing.PlotId, 8, 6)}
                         </span>
                       </div>
                       <div className="marketplace-listing-card__row">
@@ -1232,11 +1232,11 @@ export default function Marketplace() {
                       </span>
                       <span className="marketplace-listing-card__price-value flex items-center gap-1">
                         <img
-                          alt="chunk"
+                          alt="Plot"
                           className="w-4 h-4"
                           src="https://ik.imagekit.io/huubao/chunk_coin.png"
                         />
-                        {listing.price} CHUNK
+                        {listing.price} Plot
                       </span>
                     </div>
                     {listing.seller === account?.address ? (
@@ -1282,7 +1282,7 @@ export default function Marketplace() {
                 <Mountain size={32} />
               </div>
               <p className="marketplace-empty__text">
-                No chunks currently listed for sale. Be the first to list!
+                No Plots currently listed for sale. Be the first to list!
               </p>
             </div>
           )}
@@ -1332,3 +1332,7 @@ function parseBalanceAmount(value: unknown): number {
   }
   return 0;
 }
+
+
+
+

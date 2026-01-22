@@ -3,7 +3,7 @@ import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useBalanceStore } from "../stores";
 
 /**
- * Hook to fetch and track the user's CHUNK reward token balance
+ * Hook to fetch and track the user's PLOT reward token balance
  * Uses Zustand store to cache balance and avoid repeated fetches
  */
 export function useRewardBalance() {
@@ -20,4 +20,6 @@ export function useRewardBalance() {
 
   return { balance, isLoading, refetch, account };
 }
+
+
 

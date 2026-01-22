@@ -12,7 +12,7 @@
 | `src/pages/GamePage.jsx` | Nhận event `game:difficulty-update`, hiển thị UI |
 
 ## Dữ liệu đầu vào
-- Map: `difficulty` (1-9), `chunkCount` (nếu không có sẽ tính từ diện tích map với `CHUNK_SIZE=5`).
+- Map: `difficulty` (1-9), `PLOTCount` (nếu không có sẽ tính từ diện tích map với `PLOT_SIZE=5`).
 - On-chain: chỉ dùng `getTotalTransactionBlocks` để suy ra TPS; `validatorHealth` đang cố định 100.
 
 ## Logic EnemyMaintainer (code hiện tại)
@@ -23,7 +23,7 @@
 5. `effectiveDifficulty = min(9, baseDifficulty * networkFactor * validatorFactor)`  
    - `networkFactor = 0.8 + (networkScore/100)*0.4` (0.8→1.2)  
    - `validatorFactor = 0.9 + (validatorHealth/100)*0.2` (0.9→1.1)
-6. `targetEnemyCount` hiện đang cố định `chunkCount * 2` (đã clamp tối thiểu 1). Giá trị tính từ `enemiesPerChunk` trong constructor bị override bởi bước này.
+6. `targetEnemyCount` hiện đang cố định `PLOTCount * 2` (đã clamp tối thiểu 1). Giá trị tính từ `enemiesPerPLOT` trong constructor bị override bởi bước này.
 7. Nếu `currentEnemyCount < targetEnemyCount` thì spawn thêm đúng 1 quái mỗi chu kỳ.
 
 ### Flow tóm tắt (maintainer)
@@ -34,7 +34,7 @@ flowchart TD
     B -->|Fail| C
     C --> D[networkFactor, validatorFactor]
     D --> E[effectiveDifficulty]
-    E --> F[targetEnemyCount = chunkCount * 2]
+    E --> F[targetEnemyCount = PLOTCount * 2]
     F --> G{currentEnemyCount < target?}
     G -->|Yes| H[Spawn 1 quái với stat scale]
     G -->|No| I[Không spawn]
@@ -55,12 +55,12 @@ flowchart TD
   - `hp = 2 + round(norm * 12)`
   - `damage = 5 + round(norm * 18)`
   - `speed = 30 + round(norm * 25)`
-  - `enemiesPerChunk = 0.5 + norm * 3.5` (chỉ dùng cho target ban đầu trong constructor).
+  - `enemiesPerPLOT = 0.5 + norm * 3.5` (chỉ dùng cho target ban đầu trong constructor).
 - Khi spawn, stat gửi vào callback = `baseStat * (effectiveDifficulty / baseDifficulty)` (làm tròn lên).
 
 ## Spawn trong scene (`start.ts`)
-- Số quái ban đầu: `enemiesPerChunk = 0.3 + (baseDifficulty - 1) * 0.15`, spawn goblin = `chunkCount * enemiesPerChunk` (tối thiểu 1), yod ≈ một nửa goblin.
-- Maintainer nhận `baseDifficulty`, `chunkCount`, callback `onSpawnEnemy` (1/3 spawn yod) và `onDifficultyUpdate`.
+- Số quái ban đầu: `enemiesPerPLOT = 0.3 + (baseDifficulty - 1) * 0.15`, spawn goblin = `PLOTCount * enemiesPerPLOT` (tối thiểu 1), yod ≈ một nửa goblin.
+- Maintainer nhận `baseDifficulty`, `PLOTCount`, callback `onSpawnEnemy` (1/3 spawn yod) và `onDifficultyUpdate`.
 - UI event: `game:difficulty-update` được dispatch với `detail` gồm `baseDifficulty`, `effectiveDifficulty`, `networkScore`, `validatorHealth`, `networkStatus`, `validatorStatus`, `targetEnemyCount`, `currentEnemyCount` (đếm thực tế trên map).
 - Spawn mới cách player ít nhất 4 tiles.
 
@@ -76,7 +76,7 @@ import {
 const maintainer = initEnemyMaintainer({
   rpcUrl: "https://fullnode.testnet.sui.io:443",
   baseDifficulty: 3,
-  chunkCount: 5,
+  PLOTCount: 5,
   onSpawnEnemy: (config: EnemyConfig) => {
     spawnGoblin(x, y, config.baseHp, config.baseDamage, config.baseSpeed);
   },
@@ -93,5 +93,6 @@ stopEnemyMaintainer();          // khi scene kết thúc
 
 ## Ghi chú
 - Mỗi chu kỳ chỉ spawn 1 quái nếu thiếu để tránh spam.
-- Network yếu làm tăng `effectiveDifficulty` và stat quái (theo tỉ lệ), nhưng target hiện fix = `chunkCount * 2`.
-- Nếu cần thay đổi mục tiêu spawn linh hoạt, chỉnh trong `checkAndMaintain()` thay vì cố định `chunkCount * 2`.
+- Network yếu làm tăng `effectiveDifficulty` và stat quái (theo tỉ lệ), nhưng target hiện fix = `PLOTCount * 2`.
+- Nếu cần thay đổi mục tiêu spawn linh hoạt, chỉnh trong `checkAndMaintain()` thay vì cố định `PLOTCount * 2`.
+

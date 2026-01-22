@@ -523,10 +523,10 @@
   display: none;
 }
 
-.landing .preview__chunk,
-.landing .preview__chunk-top,
-.landing .preview__chunk-face,
-.landing .preview__chunk-shadow {
+.landing .preview__PLOT,
+.landing .preview__PLOT-top,
+.landing .preview__PLOT-face,
+.landing .preview__PLOT-shadow {
   display: none;
 }
 
@@ -928,3 +928,4 @@
     transform: none;
   }
 }
+

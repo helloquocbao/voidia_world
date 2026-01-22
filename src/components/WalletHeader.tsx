@@ -2,7 +2,7 @@ import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import { useRewardBalance } from "../hooks/useRewardBalance";
 import "./WalletHeader.css";
 
-const CHUNK_COIN_ICON =
+const chunk_coin_ICON =
   "https://ik.imagekit.io/huubao/chunk_coin.png?updatedAt=1768641987539";
 
 /**
@@ -18,9 +18,9 @@ export function WalletHeader() {
       {account && (
         <div className="wallet-header__balance">
           <img
-            alt="CHUNK"
+            alt="VOIDIA"
             className="wallet-header__icon"
-            src={CHUNK_COIN_ICON}
+            src={chunk_coin_ICON}
           />
           {isLoading ? (
             <span className="wallet-header__skeleton" />
@@ -29,10 +29,13 @@ export function WalletHeader() {
               {balance.toLocaleString()}
             </span>
           )}
-          <span className="wallet-header__label">CHUNK</span>
+          <span className="wallet-header__label">VOIDIA</span>
         </div>
       )}
       <ConnectButton />
     </div>
   );
 }
+
+
+

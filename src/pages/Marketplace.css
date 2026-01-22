@@ -909,7 +909,7 @@
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 }
 
-/* ===== OWNED CHUNK CARD ===== */
+/* ===== OWNED PLOT CARD ===== */
 .marketplace-owned-card {
   background: rgba(13, 33, 55, 0.8);
   border-radius: 20px;
@@ -1383,3 +1383,4 @@
   content: "i";
   font-family: var(--font-mono, monospace);
 }
+

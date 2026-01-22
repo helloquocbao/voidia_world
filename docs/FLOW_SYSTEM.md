@@ -1,4 +1,4 @@
-# Chunk Adventure - Play & Claim Flow (code hi?n t?i)
+# PLOT Adventure - Play & Claim Flow (code hi?n t?i)
 
 ## T?ng quan
 - Play t?o `PlayTicket { player, policy_id=BCS(play_id), min_reward, max_reward, approved=false }`.

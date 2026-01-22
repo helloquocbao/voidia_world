@@ -26,7 +26,7 @@ import { useRewardBalance } from "../hooks/useRewardBalance";
 import "./GamePage.css";
 
 const TILE_SIZE = 32;
-const CHUNK_SIZE = 5;
+const PLOT_SIZE = 5;
 const PLAY_FEE = 5n;
 const PLAY_STATE_KEY = "PLAY_STATE";
 const PLAY_TARGET_KEY = "PLAY_TARGET";
@@ -40,7 +40,7 @@ export default function GamePage() {
   const [worldListError, setWorldListError] = useState("");
   const [mapLoadError, setMapLoadError] = useState("");
   const [isMapLoading, setIsMapLoading] = useState(false);
-  const [loadedChunks, setLoadedChunks] = useState(null);
+  const [loadedPLOTs, setLoadedPLOTs] = useState(null);
   const [rewardBalance, setRewardBalance] = useState("0");
   const [playId, setPlayId] = useState("");
   const [policyIdHex, setPolicyIdHex] = useState("");
@@ -597,36 +597,36 @@ export default function GamePage() {
   async function loadWorldMap(targetWorldId) {
     setMapLoadError("");
     setIsMapLoading(true);
-    setLoadedChunks(null);
+    setLoadedPLOTs(null);
 
     try {
       const fieldEntries = await fetchAllDynamicFields(targetWorldId);
       if (fieldEntries.length === 0) {
-        setMapLoadError("World has no chunks yet.");
-        setLoadedChunks(0);
+        setMapLoadError("World has no PLOTs yet.");
+        setLoadedPLOTs(0);
         return;
       }
 
-      const chunkEntries = await resolveChunkEntries(
+      const PLOTEntries = await resolvePLOTEntries(
         targetWorldId,
         fieldEntries
       );
-      if (chunkEntries.length === 0) {
-        setMapLoadError("No chunk entries found.");
-        setLoadedChunks(0);
+      if (PLOTEntries.length === 0) {
+        setMapLoadError("No PLOT entries found.");
+        setLoadedPLOTs(0);
         return;
       }
 
-      const chunkIds = chunkEntries.map((entry) => entry.chunkId);
-      const chunkObjects = await suiClient.multiGetObjects({
-        ids: chunkIds,
+      const PLOTIds = PLOTEntries.map((entry) => entry.PLOTId);
+      const PLOTObjects = await suiClient.multiGetObjects({
+        ids: PLOTIds,
         options: { showContent: true },
       });
 
-      const maxCx = Math.max(...chunkEntries.map((entry) => entry.cx));
-      const maxCy = Math.max(...chunkEntries.map((entry) => entry.cy));
-      const width = (maxCx + 1) * CHUNK_SIZE;
-      const height = (maxCy + 1) * CHUNK_SIZE;
+      const maxCx = Math.max(...PLOTEntries.map((entry) => entry.cx));
+      const maxCy = Math.max(...PLOTEntries.map((entry) => entry.cy));
+      const width = (maxCx + 1) * PLOT_SIZE;
+      const height = (maxCy + 1) * PLOT_SIZE;
 
       const newGrid = Array(height)
         .fill(0)
@@ -635,13 +635,13 @@ export default function GamePage() {
         .fill(0)
         .map(() => Array(width).fill(0));
 
-      for (let index = 0; index < chunkEntries.length; index++) {
-        const entry = chunkEntries[index];
-        const response = chunkObjects[index];
+      for (let index = 0; index < PLOTEntries.length; index++) {
+        const entry = PLOTEntries[index];
+        const response = PLOTObjects[index];
         let content = response.data?.content;
         if (!content || content.dataType !== "moveObject") {
-          content = await fetchListedChunk(targetWorldId, entry.chunkId);
-          console.log("Fetched listed chunk:", content);
+          content = await fetchListedPLOT(targetWorldId, entry.PLOTId);
+          console.log("Fetched listed PLOT:", content);
         }
         if (!content || content.dataType !== "moveObject") continue;
         const fields = normalizeMoveFields(content.fields);
@@ -652,12 +652,12 @@ export default function GamePage() {
           (deco) => normalizeDecoId(clampU8(parseU32Value(deco) ?? 0, 255))
         );
 
-        for (let y = 0; y < CHUNK_SIZE; y++) {
-          for (let x = 0; x < CHUNK_SIZE; x++) {
-            const idx = y * CHUNK_SIZE + x;
-            newGrid[entry.cy * CHUNK_SIZE + y][entry.cx * CHUNK_SIZE + x] =
+        for (let y = 0; y < PLOT_SIZE; y++) {
+          for (let x = 0; x < PLOT_SIZE; x++) {
+            const idx = y * PLOT_SIZE + x;
+            newGrid[entry.cy * PLOT_SIZE + y][entry.cx * PLOT_SIZE + x] =
               tiles[idx] ?? 0;
-            newDecoGrid[entry.cy * CHUNK_SIZE + y][entry.cx * CHUNK_SIZE + x] =
+            newDecoGrid[entry.cy * PLOT_SIZE + y][entry.cx * PLOT_SIZE + x] =
               decorations[idx] ?? 0;
           }
         }
@@ -672,7 +672,7 @@ export default function GamePage() {
         worldId: targetWorldId,
         characterHealth: characterHealth || 100,
         difficulty: 1, // default, will fetch from WorldMap
-        chunkCount: chunkEntries.length,
+        PLOTCount: PLOTEntries.length,
       };
 
       // Fetch difficulty from WorldMap object
@@ -692,7 +692,7 @@ export default function GamePage() {
 
       localStorage.setItem("CUSTOM_MAP", JSON.stringify(mapData));
       setPendingMapData(mapData);
-      setLoadedChunks(chunkEntries.length);
+      setLoadedPLOTs(PLOTEntries.length);
 
       // Auto-start logic: check for pending on-chain task
       if (!isGameStarted) {
@@ -824,7 +824,7 @@ export default function GamePage() {
     if (effectiveMode === "v2") {
       playableCoin = await getPlayableCoin();
       if (!playableCoin) {
-        setPlayError("Need at least 5 CHUNK coin to play V2.");
+        setPlayError("Need at least 5 PLOT coin to play V2.");
         return;
       }
     }
@@ -844,7 +844,7 @@ export default function GamePage() {
           ],
         });
       } else {
-        // Play V2: Paid play (requires 5 CHUNK)
+        // Play V2: Paid play (requires 5 PLOT)
         tx.moveCall({
           target: `${PACKAGE_ID}::world::play_v2`,
           arguments: [
@@ -1128,7 +1128,7 @@ export default function GamePage() {
               alt="icon"
               className="w-4 h-4"
               src="https://ik.imagekit.io/huubao/chunk_coin.png?updatedAt=1768641987539"
-            /> {rewardValue} CHUNK
+            /> {rewardValue} PLOT
           </div>
           : "Claimed reward successfully!"
       );
@@ -1437,11 +1437,11 @@ export default function GamePage() {
                           <span className="quest-stat__label">Reward:</span>
                           <span className="quest-stat__value flex items-center gap-1">
                             <img
-                              alt="chunk"
+                              alt="PLOT"
                               className="w-3 h-3"
                               src="https://ik.imagekit.io/huubao/chunk_coin.png"
                             />
-                            2 CHUNK
+                            2 PLOT
                           </span>
                         </div>
                       </div>
@@ -1489,22 +1489,22 @@ export default function GamePage() {
                           <span className="quest-stat__label">Reward:</span>
                           <span className="quest-stat__value flex items-center gap-1">
                             <img
-                              alt="chunk"
+                              alt="PLOT"
                               className="w-3 h-3"
                               src="https://ik.imagekit.io/huubao/chunk_coin.png"
                             />
-                            2-15 CHUNK
+                            2-15 PLOT
                           </span>
                         </div>
                         <div className="quest-stat">
                           <span className="quest-stat__label">Cost:</span>
                           <span className="quest-stat__value quest-stat__value--cost flex items-center gap-1">
                             <img
-                              alt="chunk"
+                              alt="PLOT"
                               className="w-3 h-3"
                               src="https://ik.imagekit.io/huubao/chunk_coin.png"
                             />
-                            5 CHUNK
+                            5 PLOT
                           </span>
                         </div>
                       </div>
@@ -1523,11 +1523,11 @@ export default function GamePage() {
 
                             <div className="flex items-center gap-1"> (
                               <img
-                                alt="chunk"
+                                alt="PLOT"
                                 className="w-3 h-3 inline-block"
                                 src="https://ik.imagekit.io/huubao/chunk_coin.png"
                               />
-                              5 CHUNK)</div>
+                              5 PLOT)</div>
                           </>
                         )}
                       </button>
@@ -1570,9 +1570,9 @@ export default function GamePage() {
                 {isMapLoading && (
                   <div className="game-info__note">Loading world...</div>
                 )}
-                {loadedChunks !== null && (
+                {loadedPLOTs !== null && (
                   <div className="game-info__note">
-                    Loaded {loadedChunks} chunks.
+                    Loaded {loadedPLOTs} PLOTs.
                   </div>
                 )}
                 {worldListError && (
@@ -2068,7 +2068,7 @@ function extractObjectId(value) {
   return "";
 }
 
-function extractChunkCoords(value) {
+function extractPLOTCoords(value) {
   const fields = normalizeMoveFields(value);
   const cx = parseU32Value(fields.cx);
   const cy = parseU32Value(fields.cy);
@@ -2095,13 +2095,13 @@ async function fetchAllDynamicFields(parentId) {
   return all;
 }
 
-async function resolveChunkEntries(worldId, fields) {
+async function resolvePLOTEntries(worldId, fields) {
   const results = await Promise.allSettled(
     fields.map(async (field) => {
-      if (field.name?.type && !field.name.type.includes("ChunkKey")) {
+      if (field.name?.type && !field.name.type.includes("PLOTKey")) {
         return null;
       }
-      const coords = extractChunkCoords(field.name?.value);
+      const coords = extractPLOTCoords(field.name?.value);
       if (!coords) return null;
 
       const fieldObject = await suiClient.getDynamicFieldObject({
@@ -2111,9 +2111,9 @@ async function resolveChunkEntries(worldId, fields) {
       const content = fieldObject.data?.content;
       if (!content || content.dataType !== "moveObject") return null;
       const fieldFields = normalizeMoveFields(content.fields);
-      const chunkId = extractObjectId(fieldFields.value);
-      if (!chunkId) return null;
-      return { ...coords, chunkId };
+      const PLOTId = extractObjectId(fieldFields.value);
+      if (!PLOTId) return null;
+      return { ...coords, PLOTId };
     })
   );
 
@@ -2125,32 +2125,32 @@ async function resolveChunkEntries(worldId, fields) {
 
 
 
-async function fetchListedChunk(worldId, chunkId) {
-  if (!PACKAGE_ID || !worldId || !chunkId) return null;
+async function fetchListedPLOT(worldId, PLOTId) {
+  if (!PACKAGE_ID || !worldId || !PLOTId) return null;
   const directName = {
     type: `${PACKAGE_ID}::world::ListingKey`,
-    value: { chunk_id: chunkId },
+    value: { PLOT_id: PLOTId },
   };
   const directContent = await loadListingContent(worldId, directName);
   if (directContent) return directContent;
 
   const wrappedName = {
     type: `${PACKAGE_ID}::world::ListingKey`,
-    value: { chunk_id: { id: chunkId } },
+    value: { PLOT_id: { id: PLOTId } },
   };
   const wrappedContent = await loadListingContent(worldId, wrappedName);
   if (wrappedContent) return wrappedContent;
 
   const bytesName = {
     type: `${PACKAGE_ID}::world::ListingKey`,
-    value: { chunk_id: { bytes: chunkId } },
+    value: { PLOT_id: { bytes: PLOTId } },
   };
   const bytesContent = await loadListingContent(worldId, bytesName);
   if (bytesContent) return bytesContent;
 
   const wrappedBytesName = {
     type: `${PACKAGE_ID}::world::ListingKey`,
-    value: { chunk_id: { id: { bytes: chunkId } } },
+    value: { PLOT_id: { id: { bytes: PLOTId } } },
   };
   const wrappedBytesContent = await loadListingContent(
     worldId,
@@ -2171,8 +2171,8 @@ async function fetchListedChunk(worldId, chunkId) {
     for (const field of page.data ?? []) {
       if (!field?.name?.type || !field.name.type.includes("ListingKey"))
         continue;
-      const candidateId = extractListingChunkId(field.name.value);
-      if (candidateId && candidateId === chunkId) {
+      const candidateId = extractListingPLOTId(field.name.value);
+      if (candidateId && candidateId === PLOTId) {
         return await loadListingContent(worldId, field.name);
       }
     }
@@ -2193,20 +2193,20 @@ async function loadListingContent(worldId, fieldName) {
     const content = fieldObject.data?.content;
     if (!content || content.dataType !== "moveObject") return null;
     const listingFields = normalizeMoveFields(content.fields);
-    const chunk = listingFields.chunk;
-    if (!chunk) return null;
+    const PLOT = listingFields.PLOT;
+    if (!PLOT) return null;
     return {
       dataType: "moveObject",
-      fields: normalizeMoveFields(chunk),
+      fields: normalizeMoveFields(PLOT),
     };
   } catch (error) {
     return null;
   }
 }
 
-function extractListingChunkId(value) {
+function extractListingPLOTId(value) {
   const fields = normalizeMoveFields(value);
-  const raw = fields.chunk_id ?? fields.chunkId;
+  const raw = fields.PLOT_id ?? fields.PLOTId;
   const extracted = extractObjectId(raw);
   if (extracted) return extracted;
   if (typeof raw === "string") return raw;
@@ -2217,3 +2217,6 @@ function extractListingChunkId(value) {
   const fallback = extractObjectId(fields);
   return fallback || "";
 }
+
+
+

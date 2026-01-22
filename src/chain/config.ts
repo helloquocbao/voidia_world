@@ -17,6 +17,7 @@ export const TREASURY_CAP_ID =
   import.meta.env.VITE_TREASURY_CAP ??
   "0x9c65fe112eab5919b889e7444736c3e018a4c6c3cee984b42cd439af2f9947d3";
 export const REWARD_COIN_TYPE = PACKAGE_ID
-  ? `${PACKAGE_ID}::reward_coin::REWARD_COIN`
+  ? `${PACKAGE_ID}::voidia_coin::VOIDIA_COIN`
   : "";
 export const RANDOM_OBJECT_ID = import.meta.env.VITE_RANDOM_OBJECT_ID ?? "0x8";
+

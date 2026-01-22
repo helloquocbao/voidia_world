@@ -170,3 +170,4 @@ export function isDecoBlocking(id: number) {
 export function canWalkAt(tileId: number, decoId: number = 0) {
   return isWalkableTile(tileId) && isDecoWalkable(decoId);
 }
+
