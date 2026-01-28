@@ -16,7 +16,7 @@
     "@noble/hashes": "^2.0.1",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-query": "^5.90.12",
-    "kaboom": "^3000.1.17",
+    "phaser": "^3.87.0",
     "lucide-react": "^0.560.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

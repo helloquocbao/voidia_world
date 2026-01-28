@@ -20,8 +20,18 @@ import {
   isWalkableTile,
   normalizeTileId,
   normalizeDecoId,
+  DEFAULT_GROUND_TILE_ID,
 } from "../game/tiles";
-import { User, Gift, Info, X, Copy, RefreshCw, Play, Skull } from "lucide-react";
+import {
+  User,
+  Gift,
+  Info,
+  X,
+  Copy,
+  RefreshCw,
+  Play,
+  Skull,
+} from "lucide-react";
 import { WalletHeader } from "../components";
 import { useRewardBalance } from "../hooks/useRewardBalance";
 import "./GamePage.css";
@@ -53,6 +63,8 @@ export default function GamePage() {
   const [isClaimBusy, setIsClaimBusy] = useState(false);
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [pendingMapData, setPendingMapData] = useState(null);
+  const [manualWorldId, setManualWorldId] = useState("");
+  const [mapStatus, setMapStatus] = useState("");
 
   // Pre-start modal (local/off-chain entry)
   const [showStartModal, setShowStartModal] = useState(false);
@@ -115,11 +127,11 @@ export default function GamePage() {
       // Notify user about restored session
       if (stored.playId === "pending") {
         setPlayNotice(
-          `ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒâ€šÃ‚Â³ Transaction pending, waiting for chain to index. Click "Retry Fetch" to recover Play ID.`
+          `ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒâ€šÃ‚Â³ Transaction pending, waiting for chain to index. Click "Retry Fetch" to recover Play ID.`,
         );
       } else {
         setPlayNotice(
-          `Restored pending session (Play ID: ${stored.playId}). Use the Seal policy ID to request approval.`
+          `Restored pending session (Play ID: ${stored.playId}). Use the Seal policy ID to request approval.`,
         );
       }
     }
@@ -145,9 +157,12 @@ export default function GamePage() {
     };
     window.addEventListener("game:key-found", handler);
     window.addEventListener("game:player-dead", deadHandler);
+    const readyHandler = () => setRespawnCountdown(null);
+    window.addEventListener("game:map-ready", readyHandler);
     return () => {
       window.removeEventListener("game:key-found", handler);
       window.removeEventListener("game:player-dead", deadHandler);
+      window.removeEventListener("game:map-ready", readyHandler);
     };
   }, []);
 
@@ -161,8 +176,10 @@ export default function GamePage() {
           effectiveDifficulty: info.effectiveDifficulty ?? 1,
           targetEnemyCount: info.targetEnemyCount ?? 0,
           currentEnemyCount: info.currentEnemyCount ?? 0,
-          networkStatus: info.networkStatus ?? "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Âª Unknown",
-          validatorStatus: info.validatorStatus ?? "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Âª Unknown",
+          networkStatus:
+            info.networkStatus ?? "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Âª Unknown",
+          validatorStatus:
+            info.validatorStatus ?? "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Âª Unknown",
         });
       }
     };
@@ -183,6 +200,10 @@ export default function GamePage() {
       await loadWorldListAndMap();
     })();
   }, [WORLD_REGISTRY_ID]);
+
+  useEffect(() => {
+    setManualWorldId(worldId || "");
+  }, [worldId]);
 
   useEffect(() => {
     void loadRewardBalance();
@@ -232,7 +253,8 @@ export default function GamePage() {
 
   const isWalletBusy = isPending || isPlayBusy || isClaimBusy;
   const currentPolicyHex =
-    policyIdHex || (playId && playId !== "pending" ? derivePolicyIdHex(playId) : "");
+    policyIdHex ||
+    (playId && playId !== "pending" ? derivePolicyIdHex(playId) : "");
   const restorePolicyPreview = restorePlayId
     ? derivePolicyIdHex(restorePlayId)
     : "";
@@ -257,15 +279,13 @@ export default function GamePage() {
       }
 
       const fields = normalizeMoveFields(content.fields);
-      const worldField =
-        fields.world_id ?? fields.worldId ?? fields.world ?? undefined;
-      if (!worldField) {
-        setWorldId("");
-        return "";
-      }
-
-      const optionFields = normalizeMoveFields(worldField);
-      const vec = optionFields.vec;
+      const vec = normalizeMoveVector(
+        fields.world_ids ??
+          fields.worldIds ??
+          fields.world_id ??
+          fields.worldId ??
+          fields.world,
+      );
       const id = Array.isArray(vec) && vec.length > 0 ? String(vec[0]) : "";
       setWorldId(id);
       return id;
@@ -329,13 +349,25 @@ export default function GamePage() {
         setIsMapLoading(false);
         await loadWorldMap(firstWorldId);
       } else {
-        setMapLoadError("No worlds found.");
         setIsMapLoading(false);
+        buildFallbackMap("No worlds found.");
       }
     } catch (error) {
-      setWorldListError(error instanceof Error ? error.message : String(error));
+      const msg = error instanceof Error ? error.message : String(error);
+      setWorldListError(msg);
+      buildFallbackMap(msg || "Failed to load world list.");
       setIsMapLoading(false);
     }
+  }
+
+  async function handleLoadManualWorld() {
+    setMapLoadError("");
+    if (!manualWorldId.trim()) {
+      setMapLoadError("Nhập World ID để tải map.");
+      return;
+    }
+    setWorldId(manualWorldId.trim());
+    await loadWorldMap(manualWorldId.trim());
   }
 
   async function loadRewardBalance() {
@@ -351,7 +383,7 @@ export default function GamePage() {
       });
       const total = coins.data.reduce(
         (sum, coin) => sum + BigInt(coin.balance),
-        0n
+        0n,
       );
       setRewardBalance(total.toString());
     } catch (error) {
@@ -429,7 +461,9 @@ export default function GamePage() {
       return;
     }
 
-    setPlayNotice("ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾ Retrying to fetch play ID from chain...");
+    setPlayNotice(
+      "ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾ Retrying to fetch play ID from chain...",
+    );
 
     try {
       const txBlock = await suiClient.getTransactionBlock({
@@ -457,15 +491,15 @@ export default function GamePage() {
         setPlayId(nextPlayId);
         setPolicyIdHex(policyHex);
         setPlayNotice(
-          `✅ Recovered Play ID: ${nextPlayId}. Policy ID ready for Seal.`
+          `✅ Recovered Play ID: ${nextPlayId}. Policy ID ready for Seal.`,
         );
-      } else {      } else {
+      } else {
         setPlayError("Still couldn't fetch play_id. Try again later.");
       }
     } catch (error) {
       setPlayError(
         "Failed to fetch: " +
-        (error instanceof Error ? error.message : String(error))
+          (error instanceof Error ? error.message : String(error)),
       );
     }
   }
@@ -544,16 +578,14 @@ export default function GamePage() {
       setUnclaimedPlays(unclaimed);
 
       if (unclaimed.length === 0) {
-        setPlayNotice("ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ KhÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â´ng cÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³ play nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â o chÃƒÆ’Ã¢â‚¬Â Ãƒâ€šÃ‚Â°a claim!");
+        setPlayNotice(" play a claim!");
       } else {
-        setPlayNotice(
-          `ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¹ TÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¬m thÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚ÂºÃƒâ€šÃ‚Â¥y ${unclaimed.length} play chÃƒÆ’Ã¢â‚¬Â Ãƒâ€šÃ‚Â°a claim. ChÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚Â»Ãƒâ€šÃ‚Ân ÃƒÆ’Ã¢â‚¬Å¾ÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“ÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚Â»Ãƒâ€ Ã¢â‚¬â„¢ restore.`
-        );
+        setPlayNotice(` ${unclaimed.length} play a claim. restore.`);
       }
     } catch (error) {
       setPlayError(
         "Failed to fetch: " +
-        (error instanceof Error ? error.message : String(error))
+          (error instanceof Error ? error.message : String(error)),
       );
     } finally {
       setIsFetchingUnclaimed(false);
@@ -603,20 +635,20 @@ export default function GamePage() {
     try {
       const fieldEntries = await fetchAllDynamicFields(targetWorldId);
       if (fieldEntries.length === 0) {
-        setMapLoadError("World has no PLOTs yet.");
-        setLoadedPLOTs(0);
+        buildFallbackMap("World has no PLOTs yet.");
         return;
       }
 
-      const PLOTEntries = await resolvePLOTEntries(
-        targetWorldId,
-        fieldEntries
-      );
+      const PLOTEntries = await resolvePLOTEntries(targetWorldId, fieldEntries);
       if (PLOTEntries.length === 0) {
-        setMapLoadError("No PLOT entries found.");
-        setLoadedPLOTs(0);
+        buildFallbackMap("No PLOT entries found.");
         return;
       }
+      console.info("[Voidia] PLOT entries", {
+        worldId: targetWorldId,
+        count: PLOTEntries.length,
+        sample: PLOTEntries.slice(0, 5),
+      });
 
       const PLOTIds = PLOTEntries.map((entry) => entry.PLOTId);
       const PLOTObjects = await suiClient.multiGetObjects({
@@ -647,11 +679,21 @@ export default function GamePage() {
         if (!content || content.dataType !== "moveObject") continue;
         const fields = normalizeMoveFields(content.fields);
         const tiles = normalizeMoveVector(fields.tiles).map((tile) =>
-          normalizeTileId(clampU8(parseU32Value(tile) ?? 0, 255))
+          normalizeTileId(clampU8(parseU32Value(tile) ?? 0, 255)),
         );
         const decorations = normalizeMoveVector(fields.decorations ?? []).map(
-          (deco) => normalizeDecoId(clampU8(parseU32Value(deco) ?? 0, 255))
+          (deco) => normalizeDecoId(clampU8(parseU32Value(deco) ?? 0, 255)),
         );
+
+        console.info("[Voidia] PLOT tiles", {
+          plotId: entry.PLOTId,
+          cx: entry.cx,
+          cy: entry.cy,
+          tilesLen: tiles.length,
+          decosLen: decorations.length,
+          tilesSample: tiles.slice(0, 10),
+          decosSample: decorations.slice(0, 10),
+        });
 
         for (let y = 0; y < PLOT_SIZE; y++) {
           for (let x = 0; x < PLOT_SIZE; x++) {
@@ -675,6 +717,15 @@ export default function GamePage() {
         difficulty: 1, // default, will fetch from WorldMap
         PLOTCount: PLOTEntries.length,
       };
+      setMapStatus(
+        `Loaded world ${targetWorldId.slice(0, 10)}… with ${PLOTEntries.length} PLOTs (${width}x${height} tiles)`,
+      );
+      console.info("[Voidia] map assembled", {
+        worldId: targetWorldId,
+        plots: PLOTEntries.length,
+        width,
+        height,
+      });
 
       // Fetch difficulty from WorldMap object
       try {
@@ -714,7 +765,9 @@ export default function GamePage() {
         startGame(mapData);
       }
     } catch (error) {
-      setMapLoadError(error instanceof Error ? error.message : String(error));
+      const reason = error instanceof Error ? error.message : String(error);
+      buildFallbackMap(reason || "Không tải được world từ chain.");
+      console.error("loadWorldMap failed:", error);
     } finally {
       setIsMapLoading(false);
     }
@@ -760,16 +813,25 @@ export default function GamePage() {
       }
       if (!floors.length) return [];
 
-      const chests = [{ x: keyTarget.x, y: keyTarget.y, hasKey: true, id: "chest_key" }];
+      const chests = [
+        { x: keyTarget.x, y: keyTarget.y, hasKey: true, id: "chest_key" },
+      ];
 
       // Pick 4 more unique locations
       let attempts = 0;
       while (chests.length < 5 && attempts < 100) {
         attempts++;
         const candidate = floors[Math.floor(Math.random() * floors.length)];
-        const exists = chests.some(c => c.x === candidate.x && c.y === candidate.y);
+        const exists = chests.some(
+          (c) => c.x === candidate.x && c.y === candidate.y,
+        );
         if (!exists) {
-          chests.push({ x: candidate.x, y: candidate.y, hasKey: false, id: `chest_${chests.length}` });
+          chests.push({
+            x: candidate.x,
+            y: candidate.y,
+            hasKey: false,
+            id: `chest_${chests.length}`,
+          });
         }
       }
       return chests;
@@ -811,7 +873,7 @@ export default function GamePage() {
     // Check play limits
     if (effectiveMode === "v1" && characterFreePlays >= 2) {
       setPlayError(
-        "Free play limit reached (2/day). Use Play V2 or wait for next epoch."
+        "Free play limit reached (2/day). Use Play V2 or wait for next epoch.",
       );
       return;
     }
@@ -862,11 +924,10 @@ export default function GamePage() {
       const result = await signAndExecute({ transaction: tx });
       console.log("result", result);
 
-      // Retry logic: Ãƒâ€žÃ¢â‚¬ËœÃƒÂ¡Ã‚Â»Ã‚Â£i transaction Ãƒâ€žÃ¢â‚¬ËœÃƒâ€ Ã‚Â°ÃƒÂ¡Ã‚Â»Ã‚Â£c index trÃƒÆ’Ã‚Âªn chain
       let txBlock = null;
       let retryCount = 0;
       const maxRetries = 5;
-      const retryDelay = 1500; // 1.5 giÃƒÆ’Ã‚Â¢y
+      const retryDelay = 1500;
 
       while (retryCount < maxRetries) {
         try {
@@ -881,7 +942,7 @@ export default function GamePage() {
         } catch (fetchError) {
           console.warn(
             `Retry ${retryCount + 1}/${maxRetries}: waiting for transaction...`,
-            fetchError
+            fetchError,
           );
         }
         retryCount++;
@@ -898,7 +959,7 @@ export default function GamePage() {
         });
         setPolicyIdHex("");
         setPlayError(
-          "Transaction submitted but couldn't fetch details. Please verify claim status later."
+          "Transaction submitted but couldn't fetch details. Please verify claim status later.",
         );
         return;
       }
@@ -906,7 +967,7 @@ export default function GamePage() {
       const eventType = `${PACKAGE_ID}::world::PlayCreatedEvent`;
       console.log("eventType", eventType);
       const playEvent = txBlock.events?.find(
-        (event) => event.type === eventType
+        (event) => event.type === eventType,
       );
       console.log("playEvent", playEvent);
       const parsed = playEvent?.parsedJson ?? {};
@@ -945,7 +1006,7 @@ export default function GamePage() {
       setPlayNotice(
         target
           ? `Seal policy ready. Policy ID (BCS play_id): ${policyHex}. Key hidden at tile (${target.x}, ${target.y}).`
-          : `Seal policy ready. Policy ID (BCS play_id): ${policyHex}. Load a map to hide the key.`
+          : `Seal policy ready. Policy ID (BCS play_id): ${policyHex}. Load a map to hide the key.`,
       );
       await loadRewardBalance();
     } catch (error) {
@@ -953,7 +1014,8 @@ export default function GamePage() {
     } finally {
       setIsPlayBusy(false);
     }
-  }async function handleStartModalAction() {
+  }
+  async function handleStartModalAction() {
     setStartModalError("");
 
     // Default to player mode - auto start off-chain
@@ -1031,7 +1093,12 @@ export default function GamePage() {
       setClaimError("Connect wallet first.");
       return;
     }
-    if (!PACKAGE_ID || !REWARD_VAULT_ID || !POWER_STONE_VAULT_ID || !RANDOM_OBJECT_ID) {
+    if (
+      !PACKAGE_ID ||
+      !REWARD_VAULT_ID ||
+      !POWER_STONE_VAULT_ID ||
+      !RANDOM_OBJECT_ID
+    ) {
       setClaimError("Missing chain config for claim.");
       return;
     }
@@ -1103,7 +1170,7 @@ export default function GamePage() {
           if (txBlock && txBlock.events) {
             const eventType = `${PACKAGE_ID}::world::RewardClaimedEvent`;
             const rewardEvent = txBlock.events?.find(
-              (event) => event.type === eventType
+              (event) => event.type === eventType,
             );
             const parsed = rewardEvent?.parsedJson ?? {};
             rewardValue =
@@ -1117,7 +1184,7 @@ export default function GamePage() {
         } catch (fetchError) {
           console.warn(
             `Retry ${retryCount + 1}/${maxRetries}: waiting for claim transaction...`,
-            fetchError
+            fetchError,
           );
         }
         retryCount++;
@@ -1125,16 +1192,19 @@ export default function GamePage() {
 
       // Reset play state regardless of whether we could fetch details
       resetPlayState(
-        rewardValue ?
+        rewardValue ? (
           <div className="flex items-center gap-2">
             Claimed
             <img
               alt="icon"
               className="w-4 h-4"
               src="https://ik.imagekit.io/huubao/chunk_coin.png?updatedAt=1768641987539"
-            /> {rewardValue} PLOT
+            />{" "}
+            {rewardValue} PLOT
           </div>
-          : "Claimed reward successfully!"
+        ) : (
+          "Claimed reward successfully!"
+        ),
       );
       await loadRewardBalance();
       // Delay to allow indexer to sync before refetching global balance
@@ -1147,8 +1217,6 @@ export default function GamePage() {
       setIsClaimBusy(false);
     }
   }
-
-
 
   async function handleCreateCharacter() {
     setCreateCharacterError("");
@@ -1197,7 +1265,7 @@ export default function GamePage() {
       setPlayNotice("Character created! You can now start playing.");
     } catch (error) {
       setCreateCharacterError(
-        error instanceof Error ? error.message : String(error)
+        error instanceof Error ? error.message : String(error),
       );
     } finally {
       setIsCreatingCharacter(false);
@@ -1208,6 +1276,42 @@ export default function GamePage() {
     !isMapLoading && Boolean(pendingMapData ?? getStoredMapData());
   const hasPendingPlay = Boolean(playId);
 
+  function buildFallbackMap(reason = "") {
+    // Simple 20x15 ground-only map so the game still renders when chain data is missing
+    const width = 20;
+    const height = 15;
+    const grid = Array(height)
+      .fill(0)
+      .map(() => Array(width).fill(DEFAULT_GROUND_TILE_ID));
+    const decoGrid = Array(height)
+      .fill(0)
+      .map(() => Array(width).fill(0));
+    const fallbackMap = {
+      tileSize: TILE_SIZE,
+      width,
+      height,
+      grid,
+      decoGrid,
+      worldId: "offline-fallback",
+      characterHealth: characterHealth || 100,
+      difficulty: 1,
+      PLOTCount: 0,
+    };
+    localStorage.setItem("CUSTOM_MAP", JSON.stringify(fallbackMap));
+    setWorldId("offline-fallback");
+    setMapStatus(
+      `Using offline map (20x15). Reason: ${reason || "chain data missing"}`,
+    );
+    console.warn("[Voidia] fallback map created:", fallbackMap);
+    setPendingMapData(fallbackMap);
+    setLoadedPLOTs(0);
+    setIsGameStarted(true);
+    startGame(fallbackMap);
+    if (reason) {
+      setMapLoadError(`${reason} (đang hiển thị map offline mẫu)`);
+    }
+  }
+
   return (
     <div className="game-page">
       <div className="game-bg">
@@ -1216,33 +1320,65 @@ export default function GamePage() {
         <span className="game-cloud game-cloud--c" />
         <span className="game-haze" />
       </div>
-
       {/* Floating Panel Buttons */}
       <div className="game-panel-buttons">
         <button
-          className={`game-panel-btn ${activePanel === 'character' ? 'active' : ''}`}
-          onClick={() => setActivePanel(activePanel === 'character' ? null : 'character')}
+          className={`game-panel-btn ${activePanel === "character" ? "active" : ""}`}
+          onClick={() =>
+            setActivePanel(activePanel === "character" ? null : "character")
+          }
           title="Character"
         >
           <User size={18} />
         </button>
         <button
-          className={`game-panel-btn ${activePanel === 'rewards' ? 'active' : ''} ${playId && isKeyFound ? 'notification' : ''}`}
-          onClick={() => setActivePanel(activePanel === 'rewards' ? null : 'rewards')}
+          className={`game-panel-btn ${activePanel === "rewards" ? "active" : ""} ${playId && isKeyFound ? "notification" : ""}`}
+          onClick={() =>
+            setActivePanel(activePanel === "rewards" ? null : "rewards")
+          }
           title="Rewards"
         >
           <Gift size={18} />
         </button>
         <button
-          className={`game-panel-btn ${activePanel === 'info' ? 'active' : ''}`}
-          onClick={() => setActivePanel(activePanel === 'info' ? null : 'info')}
+          className={`game-panel-btn ${activePanel === "info" ? "active" : ""}`}
+          onClick={() => setActivePanel(activePanel === "info" ? null : "info")}
           title="Info"
         >
           <Info size={18} />
         </button>
       </div>
-
       <div className="game-shell">
+        <div className="game-world-bar">
+          <div className="game-world-bar__row">
+            <span className="game-world-bar__label">World ID</span>
+            <code className="game-world-bar__value">
+              {worldId || "not loaded"}
+            </code>
+          </div>
+          {mapStatus && (
+            <div className="game-world-bar__status">{mapStatus}</div>
+          )}
+          <div className="game-world-bar__controls">
+            <input
+              className="game-world-bar__input"
+              placeholder="0x... world id"
+              value={manualWorldId}
+              onChange={(e) => setManualWorldId(e.target.value)}
+            />
+            <button className="game-btn game-btn--primary" onClick={handleLoadManualWorld}>
+              Load world
+            </button>
+            <button className="game-btn" onClick={loadWorldListAndMap} disabled={isMapLoading}>
+              Auto refresh
+            </button>
+          </div>
+          {(mapLoadError || worldListError) && (
+            <div className="game-world-bar__error">
+              {mapLoadError || worldListError}
+            </div>
+          )}
+        </div>
         {/* Minimal Header */}
         <header className="game-header">
           <nav className="game-nav">
@@ -1271,11 +1407,13 @@ export default function GamePage() {
           </div>
 
           {/* Character Panel */}
-          {activePanel === 'character' && (
+          {activePanel === "character" && (
             <aside className="game-panel">
               <div className="game-panel__header">
                 <span>Character</span>
-                <button onClick={() => setActivePanel(null)}><X size={16} /></button>
+                <button onClick={() => setActivePanel(null)}>
+                  <X size={16} />
+                </button>
               </div>
               <div className="game-panel__body">
                 {characterId ? (
@@ -1310,31 +1448,35 @@ export default function GamePage() {
                     No character found.
                     <button
                       className="game-btn game-btn--primary"
-                      style={{ marginTop: '8px', width: '100%' }}
+                      style={{ marginTop: "8px", width: "100%" }}
                       onClick={() => setShowCreateCharacterModal(true)}
                     >
                       Create Character
                     </button>
                   </div>
                 ) : (
-                  <div className="game-info__note">Connect wallet to see character.</div>
+                  <div className="game-info__note">
+                    Connect wallet to see character.
+                  </div>
                 )}
               </div>
             </aside>
           )}
 
           {/* Quest Board Panel */}
-          {activePanel === 'rewards' && (
+          {activePanel === "rewards" && (
             <aside className="game-panel">
               <div className="game-panel__header">
                 <span>Quest Board</span>
-                <button onClick={() => setActivePanel(null)}><X size={16} /></button>
+                <button onClick={() => setActivePanel(null)}>
+                  <X size={16} />
+                </button>
               </div>
               <div className="game-panel__body">
                 {/* Active Quest Status */}
                 {playId && !isKeyFound && (
                   <div className="quest-active">
-                                        <div className="quest-active__header">
+                    <div className="quest-active__header">
                       <span className="quest-active__badge">ACTIVE</span>
                       <span className="quest-active__id">Quest #{playId}</span>
                     </div>
@@ -1344,7 +1486,9 @@ export default function GamePage() {
                     <div className="quest-active__info">
                       <div className="quest-info-row">
                         <span>World:</span>
-                        <span>{loadPlayState()?.worldId?.slice(0, 10) || "-"}...</span>
+                        <span>
+                          {loadPlayState()?.worldId?.slice(0, 10) || "-"}...
+                        </span>
                       </div>
                       <div className="quest-info-row">
                         <span>Status:</span>
@@ -1352,7 +1496,9 @@ export default function GamePage() {
                       </div>
                     </div>
                     <div className="quest-backup-key">
-                      <div className="quest-backup-key__label">Seal Policy ID (BCS play_id):</div>
+                      <div className="quest-backup-key__label">
+                        Seal Policy ID (BCS play_id):
+                      </div>
                       <div className="quest-backup-key__value">
                         <code>{currentPolicyHex}</code>
                         <button
@@ -1370,9 +1516,11 @@ export default function GamePage() {
                         </button>
                       </div>
                       <div className="quest-backup-key__hint">
-                        Share this policy ID with Seal key server for seal_approve.
+                        Share this policy ID with Seal key server for
+                        seal_approve.
                       </div>
-                    </div><div className="quest-actions">
+                    </div>
+                    <div className="quest-actions">
                       {playId === "pending" && (
                         <button
                           className="game-btn game-btn--retry"
@@ -1385,7 +1533,9 @@ export default function GamePage() {
                       <button
                         className="game-btn game-btn--cancel"
                         onClick={() => {
-                          if (confirm("Abandon quest? You will lose progress.")) {
+                          if (
+                            confirm("Abandon quest? You will lose progress.")
+                          ) {
                             resetPlayState("Quest abandoned.");
                           }
                         }}
@@ -1410,7 +1560,9 @@ export default function GamePage() {
                       onClick={handleClaimOnChain}
                       disabled={isWalletBusy}
                     >
-                      {isClaimBusy ? "Claiming..." : "ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â½Ãƒâ€šÃ‚Â Claim Reward"}
+                      {isClaimBusy
+                        ? "Claiming..."
+                        : "ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â½Ãƒâ€šÃ‚Â Claim Reward"}
                     </button>
                   </div>
                 )}
@@ -1418,7 +1570,6 @@ export default function GamePage() {
                 {/* Available Quests */}
                 {!playId && (
                   <>
-
                     {/* Free Quest */}
                     <div className="quest-card quest-card--free">
                       <div className="quest-card__header">
@@ -1434,8 +1585,12 @@ export default function GamePage() {
                       </div>
                       <div className="quest-card__stats">
                         <div className="quest-stat">
-                          <span className="quest-stat__label">Plays Today:</span>
-                          <span className="quest-stat__value">{characterFreePlays}/2</span>
+                          <span className="quest-stat__label">
+                            Plays Today:
+                          </span>
+                          <span className="quest-stat__value">
+                            {characterFreePlays}/2
+                          </span>
                         </div>
                         <div className="quest-stat">
                           <span className="quest-stat__label">Reward:</span>
@@ -1452,7 +1607,11 @@ export default function GamePage() {
                       <button
                         className="game-btn game-btn--quest game-btn--quest-free"
                         onClick={() => handlePlayOnChain("v1")}
-                        disabled={isWalletBusy || !account?.address || characterFreePlays >= 2}
+                        disabled={
+                          isWalletBusy ||
+                          !account?.address ||
+                          characterFreePlays >= 2
+                        }
                       >
                         {isPlayBusy && playMode === "v1" ? (
                           "Starting..."
@@ -1482,12 +1641,17 @@ export default function GamePage() {
                         </div>
                       </div>
                       <div className="quest-card__description">
-                        Enhanced rewards for experienced adventurers. Higher stakes, bigger rewards!
+                        Enhanced rewards for experienced adventurers. Higher
+                        stakes, bigger rewards!
                       </div>
                       <div className="quest-card__stats">
                         <div className="quest-stat">
-                          <span className="quest-stat__label">Plays Today:</span>
-                          <span className="quest-stat__value">{characterDailyPlays}/3</span>
+                          <span className="quest-stat__label">
+                            Plays Today:
+                          </span>
+                          <span className="quest-stat__value">
+                            {characterDailyPlays}/3
+                          </span>
                         </div>
                         <div className="quest-stat">
                           <span className="quest-stat__label">Reward:</span>
@@ -1515,7 +1679,11 @@ export default function GamePage() {
                       <button
                         className="game-btn game-btn--quest game-btn--quest-premium text-nowrap flex flex-col"
                         onClick={() => handlePlayOnChain("v2")}
-                        disabled={isWalletBusy || !account?.address || characterDailyPlays >= 3}
+                        disabled={
+                          isWalletBusy ||
+                          !account?.address ||
+                          characterDailyPlays >= 3
+                        }
                       >
                         {isPlayBusy && playMode === "v2" ? (
                           "Starting..."
@@ -1523,15 +1691,20 @@ export default function GamePage() {
                           "Daily Limit Reached"
                         ) : (
                           <>
-                            <div className="flex items-center gap-1"><Play size={14} /> Premium Quest</div>
+                            <div className="flex items-center gap-1">
+                              <Play size={14} /> Premium Quest
+                            </div>
 
-                            <div className="flex items-center gap-1"> (
+                            <div className="flex items-center gap-1">
+                              {" "}
+                              (
                               <img
                                 alt="PLOT"
                                 className="w-3 h-3 inline-block"
                                 src="https://ik.imagekit.io/huubao/chunk_coin.png"
                               />
-                              5 PLOT)</div>
+                              5 PLOT)
+                            </div>
                           </>
                         )}
                       </button>
@@ -1555,19 +1728,27 @@ export default function GamePage() {
                 )}
 
                 {/* Messages */}
-                {playNotice && <div className="game-info__note">{playNotice}</div>}
-                {playError && <div className="game-info__error">{playError}</div>}
-                {claimError && <div className="game-info__error">{claimError}</div>}
+                {playNotice && (
+                  <div className="game-info__note">{playNotice}</div>
+                )}
+                {playError && (
+                  <div className="game-info__error">{playError}</div>
+                )}
+                {claimError && (
+                  <div className="game-info__error">{claimError}</div>
+                )}
               </div>
             </aside>
           )}
 
           {/* Info Panel */}
-          {activePanel === 'info' && (
+          {activePanel === "info" && (
             <aside className="game-panel">
               <div className="game-panel__header">
                 <span>Info</span>
-                <button onClick={() => setActivePanel(null)}><X size={16} /></button>
+                <button onClick={() => setActivePanel(null)}>
+                  <X size={16} />
+                </button>
               </div>
               <div className="game-panel__body">
                 {/* Map Status */}
@@ -1616,63 +1797,103 @@ export default function GamePage() {
           )}
         </div>
       </div>
-
-      {/* Death Screen Overlay - Pixel Art Style */
+      {
+        /* Death Screen Overlay - Pixel Art Style */
         respawnCountdown !== null && (
-          <div className="game-modal-overlay" style={{ zIndex: 9999, backgroundColor: 'rgba(20, 10, 10, 0.85)' }}>
-            <div className="game-modal" style={{
-              border: '4px solid #fff',
-              borderRadius: '0',
-              backgroundColor: '#000',
-              boxShadow: '8px 8px 0px rgba(0,0,0,0.5)',
-              imageRendering: 'pixelated',
-              fontFamily: '"Courier New", monospace',
-              textAlign: 'center',
-              padding: '2rem',
-              minWidth: '300px'
-            }}>
-              <div style={{ color: '#ff3333', marginBottom: '1rem' }}>
-                <Skull size={64} style={{ display: 'block', margin: '0 auto 1rem auto' }} strokeWidth={1.5} />
-                <h2 style={{ fontSize: '32px', textTransform: 'uppercase', letterSpacing: '2px', textShadow: '2px 2px 0px #550000' }}>YOU HAVE FALLEN</h2>
+          <div
+            className="game-modal-overlay"
+            style={{ zIndex: 9999, backgroundColor: "rgba(20, 10, 10, 0.85)" }}
+          >
+            <div
+              className="game-modal"
+              style={{
+                border: "4px solid #fff",
+                borderRadius: "0",
+                backgroundColor: "#000",
+                boxShadow: "8px 8px 0px rgba(0,0,0,0.5)",
+                imageRendering: "pixelated",
+                fontFamily: '"Courier New", monospace',
+                textAlign: "center",
+                padding: "2rem",
+                minWidth: "300px",
+              }}
+            >
+              <div style={{ color: "#ff3333", marginBottom: "1rem" }}>
+                <Skull
+                  size={64}
+                  style={{ display: "block", margin: "0 auto 1rem auto" }}
+                  strokeWidth={1.5}
+                />
+                <h2
+                  style={{
+                    fontSize: "32px",
+                    textTransform: "uppercase",
+                    letterSpacing: "2px",
+                    textShadow: "2px 2px 0px #550000",
+                  }}
+                >
+                  YOU HAVE FALLEN
+                </h2>
               </div>
-              <div style={{ fontSize: '20px', color: '#fff' }}>
-                RESPAWN IN <span style={{ color: '#ffff00', fontSize: '24px' }}>{respawnCountdown}</span>
+              <div style={{ fontSize: "20px", color: "#fff" }}>
+                RESPAWN IN{" "}
+                <span style={{ color: "#ffff00", fontSize: "24px" }}>
+                  {respawnCountdown}
+                </span>
               </div>
             </div>
           </div>
-        )}
-
+        )
+      }
       {/* Resume Task Modal */}
       {showResumeModal && (
         <div className="game-modal-overlay" style={{ zIndex: 9998 }}>
-          <div className="game-modal" style={{
-            border: '4px solid #59b7ff',
-            borderRadius: '12px',
-            backgroundColor: 'rgba(13, 33, 55, 0.98)',
-            maxWidth: '400px',
-            textAlign: 'center',
-            padding: '24px'
-          }}>
-            <div style={{ color: '#59b7ff', marginBottom: '16px' }}>
-              <RefreshCw size={48} style={{ display: 'block', margin: '0 auto 12px auto' }} />
-              <h2 style={{ fontSize: '20px', marginBottom: '8px' }}>Pending On-Chain Task</h2>
+          <div
+            className="game-modal"
+            style={{
+              border: "4px solid #59b7ff",
+              borderRadius: "12px",
+              backgroundColor: "rgba(13, 33, 55, 0.98)",
+              maxWidth: "400px",
+              textAlign: "center",
+              padding: "24px",
+            }}
+          >
+            <div style={{ color: "#59b7ff", marginBottom: "16px" }}>
+              <RefreshCw
+                size={48}
+                style={{ display: "block", margin: "0 auto 12px auto" }}
+              />
+              <h2 style={{ fontSize: "20px", marginBottom: "8px" }}>
+                Pending On-Chain Task
+              </h2>
             </div>
-            <div style={{ color: '#b8daff', fontSize: '14px', marginBottom: '24px', lineHeight: 1.5 }}>
-              You have an incomplete on-chain game session.<br />
+            <div
+              style={{
+                color: "#b8daff",
+                fontSize: "14px",
+                marginBottom: "24px",
+                lineHeight: 1.5,
+              }}
+            >
+              You have an incomplete on-chain game session.
+              <br />
               Would you like to continue or start fresh in offline mode?
             </div>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <div
+              style={{ display: "flex", gap: "12px", justifyContent: "center" }}
+            >
               <button
                 className="game-btn game-btn--primary"
                 onClick={handleResumeTask}
-                style={{ padding: '12px 24px' }}
+                style={{ padding: "12px 24px" }}
               >
                 Continue Task
               </button>
               <button
                 className="game-btn"
                 onClick={handleStartFresh}
-                style={{ padding: '12px 24px' }}
+                style={{ padding: "12px 24px" }}
               >
                 Start Fresh
               </button>
@@ -1680,7 +1901,6 @@ export default function GamePage() {
           </div>
         </div>
       )}
-
       {/* Create Character Modal */}
       {showCreateCharacterModal && (
         <div className="game-modal-overlay">
@@ -1730,14 +1950,15 @@ export default function GamePage() {
           </div>
         </div>
       )}
-
       {/* Restore Session Modal */}
       {showRestoreModal && (
         <div className="game-modal-overlay">
           <div className="game-modal">
             <div className="game-modal__header">
               <span>Restore Session</span>
-              <button onClick={() => setShowRestoreModal(false)}><X size={16} /></button>
+              <button onClick={() => setShowRestoreModal(false)}>
+                <X size={16} />
+              </button>
             </div>
             <div className="game-modal__body">
               {/* Fetch Unclaimed Plays */}
@@ -1793,8 +2014,13 @@ export default function GamePage() {
               </div>
               <div className="game-field">
                 <label>Policy ID (auto from Play ID)</label>
-                <div className="quest-backup-key__value" style={{ justifyContent: "space-between" }}>
-                  <code>{restorePolicyPreview || "Enter Play ID to compute"}</code>
+                <div
+                  className="quest-backup-key__value"
+                  style={{ justifyContent: "space-between" }}
+                >
+                  <code>
+                    {restorePolicyPreview || "Enter Play ID to compute"}
+                  </code>
                   <button
                     className="copy-btn"
                     onClick={() => {
@@ -1846,7 +2072,7 @@ export default function GamePage() {
                   setIsKeyFound(false);
                   setShowRestoreModal(false);
                   setPlayNotice(
-                    `Session restored! Play ID: ${restorePlayId}. Share policy with Seal key server.`
+                    `Session restored! Play ID: ${restorePlayId}. Share policy with Seal key server.`,
                   );
                 }}
                 disabled={!restorePlayId}
@@ -1856,7 +2082,8 @@ export default function GamePage() {
             </div>
           </div>
         </div>
-      )}      {/* Pre-start Modal */}
+      )}{" "}
+      {/* Pre-start Modal */}
       {showStartModal && (
         <div className="game-modal-overlay game-modal-overlay--start">
           <div className="game-modal">
@@ -1879,8 +2106,9 @@ export default function GamePage() {
               )}
               <div className="game-start-options">
                 <label
-                  className={`game-start-option ${startMode === "player" ? "active" : ""
-                    }`}
+                  className={`game-start-option ${
+                    startMode === "player" ? "active" : ""
+                  }`}
                 >
                   <input
                     type="radio"
@@ -1899,8 +2127,9 @@ export default function GamePage() {
                 </label>
                 {hasPendingPlay && (
                   <label
-                    className={`game-start-option ${startMode === "resume" ? "active" : ""
-                      }`}
+                    className={`game-start-option ${
+                      startMode === "resume" ? "active" : ""
+                    }`}
                   >
                     <input
                       type="radio"
@@ -1921,8 +2150,9 @@ export default function GamePage() {
                   </label>
                 )}
                 <label
-                  className={`game-start-option ${startMode === "chain" ? "active" : ""
-                    }`}
+                  className={`game-start-option ${
+                    startMode === "chain" ? "active" : ""
+                  }`}
                 >
                   <input
                     type="radio"
@@ -1942,8 +2172,9 @@ export default function GamePage() {
                 {startMode === "chain" && (
                   <div className="game-start-chain">
                     <label
-                      className={`game-start-option ${startChainMode === "v1" ? "active" : ""
-                        }`}
+                      className={`game-start-option ${
+                        startChainMode === "v1" ? "active" : ""
+                      }`}
                     >
                       <input
                         type="radio"
@@ -1961,8 +2192,9 @@ export default function GamePage() {
                       </div>
                     </label>
                     <label
-                      className={`game-start-option ${startChainMode === "v2" ? "active" : ""
-                        }`}
+                      className={`game-start-option ${
+                        startChainMode === "v2" ? "active" : ""
+                      }`}
                     >
                       <input
                         type="radio"
@@ -1996,9 +2228,7 @@ export default function GamePage() {
               <button
                 className="game-btn game-btn--primary"
                 onClick={handleStartModalAction}
-                disabled={
-                  !mapReady || (startMode === "chain" && isWalletBusy)
-                }
+                disabled={!mapReady || (startMode === "chain" && isWalletBusy)}
               >
                 {startMode === "player"
                   ? "Play"
@@ -2025,8 +2255,19 @@ function normalizeMoveFields(value) {
 
 function normalizeMoveVector(value) {
   if (Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    const hex = value.startsWith("0x") ? value.slice(2) : value;
+    const bytes = [];
+    for (let i = 0; i + 1 < hex.length; i += 2) {
+      const byte = Number.parseInt(hex.slice(i, i + 2), 16);
+      if (Number.isFinite(byte)) bytes.push(byte);
+    }
+    return bytes;
+  }
   const fields = normalizeMoveFields(value);
   if (Array.isArray(fields.vec)) return fields.vec;
+  if (typeof fields.bytes === "string") return normalizeMoveVector(fields.bytes);
+  if (Array.isArray(fields.value)) return fields.value;
   return [];
 }
 
@@ -2102,7 +2343,12 @@ async function fetchAllDynamicFields(parentId) {
 async function resolvePLOTEntries(worldId, fields) {
   const results = await Promise.allSettled(
     fields.map(async (field) => {
-      if (field.name?.type && !field.name.type.includes("PLOTKey")) {
+      const nameType = field.name?.type ?? "";
+      if (
+        nameType &&
+        !nameType.includes("PlotKey") &&
+        !nameType.includes("PLOTKey")
+      ) {
         return null;
       }
       const coords = extractPLOTCoords(field.name?.value);
@@ -2118,7 +2364,7 @@ async function resolvePLOTEntries(worldId, fields) {
       const PLOTId = extractObjectId(fieldFields.value);
       if (!PLOTId) return null;
       return { ...coords, PLOTId };
-    })
+    }),
   );
 
   return results
@@ -2127,38 +2373,36 @@ async function resolvePLOTEntries(worldId, fields) {
     .filter((entry) => Boolean(entry));
 }
 
-
-
 async function fetchListedPLOT(worldId, PLOTId) {
   if (!PACKAGE_ID || !worldId || !PLOTId) return null;
   const directName = {
     type: `${PACKAGE_ID}::world::ListingKey`,
-    value: { PLOT_id: PLOTId },
+    value: { plot_id: PLOTId },
   };
   const directContent = await loadListingContent(worldId, directName);
   if (directContent) return directContent;
 
   const wrappedName = {
     type: `${PACKAGE_ID}::world::ListingKey`,
-    value: { PLOT_id: { id: PLOTId } },
+    value: { plot_id: { id: PLOTId } },
   };
   const wrappedContent = await loadListingContent(worldId, wrappedName);
   if (wrappedContent) return wrappedContent;
 
   const bytesName = {
     type: `${PACKAGE_ID}::world::ListingKey`,
-    value: { PLOT_id: { bytes: PLOTId } },
+    value: { plot_id: { bytes: PLOTId } },
   };
   const bytesContent = await loadListingContent(worldId, bytesName);
   if (bytesContent) return bytesContent;
 
   const wrappedBytesName = {
     type: `${PACKAGE_ID}::world::ListingKey`,
-    value: { PLOT_id: { id: { bytes: PLOTId } } },
+    value: { plot_id: { id: { bytes: PLOTId } } },
   };
   const wrappedBytesContent = await loadListingContent(
     worldId,
-    wrappedBytesName
+    wrappedBytesName,
   );
   if (wrappedBytesContent) return wrappedBytesContent;
 
@@ -2197,20 +2441,25 @@ async function loadListingContent(worldId, fieldName) {
     const content = fieldObject.data?.content;
     if (!content || content.dataType !== "moveObject") return null;
     const listingFields = normalizeMoveFields(content.fields);
-    const PLOT = listingFields.PLOT;
+    const PLOT = listingFields.plot ?? listingFields.PLOT;
     if (!PLOT) return null;
     return {
       dataType: "moveObject",
       fields: normalizeMoveFields(PLOT),
     };
-  } catch (error) {
+  } catch (e) {
+    console.log(e);
     return null;
   }
 }
 
 function extractListingPLOTId(value) {
   const fields = normalizeMoveFields(value);
-  const raw = fields.PLOT_id ?? fields.PLOTId;
+  const raw =
+    fields.plot_id ??
+    fields.plotId ??
+    fields.PLOT_id ??
+    fields.PLOTId;
   const extracted = extractObjectId(raw);
   if (extracted) return extracted;
   if (typeof raw === "string") return raw;
@@ -2221,6 +2470,3 @@ function extractListingPLOTId(value) {
   const fallback = extractObjectId(fields);
   return fallback || "";
 }
-
-
-

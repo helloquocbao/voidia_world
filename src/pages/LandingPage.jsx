@@ -77,6 +77,8 @@ export default function LandingPage() {
           <nav className="landing__links">
             <Link to="/editor">Editor</Link>
             <Link to="/game">Play Now</Link>
+            <Link to="/upgrade">Upgrade</Link>
+            <Link to="/presale">Presale</Link>
             <Link to="/marketplace">Marketplace</Link>
           </nav>
 

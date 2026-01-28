@@ -171,6 +171,22 @@ export default function EditorGame() {
   const isAdmin = Boolean(
     walletAddress && adminCapOwner && walletAddress === adminCapOwner,
   );
+  const adminOwnerLabel = adminCapOwner
+    ? shortAddress(adminCapOwner)
+    : "unknown";
+  const walletLabel = walletAddress ? shortAddress(walletAddress) : "not connected";
+  const createWorldBlockReason = !WORLD_REGISTRY_ID || !ADMIN_CAP_ID
+    ? "Thiếu WORLD_REGISTRY_ID hoặc ADMIN_CAP_ID trong .env"
+    : !isConnected
+      ? "Kết nối ví admin để tạo world"
+      : !isAdmin
+        ? `Cần ví admin (${adminOwnerLabel})`
+        : !worldName.trim()
+          ? "Nhập tên world"
+          : worldName.trim().length > 64
+            ? "Tên world tối đa 64 ký tự"
+            : null;
+  const canCreateWorld = !createWorldBlockReason && !isBusy;
   const isOwnerMatch = (owner?: string) =>
     Boolean(
       owner && (owner === userId || (walletAddress && owner === walletAddress)),
@@ -556,15 +572,13 @@ export default function EditorGame() {
         setChainError(`WORLD_REGISTRY_ID is ${typeName}, not WorldRegistry.`);
       }
 
-      const worldField =
-        fields.world_id ?? fields.worldId ?? fields.world ?? undefined;
-      if (!worldField) {
-        setWorldId("");
-        return "";
-      }
-
-      const optionFields = normalizeMoveFields(worldField);
-      const vec = optionFields.vec;
+      const vec = normalizeMoveVector(
+        fields.world_ids ??
+          fields.worldIds ??
+          fields.world_id ??
+          fields.worldId ??
+          fields.world,
+      );
 
       const id = Array.isArray(vec) && vec.length > 0 ? String(vec[0]) : "";
       setWorldId(id);
@@ -894,7 +908,7 @@ export default function EditorGame() {
           ],
         });
       },
-      () => loadWorldId(),
+      () => loadWorldListAndMap(),
     );
   }
 
@@ -1639,60 +1653,101 @@ export default function EditorGame() {
               {txError && <div className="panel__error">{txError}</div>}
             </div>
 
-            {isAdmin && (
-              <div className="panel">
-                <div className="panel__title">World admin</div>
-                <p className="panel__desc">
-                  Create the shared world object using the admin cap.
-                </p>
-                <div className="panel__field">
-                  <label>World Name (1-64 chars)</label>
-                  <input
-                    className="input"
-                    type="text"
-                    maxLength={64}
-                    value={worldName}
-                    onChange={(e) => setWorldName(e.target.value)}
-                    placeholder="Enter world name..."
-                  />
+            <div className="panel">
+              <div className="panel__title">World setup</div>
+              <p className="panel__desc">
+                Tạo shared world object bằng AdminCap. Chỉ ví sở hữu AdminCap mới
+                thực thi được.
+              </p>
+              <div className="panel__rows">
+                <div>
+                  <span>AdminCap owner</span>
+                  <span className="panel__value--wrap">
+                    {adminCapOwner ? adminOwnerLabel : "không tìm thấy"}
+                  </span>
                 </div>
-                <div className="panel__field">
-                  <label>Difficulty (1-9)</label>
-                  <select
-                    className="input"
-                    value={worldDifficulty}
-                    onChange={(e) => setWorldDifficulty(Number(e.target.value))}
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
+                <div>
+                  <span>Ví kết nối</span>
+                  <span className="panel__value--wrap">{walletLabel}</span>
                 </div>
-                <div className="panel__field">
-                  <label>Required Power</label>
-                  <input
-                    className="input"
-                    type="number"
-                    min="0"
-                    value={worldRequiredPower}
-                    onChange={(e) =>
-                      setWorldRequiredPower(Number(e.target.value))
-                    }
-                  />
+                <div>
+                  <span>Registry ID</span>
+                  <span className="panel__value--wrap">
+                    {WORLD_REGISTRY_ID ?? "missing"}
+                  </span>
                 </div>
+                <div>
+                  <span>AdminCap ID</span>
+                  <span className="panel__value--wrap">
+                    {ADMIN_CAP_ID ?? "missing"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="panel__field">
+                <label>World Name (1-64 chars)</label>
+                <input
+                  className="input"
+                  type="text"
+                  maxLength={64}
+                  value={worldName}
+                  onChange={(e) => setWorldName(e.target.value)}
+                  placeholder="Enter world name..."
+                />
+              </div>
+              <div className="panel__field">
+                <label>Difficulty (1-9)</label>
+                <select
+                  className="input"
+                  value={worldDifficulty}
+                  onChange={(e) => setWorldDifficulty(Number(e.target.value))}
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="panel__field">
+                <label>Required Power</label>
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  value={worldRequiredPower}
+                  onChange={(e) =>
+                    setWorldRequiredPower(Number(e.target.value))
+                  }
+                />
+              </div>
+              <div className="panel__actions">
                 <button
                   className="btn btn--primary"
                   onClick={createWorldOnChain}
-                  disabled={isBusy || !isConnected}
+                  disabled={!canCreateWorld}
                 >
                   {busyAction === "Create world"
                     ? "Creating..."
                     : "Create world"}
                 </button>
+                <button
+                  className="btn btn--ghost"
+                  onClick={loadWorldListAndMap}
+                  disabled={isBusy}
+                >
+                  Refresh worlds
+                </button>
               </div>
-            )}
+              {createWorldBlockReason ? (
+                <div className="panel__error">{createWorldBlockReason}</div>
+              ) : (
+                <div className="panel__notice">
+                  Ví admin đã sẵn sàng. Nhấn “Create world” để khởi tạo world
+                  trên chain, sau đó danh sách sẽ tự tải lại.
+                </div>
+              )}
+            </div>
           </aside>
         </div>
 
@@ -2116,8 +2171,19 @@ function normalizeMoveFields(value: unknown): Record<string, unknown> {
 
 function normalizeMoveVector(value: unknown): unknown[] {
   if (Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    const hex = value.startsWith("0x") ? value.slice(2) : value;
+    const bytes: number[] = [];
+    for (let i = 0; i + 1 < hex.length; i += 2) {
+      const byte = Number.parseInt(hex.slice(i, i + 2), 16);
+      if (Number.isFinite(byte)) bytes.push(byte);
+    }
+    return bytes;
+  }
   const fields = normalizeMoveFields(value);
   if (Array.isArray(fields.vec)) return fields.vec;
+  if (typeof fields.bytes === "string") return normalizeMoveVector(fields.bytes);
+  if (Array.isArray(fields.value)) return fields.value;
   return [];
 }
 
