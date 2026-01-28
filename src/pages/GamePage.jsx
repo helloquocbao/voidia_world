@@ -52,6 +52,8 @@ export default function GamePage() {
   const [mapLoadError, setMapLoadError] = useState("");
   const [isMapLoading, setIsMapLoading] = useState(false);
   const [loadedPLOTs, setLoadedPLOTs] = useState(null);
+  const [worldOptions, setWorldOptions] = useState([]);
+  const [selectedWorldId, setSelectedWorldId] = useState("");
   const [rewardBalance, setRewardBalance] = useState("0");
   const [playId, setPlayId] = useState("");
   const [policyIdHex, setPolicyIdHex] = useState("");
@@ -63,7 +65,6 @@ export default function GamePage() {
   const [isClaimBusy, setIsClaimBusy] = useState(false);
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [pendingMapData, setPendingMapData] = useState(null);
-  const [manualWorldId, setManualWorldId] = useState("");
   const [mapStatus, setMapStatus] = useState("");
 
   // Pre-start modal (local/off-chain entry)
@@ -142,18 +143,11 @@ export default function GamePage() {
     const handler = () => setIsKeyFound(true);
     const deadHandler = () => {
       console.log("GamePage: Received game:player-dead event");
-      setRespawnCountdown(3);
-      const interval = setInterval(() => {
-        setRespawnCountdown((prev) => {
-          if (prev === null || prev <= 1) {
-            clearInterval(interval);
-            reloadGameFromStorage();
-            setPlayNotice(""); // Clear any notice
-            return null; // Close modal
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      resetGame();
+      setRespawnCountdown(null);
+      setIsGameStarted(false);
+      setShowStartModal(true);
+      setPlayNotice("Bạn đã chết, hãy chọn lại chế độ chơi.");
     };
     window.addEventListener("game:key-found", handler);
     window.addEventListener("game:player-dead", deadHandler);
@@ -164,6 +158,11 @@ export default function GamePage() {
       window.removeEventListener("game:player-dead", deadHandler);
       window.removeEventListener("game:map-ready", readyHandler);
     };
+  }, []);
+
+  // Show start modal when entering page
+  useEffect(() => {
+    setShowStartModal(true);
   }, []);
 
   // Listen for difficulty updates from game
@@ -200,10 +199,6 @@ export default function GamePage() {
       await loadWorldListAndMap();
     })();
   }, [WORLD_REGISTRY_ID]);
-
-  useEffect(() => {
-    setManualWorldId(worldId || "");
-  }, [worldId]);
 
   useEffect(() => {
     void loadRewardBalance();
@@ -342,14 +337,14 @@ export default function GamePage() {
         }
       }
 
-      // Auto-load the first world in the list
-      if (ids.length > 0) {
-        const firstWorldId = ids[0];
-        setWorldId(firstWorldId);
-        setIsMapLoading(false);
-        await loadWorldMap(firstWorldId);
-      } else {
-        setIsMapLoading(false);
+      // Save world list for modal selection
+      setWorldOptions(ids);
+      if (!selectedWorldId && ids.length > 0) {
+        setSelectedWorldId(ids[0]);
+        setWorldId(ids[0]);
+      }
+      setIsMapLoading(false);
+      if (ids.length === 0) {
         buildFallbackMap("No worlds found.");
       }
     } catch (error) {
@@ -358,16 +353,6 @@ export default function GamePage() {
       buildFallbackMap(msg || "Failed to load world list.");
       setIsMapLoading(false);
     }
-  }
-
-  async function handleLoadManualWorld() {
-    setMapLoadError("");
-    if (!manualWorldId.trim()) {
-      setMapLoadError("Nhập World ID để tải map.");
-      return;
-    }
-    setWorldId(manualWorldId.trim());
-    await loadWorldMap(manualWorldId.trim());
   }
 
   async function loadRewardBalance() {
@@ -745,25 +730,7 @@ export default function GamePage() {
       localStorage.setItem("CUSTOM_MAP", JSON.stringify(mapData));
       setPendingMapData(mapData);
       setLoadedPLOTs(PLOTEntries.length);
-
-      // Auto-start logic: check for pending on-chain task
-      if (!isGameStarted) {
-        const storedPlay = loadPlayState();
-        const storedTarget = loadPlayTarget();
-        const hasPendingTask = storedPlay?.playId && !storedTarget?.found;
-
-        if (hasPendingTask) {
-          // Show resume modal for pending task
-          setShowResumeModal(true);
-        } else {
-          // Auto-start in offchain mode
-          setIsGameStarted(true);
-          startGame(mapData);
-        }
-      } else {
-        // Game already started, just reload
-        startGame(mapData);
-      }
+      // Keep modal open; user will choose how to start.
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
       buildFallbackMap(reason || "Không tải được world từ chain.");
@@ -1305,8 +1272,8 @@ export default function GamePage() {
     console.warn("[Voidia] fallback map created:", fallbackMap);
     setPendingMapData(fallbackMap);
     setLoadedPLOTs(0);
-    setIsGameStarted(true);
-    startGame(fallbackMap);
+    setIsGameStarted(false);
+    setShowStartModal(true);
     if (reason) {
       setMapLoadError(`${reason} (đang hiển thị map offline mẫu)`);
     }
@@ -1349,36 +1316,6 @@ export default function GamePage() {
         </button>
       </div>
       <div className="game-shell">
-        <div className="game-world-bar">
-          <div className="game-world-bar__row">
-            <span className="game-world-bar__label">World ID</span>
-            <code className="game-world-bar__value">
-              {worldId || "not loaded"}
-            </code>
-          </div>
-          {mapStatus && (
-            <div className="game-world-bar__status">{mapStatus}</div>
-          )}
-          <div className="game-world-bar__controls">
-            <input
-              className="game-world-bar__input"
-              placeholder="0x... world id"
-              value={manualWorldId}
-              onChange={(e) => setManualWorldId(e.target.value)}
-            />
-            <button className="game-btn game-btn--primary" onClick={handleLoadManualWorld}>
-              Load world
-            </button>
-            <button className="game-btn" onClick={loadWorldListAndMap} disabled={isMapLoading}>
-              Auto refresh
-            </button>
-          </div>
-          {(mapLoadError || worldListError) && (
-            <div className="game-world-bar__error">
-              {mapLoadError || worldListError}
-            </div>
-          )}
-        </div>
         {/* Minimal Header */}
         <header className="game-header">
           <nav className="game-nav">
@@ -2097,11 +2034,48 @@ export default function GamePage() {
               </button>
             </div>
             <div className="game-modal__body">
-              <p>Choose your entry mode before the game begins.</p>
+              <p>Chọn world và chế độ chơi.</p>
+              <div className="game-field">
+                <label>World</label>
+                <select
+                  value={selectedWorldId}
+                  onChange={(e) => setSelectedWorldId(e.target.value)}
+                >
+                  {worldOptions.length === 0 && (
+                    <option value="">Không có world</option>
+                  )}
+                  {worldOptions.map((id) => (
+                    <option key={id} value={id}>
+                      {id}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  className="game-btn"
+                  style={{ marginTop: "8px" }}
+                  onClick={() => {
+                    if (!selectedWorldId) {
+                      setMapLoadError("Chưa chọn world.");
+                      return;
+                    }
+                    setWorldId(selectedWorldId);
+                    void loadWorldMap(selectedWorldId);
+                  }}
+                  disabled={isMapLoading || !selectedWorldId}
+                >
+                  {isMapLoading ? "Đang tải..." : "Tải world"}
+                </button>
+                {mapStatus && <div className="game-world-bar__status">{mapStatus}</div>}
+                {(mapLoadError || worldListError) && (
+                  <div className="game-world-bar__error">
+                    {mapLoadError || worldListError}
+                  </div>
+                )}
+              </div>
               {!mapReady && (
                 <div className="game-start-loading">
                   <div className="game-loading-spinner" />
-                  <div className="game-loading-text">Loading world...</div>
+                  <div className="game-loading-text">Map chưa sẵn sàng.</div>
                 </div>
               )}
               <div className="game-start-options">

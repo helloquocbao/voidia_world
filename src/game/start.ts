@@ -171,11 +171,21 @@ export function startGame(mapData?: GameMapData) {
 
   // Phaser >=3.87 requires explicit type when using a custom canvas/environment.
   // Use WEBGL (preferred) and let Phaser fall back to Canvas internally if unavailable.
+  const hostRect = canvas.parentElement?.getBoundingClientRect();
+  const viewWidth = Math.max(
+    320,
+    Math.floor(hostRect?.width ?? window.innerWidth),
+  );
+  const viewHeight = Math.max(
+    240,
+    Math.floor(hostRect?.height ?? window.innerHeight),
+  );
+
   try {
     game = new Phaser.Game({
       type: renderType,
-      width: window.innerWidth,
-      height: window.innerHeight,
+      width: viewWidth,
+      height: viewHeight,
       canvas,
       backgroundColor: "#1a2a3a",
       physics: {
@@ -193,8 +203,8 @@ export function startGame(mapData?: GameMapData) {
     // Fallback to Canvas explicitly
     game = new Phaser.Game({
       type: Phaser.CANVAS,
-      width: window.innerWidth,
-      height: window.innerHeight,
+      width: viewWidth,
+      height: viewHeight,
       canvas,
       backgroundColor: "#1a2a3a",
       physics: {
