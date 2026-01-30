@@ -5,7 +5,6 @@ import {
   useSignAndExecuteTransaction,
 } from "@mysten/dapp-kit";
 import { Transaction } from "@mysten/sui/transactions";
-import { bcs } from "@mysten/sui/bcs";
 import {
   PACKAGE_ID,
   RANDOM_OBJECT_ID,
@@ -387,8 +386,14 @@ export default function GamePage() {
   }
 
   function derivePolicyIdHex(nextPlayId) {
+    // BCS u64 is little-endian 8 bytes
     try {
-      const bytes = bcs.ser("u64", BigInt(nextPlayId)).toBytes();
+      const bytes = new Uint8Array(8);
+      let value = BigInt(nextPlayId);
+      for (let i = 0; i < 8; i++) {
+        bytes[i] = Number(value & 0xffn);
+        value >>= 8n;
+      }
       return Array.from(bytes)
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");

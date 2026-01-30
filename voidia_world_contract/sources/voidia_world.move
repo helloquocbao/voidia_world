@@ -63,6 +63,9 @@ module voidia_world::world {
     const E_NO_PROCEEDS: u64 = 26;
     const E_INVALID_WITHDRAW_AMOUNT: u64 = 27;
     const E_INSUFFICIENT_PAYMENT: u64 = 29;
+    const E_INVALID_UPGRADE_PATH: u64 = 30;
+    const E_INSUFFICIENT_STONES: u64 = 31;
+    const E_INVALID_STONE_AMOUNT: u64 = 32;
 
     /* ================= ADMIN / REGISTRY ================= */
 
@@ -246,6 +249,17 @@ module voidia_world::world {
         character_id: ID,
         power: u64,
         potential: u64,
+    }
+
+    public struct CharacterUpgradedEvent has copy, drop {
+        character_id: ID,
+        sender: address,
+        path: u8,
+        stones: u64,
+        power: u64,
+        health: u64,
+        potential: u64,
+        power_tier: u8,
     }
 
     /* ================= DISPLAY INIT ================= */
@@ -768,6 +782,63 @@ module voidia_world::world {
         let sender = tx_context::sender(ctx);
         assert!(ticket.player == sender, E_INVALID_SEAL);
         ticket.approved = true;
+    }
+
+    /* ================= UPGRADE FLOW ================= */
+
+    /// Spend Power Stones to upgrade a character.
+    /// path: 0 = power, 1 = health, 2 = potential.
+    entry fun upgrade_character(
+        stones_vault: &mut StoneVault,
+        character: &mut CharacterNFT,
+        mut stones_coin: Coin<power_stone::POWER_STONE>,
+        path: u8,
+        stones: u64,
+        ctx: &mut tx_context::TxContext
+    ) {
+        let sender = tx_context::sender(ctx);
+        assert!(sender == character.owner, E_NOT_CHARACTER_OWNER);
+        assert!(stones > 0, E_INVALID_STONE_AMOUNT);
+        assert!(path <= 2, E_INVALID_UPGRADE_PATH);
+
+        let available = coin::value(&stones_coin);
+        assert!(available >= stones, E_INSUFFICIENT_STONES);
+
+        let pay_coin = if (available > stones) {
+            coin::split(&mut stones_coin, stones, ctx)
+        } else {
+            stones_coin
+        };
+
+        if (available > stones) {
+            transfer::public_transfer(stones_coin, sender);
+        };
+
+        power_stone::deposit(stones_vault, pay_coin);
+
+        if (path == 0) {
+            let gain = stones * 12;
+            character.power = character.power + gain;
+            let tier = character.power / 10_000;
+            character.power_tier = if (tier >= 5) { 5 } else { tier as u8 };
+        } else if (path == 1) {
+            let gain = stones * 3;
+            character.health = character.health + gain;
+        } else {
+            let gain = stones * 7;
+            character.potential = character.potential + gain;
+        };
+
+        event::emit(CharacterUpgradedEvent {
+            character_id: object::uid_to_inner(&character.id),
+            sender,
+            path,
+            stones,
+            power: character.power,
+            health: character.health,
+            potential: character.potential,
+            power_tier: character.power_tier,
+        });
     }
 
     /* ================= READ HELPERS ================= */

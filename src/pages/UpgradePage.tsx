@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useCurrentAccount } from "@mysten/dapp-kit";
+import {
+  useCurrentAccount,
+  useSignAndExecuteTransaction,
+} from "@mysten/dapp-kit";
+import { Transaction } from "@mysten/sui/transactions";
 import { WalletHeader } from "../components";
-import { PACKAGE_ID } from "../chain/config";
+import { PACKAGE_ID, POWER_STONE_VAULT_ID } from "../chain/config";
 import { suiClient } from "../chain/suiClient";
 import "./UpgradePage.css";
 
@@ -67,6 +71,10 @@ const UPGRADE_PATHS: UpgradePath[] = [
   },
 ];
 
+const POWER_STONE_TYPE = PACKAGE_ID
+  ? `${PACKAGE_ID}::power_stone::POWER_STONE`
+  : "";
+
 function normalizeMoveFields(value: unknown) {
   if (!value || typeof value !== "object") return {};
   const record = value as Record<string, unknown>;
@@ -89,17 +97,37 @@ function parseU64(value: unknown, fallback = 0) {
 
 export default function UpgradePage() {
   const account = useCurrentAccount();
+  const { mutateAsync: signAndExecute, isPending: isSigning } =
+    useSignAndExecuteTransaction();
   const [character, setCharacter] =
     useState<CharacterSnapshot>(DEFAULT_CHARACTER);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [txError, setTxError] = useState("");
+  const [isUpgrading, setIsUpgrading] = useState(false);
   const [selectedPath, setSelectedPath] = useState<UpgradePath>(UPGRADE_PATHS[0]);
   const [stones, setStones] = useState(12);
+  const [stoneBalance, setStoneBalance] = useState(0);
+  const [stoneCoins, setStoneCoins] = useState<string[]>([]);
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     void loadCharacter();
+    void loadPowerStones();
   }, [account?.address]);
+
+  useEffect(() => {
+    const max = stoneBalance > 0 ? Math.min(80, stoneBalance) : 0;
+    if (max === 0) {
+      setStones(0);
+      return;
+    }
+    if (stones === 0) {
+      setStones(Math.min(12, max));
+    } else if (stones > max) {
+      setStones(max);
+    }
+  }, [stoneBalance, stones]);
 
   async function loadCharacter() {
     if (!account?.address || !PACKAGE_ID) {
@@ -156,6 +184,30 @@ export default function UpgradePage() {
     }
   }
 
+  async function loadPowerStones() {
+    if (!account?.address || !POWER_STONE_TYPE) {
+      setStoneBalance(0);
+      setStoneCoins([]);
+      return;
+    }
+    try {
+      const coins = await suiClient.getCoins({
+        owner: account.address,
+        coinType: POWER_STONE_TYPE,
+      });
+      const total = coins.data.reduce(
+        (sum, coin) => sum + Number(coin.balance ?? 0),
+        0,
+      );
+      setStoneBalance(total);
+      setStoneCoins(coins.data.map((c) => c.coinObjectId));
+    } catch (err) {
+      console.error("UpgradePage: failed to load Power Stones", err);
+      setStoneBalance(0);
+      setStoneCoins([]);
+    }
+  }
+
   const preview = useMemo(() => {
     const bonus = stones * selectedPath.ratio;
     const next: CharacterSnapshot = { ...character };
@@ -174,16 +226,87 @@ export default function UpgradePage() {
     return value.toLocaleString();
   }
 
-  function handleSimulateUpgrade() {
-    setToast(
-      "Đây là bản mô phỏng. Kết nối hàm Move nâng cấp sẽ được thêm sau khi contract sẵn sàng.",
-    );
-    setTimeout(() => setToast(null), 4200);
+  async function handleUpgradeOnChain() {
+    setTxError("");
+    setToast(null);
+
+    if (!account?.address) {
+      setTxError("Hãy kết nối ví để nâng cấp.");
+      return;
+    }
+    if (!character.id) {
+      setTxError("Không tìm thấy nhân vật. Tạo trong trang Game trước.");
+      return;
+    }
+    if (!POWER_STONE_VAULT_ID || !PACKAGE_ID) {
+      setTxError("Thiếu cấu hình contract. Bổ sung PACKAGE_ID / POWER_STONE_VAULT.");
+      return;
+    }
+    if (stones <= 0) {
+      setTxError("Chọn số lượng Power Stone > 0.");
+      return;
+    }
+    if (stoneBalance < stones) {
+      setTxError("Không đủ Power Stone để nâng cấp.");
+      return;
+    }
+    if (stoneCoins.length === 0) {
+      setTxError("Không tìm thấy coin Power Stone trong ví.");
+      return;
+    }
+
+    setIsUpgrading(true);
+    try {
+      const tx = new Transaction();
+      let payment;
+      if (stoneCoins.length > 1) {
+        const [first, ...rest] = stoneCoins;
+        tx.mergeCoins(
+          tx.object(first),
+          rest.map((id) => tx.object(id)),
+        );
+        payment = tx.object(first);
+      } else {
+        payment = tx.object(stoneCoins[0]);
+      }
+
+      const pathCode =
+        selectedPath.id === "power" ? 0 : selectedPath.id === "health" ? 1 : 2;
+
+      tx.moveCall({
+        target: `${PACKAGE_ID}::world::upgrade_character`,
+        arguments: [
+          tx.object(POWER_STONE_VAULT_ID),
+          tx.object(character.id),
+          payment,
+          tx.pure.u8(pathCode),
+          tx.pure.u64(stones),
+        ],
+      });
+
+      const result = await signAndExecute({ transaction: tx });
+
+      setToast(`Nâng cấp thành công! Digest ${result.digest}`);
+      await loadCharacter();
+      await loadPowerStones();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error("UpgradePage: upgrade failed", err);
+      setTxError(message);
+    } finally {
+      setIsUpgrading(false);
+    }
   }
 
   const progressPower = Math.min(100, (preview.power / 15000) * 100);
   const progressHealth = Math.min(100, (preview.health / 500) * 100);
   const progressPotential = Math.min(100, (preview.potential / 8000) * 100);
+  const sliderMax = stoneBalance > 0 ? Math.min(80, stoneBalance) : 0;
+  const canUpgrade =
+    Boolean(account?.address) &&
+    stones > 0 &&
+    stoneBalance >= stones &&
+    Boolean(character.id);
 
   return (
     <div className="upgrade-page">
@@ -322,19 +445,26 @@ export default function UpgradePage() {
           <div className="upgrade-slider">
             <div className="upgrade-slider__row">
               <span>Power Stones</span>
-              <span className="upgrade-slider__value">{stones}</span>
+              <span className="upgrade-slider__value">
+                {stones} / {stoneBalance.toLocaleString()}
+              </span>
             </div>
             <input
               type="range"
-              min={4}
-              max={80}
+              min={0}
+              max={sliderMax}
               step={1}
               value={stones}
+              disabled={sliderMax === 0 || isUpgrading}
               onChange={(e) => setStones(Number(e.target.value))}
             />
             <p className="upgrade-slider__hint">
-              Kéo thanh để xem trước chỉ số sau khi tiêu hao Power Stones.
+              Kéo thanh để xem trước chỉ số sau khi tiêu hao Power Stones. Bạn có{" "}
+              {stoneBalance.toLocaleString()} stones.
             </p>
+            {sliderMax === 0 && (
+              <p className="panel__error">Chưa có Power Stone trong ví.</p>
+            )}
           </div>
 
           <div className="upgrade-summary">
@@ -345,10 +475,15 @@ export default function UpgradePage() {
                 Potential {formatNumber(preview.potential)}
               </p>
             </div>
-            <button className="upgrade-cta" onClick={handleSimulateUpgrade}>
-              Nâng cấp (mô phỏng)
+            <button
+              className="upgrade-cta"
+              onClick={handleUpgradeOnChain}
+              disabled={!canUpgrade || isUpgrading || isSigning}
+            >
+              {isUpgrading || isSigning ? "Đang gửi giao dịch..." : "Nâng cấp on-chain"}
             </button>
           </div>
+          {txError && <div className="panel__error">{txError}</div>}
           {toast && <div className="upgrade-toast">{toast}</div>}
         </section>
       </main>

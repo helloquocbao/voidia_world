@@ -307,6 +307,7 @@ class WorldScene extends Phaser.Scene {
   private attacks!: Phaser.Physics.Arcade.Group;
   private enemies!: Phaser.Physics.Arcade.Group;
   private chests!: Phaser.Physics.Arcade.StaticGroup;
+  private attackHitSeq = 0;
   private keyObj?: Phaser.GameObjects.Sprite;
   private maintainer?: ReturnType<typeof initEnemyMaintainer>;
   private playerMaxHp = 100;
@@ -387,6 +388,29 @@ class WorldScene extends Phaser.Scene {
     this.attacks = this.physics.add.group();
     this.enemies = this.physics.add.group();
     this.hazards.clear();
+    // Persistent overlap handlers (avoid per-attack collider churn)
+    this.physics.add.overlap(
+      this.attacks,
+      this.enemies,
+      (hb, enemyObj) =>
+        this.handleAttackEnemy(
+          hb as Phaser.GameObjects.Rectangle,
+          enemyObj as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody,
+        ),
+      undefined,
+      this,
+    );
+    this.physics.add.overlap(
+      this.attacks,
+      this.chests,
+      (hb, chestObj) =>
+        this.handleAttackChest(
+          hb as Phaser.GameObjects.Rectangle,
+          chestObj as Phaser.Types.Physics.Arcade.SpriteWithStaticBody,
+        ),
+      undefined,
+      this,
+    );
 
     // Solid background so player always sees something even if textures fail
     this.add
@@ -424,10 +448,14 @@ class WorldScene extends Phaser.Scene {
 
     // Player sprite scale (~40-45px tall)
     this.player.setScale(0.3);
-    // Player hitbox size (width x height)
-    this.player.setSize(this.tileSize * 2, this.tileSize * 2);
-    // Offset hitbox down to cover torso/feet
-    this.player.setOffset(this.tileSize * 2, this.tileSize * 2);
+    // Tighten hitbox to reduce wall clipping and center on the feet
+    const bodyW = this.tileSize * 0.7;
+    const bodyH = this.tileSize * 0.9;
+    this.player.setSize(bodyW, bodyH);
+    this.player.setOffset(
+      (this.player.displayWidth - bodyW) / 2,
+      this.player.displayHeight - bodyH - this.tileSize * 0.1,
+    );
     this.player.play("player-idle");
     this.player.setData("facing", 1);
 
@@ -794,45 +822,85 @@ class WorldScene extends Phaser.Scene {
     body.setSize(size, this.tileSize * 0.4); // Match physics body to visual hitbox
     body.enable = true;
 
+    const attackId = ++this.attackHitSeq;
+    hitbox.setDataEnabled();
+    hitbox.setData("attackId", attackId);
     this.attacks.add(hitbox);
 
-    this.physics.add.overlap(hitbox, this.enemies, (hb, enemyObj) => {
-      const enemy =
-        enemyObj as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
-      if (!enemy.active) return;
-      soundManager.play("hit-enemy");
-      const hp = (enemy.getData("hp") as number) ?? 1;
-      const next = hp - 1;
-      enemy.setData("hp", next);
-      if (next <= 0) {
-        enemy.destroy();
-      } else {
-        const knock = facing >= 0 ? 1 : -1;
-        enemy.body.velocity.x += 80 * knock;
-      }
-    });
-
-    this.physics.add.overlap(hitbox, this.chests, (hb, chestObj) => {
-      const chest =
-        chestObj as Phaser.Types.Physics.Arcade.SpriteWithStaticBody;
-      const hp = (chest.getData("hp") as number) ?? 2;
-      const next = hp - 1;
-      soundManager.play("hit-chest");
-      chest.setData("hp", next);
-      if (next <= 0) {
-        const target = loadPlayTarget();
-        const playState = loadPlayState();
-        const hasKey = chest.getData("hasKey");
-        chest.destroy();
-        if (hasKey && target) {
-          this.spawnKey(target, playState?.playId);
-        }
+    // Fallback: in some builds Arcade overlap misses static bodies.
+    // Also run a one-shot bounds check so chests always take damage in Play V1/V2.
+    const hitBounds = hitbox.getBounds();
+    this.chests.children.iterate((child) => {
+      const chest = child as Phaser.Types.Physics.Arcade.SpriteWithStaticBody;
+      if (!chest?.active) return;
+      if (
+        Phaser.Geom.Intersects.RectangleToRectangle(
+          hitBounds,
+          chest.getBounds(),
+        )
+      ) {
+        this.handleAttackChest(hitbox, chest);
       }
     });
 
     this.time.delayedCall(160, () => hitbox.destroy());
   }
 
+  private handleAttackEnemy(
+    hitbox: Phaser.GameObjects.Rectangle,
+    enemy: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody,
+  ) {
+    if (!enemy.active) return;
+    const attackId = (hitbox.getData("attackId") as number) ?? 0;
+    const lastHit = enemy.getData("lastHit");
+    if (lastHit === attackId) return;
+    enemy.setData("lastHit", attackId);
+
+    soundManager.play("hit-enemy");
+    const hp = (enemy.getData("hp") as number) ?? 1;
+    const next = hp - 1;
+    enemy.setData("hp", next);
+    if (next <= 0) {
+      enemy.destroy();
+    } else {
+      const facing = (this.player?.getData("facing") as number) ?? 1;
+      const knock = facing >= 0 ? 1 : -1;
+      enemy.body.velocity.x += 80 * knock;
+    }
+  }
+
+  private handleAttackChest(
+    hitbox: Phaser.GameObjects.Rectangle,
+    chest: Phaser.Types.Physics.Arcade.SpriteWithStaticBody,
+  ) {
+    const attackId = (hitbox.getData("attackId") as number) ?? 0;
+    this.damageChest(chest, attackId);
+  }
+
+  private damageChest(
+    chest: Phaser.Types.Physics.Arcade.SpriteWithStaticBody,
+    attackId: number,
+  ) {
+    if (!chest.active) return;
+    const lastHit = chest.getData("lastHit");
+    if (lastHit === attackId) return;
+    chest.setData("lastHit", attackId);
+
+    const hp = (chest.getData("hp") as number) ?? 2;
+    const next = hp - 1;
+    soundManager.play("hit-chest");
+    chest.setData("hp", next);
+    if (next <= 0) {
+      const target = loadPlayTarget();
+      const playState = loadPlayState();
+      const hasKey = chest.getData("hasKey");
+      // Remove from physics tree before destroying to avoid lingering static bodies
+      this.chests.remove(chest, true, true);
+      if (hasKey && target) {
+        this.spawnKey(target, playState?.playId);
+      }
+    }
+  }
   private spawnInitialEnemies() {
     if (!this.mapData?.grid) return;
     const baseDifficulty = this.mapData.difficulty ?? 1;
@@ -1003,7 +1071,13 @@ class WorldScene extends Phaser.Scene {
         "key",
       )
       .setDepth(4);
-    this.keyObj.play("key-spin");
+    const keyAnim = this.anims.get("key-spin");
+    if (keyAnim?.frames?.length) {
+      this.keyObj.play("key-spin");
+    } else {
+      // Fallback when spritesheet or animation is missing
+      this.keyObj.setFrame(0);
+    }
     this.keyObj.body?.setSize(this.tileSize * 0.6, this.tileSize * 0.6);
     this.physics.add.overlap(this.player!, this.keyObj, () => {
       markKeyFound(target, playId);
