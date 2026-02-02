@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   useCurrentAccount,
@@ -108,8 +108,8 @@ export default function GamePage() {
     effectiveDifficulty: 1,
     targetEnemyCount: 0,
     currentEnemyCount: 0,
-    networkStatus: "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Âª Loading...",
-    validatorStatus: "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Âª Loading...",
+    networkStatus: "Loading...",
+    validatorStatus: "Loading...",
   });
   const [respawnCountdown, setRespawnCountdown] = useState(null);
 
@@ -127,7 +127,7 @@ export default function GamePage() {
       // Notify user about restored session
       if (stored.playId === "pending") {
         setPlayNotice(
-          `ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒâ€šÃ‚Â³ Transaction pending, waiting for chain to index. Click "Retry Fetch" to recover Play ID.`,
+          `Transaction pending, waiting for chain to index. Click "Retry Fetch" to recover Play ID.`,
         );
       } else {
         setPlayNotice(
@@ -146,7 +146,7 @@ export default function GamePage() {
       setRespawnCountdown(null);
       setIsGameStarted(false);
       setShowStartModal(true);
-      setPlayNotice("Bạn đã chết, hãy chọn lại chế độ chơi.");
+      setPlayNotice("You died. Please select a game mode to continue.");
     };
     window.addEventListener("game:key-found", handler);
     window.addEventListener("game:player-dead", deadHandler);
@@ -174,10 +174,8 @@ export default function GamePage() {
           effectiveDifficulty: info.effectiveDifficulty ?? 1,
           targetEnemyCount: info.targetEnemyCount ?? 0,
           currentEnemyCount: info.currentEnemyCount ?? 0,
-          networkStatus:
-            info.networkStatus ?? "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Âª Unknown",
-          validatorStatus:
-            info.validatorStatus ?? "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Âª Unknown",
+          networkStatus: info.networkStatus ?? "Unknown",
+          validatorStatus: info.validatorStatus ?? "Unknown",
         });
       }
     };
@@ -296,11 +294,21 @@ export default function GamePage() {
     setIsMapLoading(true);
 
     try {
-      const ids = [];
+      const worlds = [];
+      const addWorld = (id, name) => {
+        if (!id) return;
+        if (worlds.some((w) => w.id === id)) return;
+        const shortId = id.length > 10 ? `${id.slice(0, 6)}…` : id;
+        const displayName =
+          name && String(name).trim()
+            ? String(name).trim()
+            : `World ${shortId}`;
+        worlds.push({ id, name: displayName });
+      };
 
       // First try to get from registry
       const registryId = await loadWorldId();
-      if (registryId) ids.push(registryId);
+      if (registryId) addWorld(registryId, "");
 
       // Then query WorldCreatedEvent for more worlds
       if (PACKAGE_ID) {
@@ -327,7 +335,13 @@ export default function GamePage() {
                 : typeof record.worldId === "string"
                   ? record.worldId
                   : "";
-            if (id && !ids.includes(id)) ids.push(id);
+            const name =
+              typeof record.name === "string"
+                ? record.name
+                : typeof record.world_name === "string"
+                  ? record.world_name
+                  : "";
+            if (id) addWorld(id, name);
           }
 
           cursor = page.nextCursor ?? null;
@@ -336,14 +350,39 @@ export default function GamePage() {
         }
       }
 
+      // Enrich names from WorldMap objects (in case events are missing)
+      try {
+        if (worlds.length > 0) {
+          const objects = await suiClient.multiGetObjects({
+            ids: worlds.map((w) => w.id),
+            options: { showContent: true },
+          });
+          objects.forEach((obj, index) => {
+            const data = obj?.data;
+            const content = data?.content;
+            const fields =
+              content && "fields" in content ? content.fields : null;
+            const name =
+              fields && typeof fields.name === "string" ? fields.name : "";
+            const current = worlds[index];
+            if (current && name && current.name.startsWith("World ")) {
+              current.name = name;
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("[Voidia] failed to enrich world names", e);
+      }
+
       // Save world list for modal selection
-      setWorldOptions(ids);
-      if (!selectedWorldId && ids.length > 0) {
-        setSelectedWorldId(ids[0]);
-        setWorldId(ids[0]);
+      console.log("[Voidia] world list", worlds);
+      setWorldOptions(worlds);
+      if (!selectedWorldId && worlds.length > 0) {
+        setSelectedWorldId(worlds[0].id);
+        setWorldId(worlds[0].id);
       }
       setIsMapLoading(false);
-      if (ids.length === 0) {
+      if (worlds.length === 0) {
         buildFallbackMap("No worlds found.");
       }
     } catch (error) {
@@ -451,9 +490,7 @@ export default function GamePage() {
       return;
     }
 
-    setPlayNotice(
-      "ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾ Retrying to fetch play ID from chain...",
-    );
+    setPlayNotice("Retrying to fetch play ID from chain...");
 
     try {
       const txBlock = await suiClient.getTransactionBlock({
@@ -494,13 +531,13 @@ export default function GamePage() {
     }
   }
 
-  // Fetch unclaimed plays cÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚Â»Ãƒâ€šÃ‚Â§a user tÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚Â»Ãƒâ€šÃ‚Â« on-chain events
+  // Fetch unclaimed plays for the user from on-chain events
   async function fetchUnclaimedPlays() {
     if (!account?.address || !PACKAGE_ID) return;
 
     setIsFetchingUnclaimed(true);
     try {
-      // 1. Fetch tÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚ÂºÃƒâ€šÃ‚Â¥t cÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚ÂºÃƒâ€šÃ‚Â£ PlayCreatedEvent cÃƒÆ’Ã‚Â¡Ãƒâ€šÃ‚Â»Ãƒâ€šÃ‚Â§a user
+      // 1. Fetch all PlayCreatedEvent for the user
       const playEventType = `${PACKAGE_ID}::world::PlayCreatedEvent`;
       const claimEventType = `${PACKAGE_ID}::world::RewardClaimedEvent`;
 
@@ -738,7 +775,7 @@ export default function GamePage() {
       // Keep modal open; user will choose how to start.
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
-      buildFallbackMap(reason || "Không tải được world từ chain.");
+      buildFallbackMap(reason || "Unable to load world from chain.");
       console.error("loadWorldMap failed:", error);
     } finally {
       setIsMapLoading(false);
@@ -1280,7 +1317,7 @@ export default function GamePage() {
     setIsGameStarted(false);
     setShowStartModal(true);
     if (reason) {
-      setMapLoadError(`${reason} (đang hiển thị map offline mẫu)`);
+      setMapLoadError(`${reason} (displaying offline map)`);
     }
   }
 
@@ -1423,7 +1460,7 @@ export default function GamePage() {
                       <span className="quest-active__id">Quest #{playId}</span>
                     </div>
                     <div className="quest-active__objective">
-                      Ã°Å¸â€Â Find the hidden key to unlock claim on this run.
+                      Find the hidden key to unlock claim on this run.
                     </div>
                     <div className="quest-active__info">
                       <div className="quest-info-row">
@@ -1492,7 +1529,7 @@ export default function GamePage() {
                 {playId && isKeyFound && (
                   <div className="quest-complete">
                     <div className="quest-complete__header">
-                      ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Quest Complete!
+                      Quest Complete!
                     </div>
                     <div className="quest-complete__message">
                       You found the key! Claim your reward now.
@@ -1502,9 +1539,7 @@ export default function GamePage() {
                       onClick={handleClaimOnChain}
                       disabled={isWalletBusy}
                     >
-                      {isClaimBusy
-                        ? "Claiming..."
-                        : "ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â½Ãƒâ€šÃ‚Â Claim Reward"}
+                      {isClaimBusy ? "Claiming..." : "Claim Reward"}
                     </button>
                   </div>
                 )}
@@ -1943,7 +1978,7 @@ export default function GamePage() {
                 )}
               </div>
 
-              <div className="restore-divider">hoáº·c nháº­p thá»§ cÃ´ng</div>
+              <div className="restore-divider">or manually enter</div>
 
               <div className="game-field">
                 <label>Play ID</label>
@@ -1951,7 +1986,7 @@ export default function GamePage() {
                   type="text"
                   value={restorePlayId}
                   onChange={(e) => setRestorePlayId(e.target.value)}
-                  placeholder="VD: 2"
+                  placeholder="Example: 2"
                 />
               </div>
               <div className="game-field">
@@ -2039,7 +2074,7 @@ export default function GamePage() {
               </button>
             </div>
             <div className="game-modal__body">
-              <p>Chọn world và chế độ chơi.</p>
+              <p>Select a world and game mode.</p>
               <div className="game-field">
                 <label>World</label>
                 <select
@@ -2047,11 +2082,11 @@ export default function GamePage() {
                   onChange={(e) => setSelectedWorldId(e.target.value)}
                 >
                   {worldOptions.length === 0 && (
-                    <option value="">Không có world</option>
+                    <option value="">No world available</option>
                   )}
-                  {worldOptions.map((id) => (
-                    <option key={id} value={id}>
-                      {id}
+                  {worldOptions.map((world) => (
+                    <option key={world.id} value={world.id}>
+                      {world.name}
                     </option>
                   ))}
                 </select>
@@ -2060,7 +2095,7 @@ export default function GamePage() {
                   style={{ marginTop: "8px" }}
                   onClick={() => {
                     if (!selectedWorldId) {
-                      setMapLoadError("Chưa chọn world.");
+                      setMapLoadError("Please select a world.");
                       return;
                     }
                     setWorldId(selectedWorldId);
@@ -2068,9 +2103,11 @@ export default function GamePage() {
                   }}
                   disabled={isMapLoading || !selectedWorldId}
                 >
-                  {isMapLoading ? "Đang tải..." : "Tải world"}
+                  {isMapLoading ? "Loading..." : "Load World"}
                 </button>
-                {mapStatus && <div className="game-world-bar__status">{mapStatus}</div>}
+                {mapStatus && (
+                  <div className="game-world-bar__status">{mapStatus}</div>
+                )}
                 {(mapLoadError || worldListError) && (
                   <div className="game-world-bar__error">
                     {mapLoadError || worldListError}
@@ -2080,7 +2117,7 @@ export default function GamePage() {
               {!mapReady && (
                 <div className="game-start-loading">
                   <div className="game-loading-spinner" />
-                  <div className="game-loading-text">Map chưa sẵn sàng.</div>
+                  <div className="game-loading-text">Map is not ready yet.</div>
                 </div>
               )}
               <div className="game-start-options">
@@ -2245,7 +2282,8 @@ function normalizeMoveVector(value) {
   }
   const fields = normalizeMoveFields(value);
   if (Array.isArray(fields.vec)) return fields.vec;
-  if (typeof fields.bytes === "string") return normalizeMoveVector(fields.bytes);
+  if (typeof fields.bytes === "string")
+    return normalizeMoveVector(fields.bytes);
   if (Array.isArray(fields.value)) return fields.value;
   return [];
 }
@@ -2435,10 +2473,7 @@ async function loadListingContent(worldId, fieldName) {
 function extractListingPLOTId(value) {
   const fields = normalizeMoveFields(value);
   const raw =
-    fields.plot_id ??
-    fields.plotId ??
-    fields.PLOT_id ??
-    fields.PLOTId;
+    fields.plot_id ?? fields.plotId ?? fields.PLOT_id ?? fields.PLOTId;
   const extracted = extractObjectId(raw);
   if (extracted) return extracted;
   if (typeof raw === "string") return raw;

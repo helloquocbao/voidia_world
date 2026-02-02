@@ -5,6 +5,7 @@ import LandingPage from "./pages/LandingPage";
 import Marketplace from "./pages/Marketplace";
 import PresalePage from "./pages/PresalePage";
 import UpgradePage from "./pages/UpgradePage";
+import PortfolioPage from "./pages/PortfolioPage";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
       <Route path="/marketplace" element={<Marketplace />} />
       <Route path="/presale" element={<PresalePage />} />
       <Route path="/upgrade" element={<UpgradePage />} />
+      <Route path="/portfolio" element={<PortfolioPage />} />
     </Routes>
   );
 }
