@@ -41,6 +41,7 @@ export default function LandingPage() {
           </div>
           <nav className="ghost-nav__links">
             <Link to="/game">Play</Link>
+            <Link to="/boss-fight">Boss Fight</Link>
             <Link to="/marketplace">Shop</Link>
             <Link to="/presale">Token</Link>
           </nav>

@@ -1,0 +1,167 @@
+.boss-fight-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: white;
+}
+
+.boss-fight-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.boss-fight-header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.back-button {
+    color: #3399ff;
+    text-decoration: none;
+    font-size: 16px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: rgba(51, 153, 255, 0.1);
+    border: 1px solid rgba(51, 153, 255, 0.3);
+    transition: all 0.2s;
+}
+
+.back-button:hover {
+    background: rgba(51, 153, 255, 0.2);
+    border-color: rgba(51, 153, 255, 0.5);
+}
+
+.server-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.status-indicator.checking {
+    background: #ffaa00;
+}
+
+.status-indicator.online {
+    background: #00ff00;
+    animation: none;
+}
+
+.status-indicator.offline {
+    background: #ff0000;
+    animation: none;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.server-offline-notice {
+    max-width: 600px;
+    margin: 100px auto;
+    padding: 32px;
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid rgba(255, 0, 0, 0.3);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.server-offline-notice h2 {
+    color: #ff6666;
+    margin-bottom: 16px;
+}
+
+.server-offline-notice code {
+    display: block;
+    padding: 12px 24px;
+    margin: 16px 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 14px;
+    color: #00ff00;
+}
+
+.game-container {
+    width: 100%;
+    height: calc(100vh - 200px);
+    min-height: 500px;
+    position: relative;
+    background: #1a2a3a;
+}
+
+.game-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.boss-fight-info {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.info-card {
+    flex: 1;
+    padding: 16px 24px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-card h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: #3399ff;
+}
+
+.info-card ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.info-card li {
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #cccccc;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .boss-fight-header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+
+    .boss-fight-info {
+        flex-direction: column;
+    }
+
+    .game-container {
+        height: 60vh;
+    }
+}
