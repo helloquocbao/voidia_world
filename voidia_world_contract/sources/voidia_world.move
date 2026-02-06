@@ -805,13 +805,11 @@ module voidia_world::world {
         assert!(available >= stones, E_INSUFFICIENT_STONES);
 
         let pay_coin = if (available > stones) {
-            coin::split(&mut stones_coin, stones, ctx)
+            let split_coin = coin::split(&mut stones_coin, stones, ctx);
+            transfer::public_transfer(stones_coin, sender);
+            split_coin
         } else {
             stones_coin
-        };
-
-        if (available > stones) {
-            transfer::public_transfer(stones_coin, sender);
         };
 
         power_stone::deposit(stones_vault, pay_coin);
@@ -838,7 +836,7 @@ module voidia_world::world {
             health: character.health,
             potential: character.potential,
             power_tier: character.power_tier,
-        });
+        })
     }
 
     /* ================= READ HELPERS ================= */

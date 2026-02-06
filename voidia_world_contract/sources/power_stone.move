@@ -103,3 +103,42 @@ public fun deposit(vault: &mut StoneVault, coin: Coin<POWER_STONE>) {
     let bal = coin::into_balance(coin);
     balance::join(&mut vault.balance, bal);
 }
+
+// ==================== MINT FUNCTIONS ====================
+
+fun mint_internal(
+    treasury_cap: &mut coin::TreasuryCap<POWER_STONE>,
+    amount: u64,
+    ctx: &mut TxContext,
+): Coin<POWER_STONE> {
+    assert!(amount > 0, E_INVALID_AMOUNT);
+    coin::mint(treasury_cap, amount, ctx)
+}
+
+public fun mint(
+    treasury_cap: &mut coin::TreasuryCap<POWER_STONE>,
+    amount: u64,
+    ctx: &mut TxContext,
+): Coin<POWER_STONE> {
+    mint_internal(treasury_cap, amount, ctx)
+}
+
+entry fun mint_stone(
+    treasury_cap: &mut coin::TreasuryCap<POWER_STONE>,
+    amount: u64,
+    ctx: &mut TxContext,
+) {
+    let coin = mint_internal(treasury_cap, amount, ctx);
+    let recipient = tx_context::sender(ctx);
+    transfer::public_transfer(coin, recipient);
+}
+
+entry fun mint_to_vault(
+    treasury_cap: &mut coin::TreasuryCap<POWER_STONE>,
+    vault: &mut StoneVault,
+    amount: u64,
+    ctx: &mut TxContext,
+) {
+    let coin = mint_internal(treasury_cap, amount, ctx);
+    deposit(vault, coin);
+}
