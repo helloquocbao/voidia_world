@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { WalletHeader } from "../components";
 import { useRewardBalance } from "../hooks/useRewardBalance";
+import { WorldSelector } from "./WorldSelector";
 import "./GamePage.css";
 
 const TILE_SIZE = 32;
@@ -1357,422 +1358,394 @@ export default function GamePage() {
           <Info size={18} />
         </button>
       </div>
-      <div className="game-shell">
-        {/* Minimal Header */}
-        <header className="game-header">
-          <nav className="game-nav">
-            <Link className="game-link" to="/">
-              Home
-            </Link>
-            <Link className="game-link" to="/editor">
-              Editor
-            </Link>
-            <Link className="game-link" to="/marketplace">
-              Marketplace
-            </Link>
-          </nav>
-          <WalletHeader />
-        </header>
-
-        <div className="game-stage">
-          <div className="game-frame">
-            <canvas id="game" />
-            {isMapLoading && (
-              <div className="game-loading-overlay">
-                <div className="game-loading-spinner" />
-                <div className="game-loading-text">Loading world...</div>
-              </div>
-            )}
-          </div>
-
-          {/* Character Panel */}
-          {activePanel === "character" && (
-            <aside className="game-panel">
-              <div className="game-panel__header">
-                <span>Character</span>
-                <button onClick={() => setActivePanel(null)}>
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="game-panel__body">
-                {characterId ? (
-                  <>
-                    <div className="game-info__card">
-                      <span>Name</span>
-                      <span>{characterName || "-"}</span>
-                    </div>
-                    <div className="game-info__card">
-                      <span>Health</span>
-                      <span>{characterHealth}</span>
-                    </div>
-                    <div className="game-info__card">
-                      <span>Power</span>
-                      <span>{characterPower}</span>
-                    </div>
-                    <div className="game-info__card">
-                      <span>Potential</span>
-                      <span>{characterPotential}</span>
-                    </div>
-                    <div className="game-info__card">
-                      <span>Daily Plays</span>
-                      <span>{characterDailyPlays}/3</span>
-                    </div>
-                    <div className="game-info__card">
-                      <span>Free Plays</span>
-                      <span>{characterFreePlays}/2</span>
-                    </div>
-                  </>
-                ) : account?.address ? (
-                  <div className="game-info__note">
-                    No character found.
-                    <button
-                      className="game-btn game-btn--primary"
-                      style={{ marginTop: "8px", width: "100%" }}
-                      onClick={() => setShowCreateCharacterModal(true)}
-                    >
-                      Create Character
-                    </button>
-                  </div>
-                ) : (
-                  <div className="game-info__note">
-                    Connect wallet to see character.
-                  </div>
-                )}
-              </div>
-            </aside>
-          )}
-
-          {/* Quest Board Panel */}
-          {activePanel === "rewards" && (
-            <aside className="game-panel">
-              <div className="game-panel__header">
-                <span>Quest Board</span>
-                <button onClick={() => setActivePanel(null)}>
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="game-panel__body">
-                {/* Active Quest Status */}
-                {playId && !isKeyFound && (
-                  <div className="quest-active">
-                    <div className="quest-active__header">
-                      <span className="quest-active__badge">ACTIVE</span>
-                      <span className="quest-active__id">Quest #{playId}</span>
-                    </div>
-                    <div className="quest-active__objective">
-                      Find the hidden key to unlock claim on this run.
-                    </div>
-                    <div className="quest-active__info">
-                      <div className="quest-info-row">
-                        <span>World:</span>
-                        <span>
-                          {loadPlayState()?.worldId?.slice(0, 10) || "-"}...
-                        </span>
-                      </div>
-                      <div className="quest-info-row">
-                        <span>Status:</span>
-                        <span className="text-yellow">In Progress</span>
-                      </div>
-                    </div>
-                    <div className="quest-backup-key">
-                      <div className="quest-backup-key__label">
-                        Seal Policy ID (BCS play_id):
-                      </div>
-                      <div className="quest-backup-key__value">
-                        <code>{currentPolicyHex}</code>
-                        <button
-                          className="copy-btn"
-                          onClick={() => {
-                            if (currentPolicyHex) {
-                              navigator.clipboard.writeText(currentPolicyHex);
-                              setPlayNotice("Policy ID copied!");
-                            }
-                          }}
-                          title="Copy policy id"
-                          disabled={!currentPolicyHex}
-                        >
-                          <Copy size={12} />
-                        </button>
-                      </div>
-                      <div className="quest-backup-key__hint">
-                        Share this policy ID with Seal key server for
-                        seal_approve.
-                      </div>
-                    </div>
-                    <div className="quest-actions">
-                      {playId === "pending" && (
-                        <button
-                          className="game-btn game-btn--retry"
-                          onClick={retryFetchPlayId}
-                          disabled={isWalletBusy}
-                        >
-                          <RefreshCw size={12} /> Retry Fetch
-                        </button>
-                      )}
-                      <button
-                        className="game-btn game-btn--cancel"
-                        onClick={() => {
-                          if (
-                            confirm("Abandon quest? You will lose progress.")
-                          ) {
-                            resetPlayState("Quest abandoned.");
-                          }
-                        }}
-                      >
-                        Abandon Quest
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Quest Complete - Ready to Claim */}
-                {playId && isKeyFound && (
-                  <div className="quest-complete">
-                    <div className="quest-complete__header">
-                      Quest Complete!
-                    </div>
-                    <div className="quest-complete__message">
-                      You found the key! Claim your reward now.
-                    </div>
-                    <button
-                      className="game-btn game-btn--primary game-btn--large"
-                      onClick={handleClaimOnChain}
-                      disabled={isWalletBusy}
-                    >
-                      {isClaimBusy ? "Claiming..." : "Claim Reward"}
-                    </button>
-                  </div>
-                )}
-
-                {/* Available Quests */}
-                {!playId && (
-                  <>
-                    {/* Free Quest */}
-                    <div className="quest-card quest-card--free">
-                      <div className="quest-card__header">
-                        <div className="quest-card__title">
-                          <span>Free Quest</span>
-                        </div>
-                        <div className="quest-card__badge quest-card__badge--free">
-                          FREE
-                        </div>
-                      </div>
-                      <div className="quest-card__description">
-                        Practice run with basic rewards. Perfect for beginners!
-                      </div>
-                      <div className="quest-card__stats">
-                        <div className="quest-stat">
-                          <span className="quest-stat__label">
-                            Plays Today:
-                          </span>
-                          <span className="quest-stat__value">
-                            {characterFreePlays}/2
-                          </span>
-                        </div>
-                        <div className="quest-stat">
-                          <span className="quest-stat__label">Reward:</span>
-                          <span className="quest-stat__value flex items-center gap-1">
-                            <img
-                              alt="PLOT"
-                              className="w-3 h-3"
-                              src="https://ik.imagekit.io/huubao/chunk_coin.png"
-                            />
-                            2 PLOT
-                          </span>
-                        </div>
-                      </div>
-                      <button
-                        className="game-btn game-btn--quest game-btn--quest-free"
-                        onClick={() => handlePlayOnChain("v1")}
-                        disabled={
-                          isWalletBusy ||
-                          !account?.address ||
-                          characterFreePlays >= 2
-                        }
-                      >
-                        {isPlayBusy && playMode === "v1" ? (
-                          "Starting..."
-                        ) : characterFreePlays >= 2 ? (
-                          "Daily Limit Reached"
-                        ) : (
-                          <>
-                            <Play size={14} /> Free Quest
-                          </>
-                        )}
-                      </button>
-                      {characterFreePlays >= 2 && (
-                        <div className="quest-card__note">
-                          Reset at next epoch (~24h)
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Premium Quest */}
-                    <div className="quest-card quest-card--premium">
-                      <div className="quest-card__header">
-                        <div className="quest-card__title">
-                          <span>Premium Quest</span>
-                        </div>
-                        <div className="quest-card__badge quest-card__badge--premium">
-                          PREMIUM
-                        </div>
-                      </div>
-                      <div className="quest-card__description">
-                        Enhanced rewards for experienced adventurers. Higher
-                        stakes, bigger rewards!
-                      </div>
-                      <div className="quest-card__stats">
-                        <div className="quest-stat">
-                          <span className="quest-stat__label">
-                            Plays Today:
-                          </span>
-                          <span className="quest-stat__value">
-                            {characterDailyPlays}/3
-                          </span>
-                        </div>
-                        <div className="quest-stat">
-                          <span className="quest-stat__label">Reward:</span>
-                          <span className="quest-stat__value flex items-center gap-1">
-                            <img
-                              alt="PLOT"
-                              className="w-3 h-3"
-                              src="https://ik.imagekit.io/huubao/chunk_coin.png"
-                            />
-                            2-15 PLOT
-                          </span>
-                        </div>
-                        <div className="quest-stat">
-                          <span className="quest-stat__label">Cost:</span>
-                          <span className="quest-stat__value quest-stat__value--cost flex items-center gap-1">
-                            <img
-                              alt="PLOT"
-                              className="w-3 h-3"
-                              src="https://ik.imagekit.io/huubao/chunk_coin.png"
-                            />
-                            5 PLOT
-                          </span>
-                        </div>
-                      </div>
-                      <button
-                        className="game-btn game-btn--quest game-btn--quest-premium text-nowrap flex flex-col"
-                        onClick={() => handlePlayOnChain("v2")}
-                        disabled={
-                          isWalletBusy ||
-                          !account?.address ||
-                          characterDailyPlays >= 3
-                        }
-                      >
-                        {isPlayBusy && playMode === "v2" ? (
-                          "Starting..."
-                        ) : characterDailyPlays >= 3 ? (
-                          "Daily Limit Reached"
-                        ) : (
-                          <>
-                            <div className="flex items-center gap-1">
-                              <Play size={14} /> Premium Quest
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                              {" "}
-                              (
-                              <img
-                                alt="PLOT"
-                                className="w-3 h-3 inline-block"
-                                src="https://ik.imagekit.io/huubao/chunk_coin.png"
-                              />
-                              5 PLOT)
-                            </div>
-                          </>
-                        )}
-                      </button>
-                      {characterDailyPlays >= 3 && (
-                        <div className="quest-card__note">
-                          Reset at next epoch (~24h)
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Restore Session */}
-                    <div className="quest-restore flex justify-center items-center">
-                      <button
-                        className="game-btn game-btn--restore flex justify-center items-center gap-2"
-                        onClick={() => setShowRestoreModal(true)}
-                      >
-                        <RefreshCw size={12} /> Restore Previous Quest
-                      </button>
-                    </div>
-                  </>
-                )}
-
-                {/* Messages */}
-                {playNotice && (
-                  <div className="game-info__note">{playNotice}</div>
-                )}
-                {playError && (
-                  <div className="game-info__error">{playError}</div>
-                )}
-                {claimError && (
-                  <div className="game-info__error">{claimError}</div>
-                )}
-              </div>
-            </aside>
-          )}
-
-          {/* Info Panel */}
-          {activePanel === "info" && (
-            <aside className="game-panel">
-              <div className="game-panel__header">
-                <span>Info</span>
-                <button onClick={() => setActivePanel(null)}>
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="game-panel__body">
-                {/* Map Status */}
-                {isMapLoading && (
-                  <div className="game-info__note">Loading world...</div>
-                )}
-                {loadedPLOTs !== null && (
-                  <div className="game-info__note">
-                    Loaded {loadedPLOTs} PLOTs.
-                  </div>
-                )}
-                {worldListError && (
-                  <div className="game-info__error">{worldListError}</div>
-                )}
-                {mapLoadError && (
-                  <div className="game-info__error">{mapLoadError}</div>
-                )}
-
-                {/* Controls */}
-                <div className="game-info__title">Controls</div>
-                <div className="game-info__card">
-                  <span>Move</span>
-                  <span>W A S D</span>
-                </div>
-                <div className="game-info__card">
-                  <span>Attack</span>
-                  <span>Space</span>
-                </div>
-
-                {/* Network Status */}
-                <div className="game-info__title">Network</div>
-                <div className="game-info__card">
-                  <span>Status</span>
-                  <span>{difficultyInfo.networkStatus}</span>
-                </div>
-                <div className="game-info__card">
-                  <span>Validators</span>
-                  <span>{difficultyInfo.validatorStatus}</span>
-                </div>
-                <div className="game-info__card">
-                  <span>Difficulty</span>
-                  <span>{difficultyInfo.effectiveDifficulty.toFixed(1)}/9</span>
-                </div>
-              </div>
-            </aside>
+      <div className="game-stage">
+        <div className="game-frame">
+          <canvas id="game" />
+          {isMapLoading && (
+            <div className="game-loading-overlay">
+              <div className="game-loading-spinner" />
+              <div className="game-loading-text">Loading world...</div>
+            </div>
           )}
         </div>
+
+        {/* Character Panel */}
+        {activePanel === "character" && (
+          <aside className="game-panel">
+            <div className="game-panel__header">
+              <span>Character</span>
+              <button onClick={() => setActivePanel(null)}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="game-panel__body">
+              {characterId ? (
+                <>
+                  <div className="game-info__card">
+                    <span>Name</span>
+                    <span>{characterName || "-"}</span>
+                  </div>
+                  <div className="game-info__card">
+                    <span>Health</span>
+                    <span>{characterHealth}</span>
+                  </div>
+                  <div className="game-info__card">
+                    <span>Power</span>
+                    <span>{characterPower}</span>
+                  </div>
+                  <div className="game-info__card">
+                    <span>Potential</span>
+                    <span>{characterPotential}</span>
+                  </div>
+                  <div className="game-info__card">
+                    <span>Daily Plays</span>
+                    <span>{characterDailyPlays}/3</span>
+                  </div>
+                  <div className="game-info__card">
+                    <span>Free Plays</span>
+                    <span>{characterFreePlays}/2</span>
+                  </div>
+                </>
+              ) : account?.address ? (
+                <div className="game-info__note">
+                  No character found.
+                  <button
+                    className="game-btn game-btn--primary"
+                    style={{ marginTop: "8px", width: "100%" }}
+                    onClick={() => setShowCreateCharacterModal(true)}
+                  >
+                    Create Character
+                  </button>
+                </div>
+              ) : (
+                <div className="game-info__note">
+                  Connect wallet to see character.
+                </div>
+              )}
+            </div>
+          </aside>
+        )}
+
+        {/* Quest Board Panel */}
+        {activePanel === "rewards" && (
+          <aside className="game-panel">
+            <div className="game-panel__header">
+              <span>Quest Board</span>
+              <button onClick={() => setActivePanel(null)}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="game-panel__body">
+              {/* Active Quest Status */}
+              {playId && !isKeyFound && (
+                <div className="quest-active">
+                  <div className="quest-active__header">
+                    <span className="quest-active__badge">ACTIVE</span>
+                    <span className="quest-active__id">Quest #{playId}</span>
+                  </div>
+                  <div className="quest-active__objective">
+                    Find the hidden key to unlock claim on this run.
+                  </div>
+                  <div className="quest-active__info">
+                    <div className="quest-info-row">
+                      <span>World:</span>
+                      <span>
+                        {loadPlayState()?.worldId?.slice(0, 10) || "-"}...
+                      </span>
+                    </div>
+                    <div className="quest-info-row">
+                      <span>Status:</span>
+                      <span className="text-yellow">In Progress</span>
+                    </div>
+                  </div>
+                  <div className="quest-backup-key">
+                    <div className="quest-backup-key__label">
+                      Seal Policy ID (BCS play_id):
+                    </div>
+                    <div className="quest-backup-key__value">
+                      <code>{currentPolicyHex}</code>
+                      <button
+                        className="copy-btn"
+                        onClick={() => {
+                          if (currentPolicyHex) {
+                            navigator.clipboard.writeText(currentPolicyHex);
+                            setPlayNotice("Policy ID copied!");
+                          }
+                        }}
+                        title="Copy policy id"
+                        disabled={!currentPolicyHex}
+                      >
+                        <Copy size={12} />
+                      </button>
+                    </div>
+                    <div className="quest-backup-key__hint">
+                      Share this policy ID with Seal key server for
+                      seal_approve.
+                    </div>
+                  </div>
+                  <div className="quest-actions">
+                    {playId === "pending" && (
+                      <button
+                        className="game-btn game-btn--retry"
+                        onClick={retryFetchPlayId}
+                        disabled={isWalletBusy}
+                      >
+                        <RefreshCw size={12} /> Retry Fetch
+                      </button>
+                    )}
+                    <button
+                      className="game-btn game-btn--cancel"
+                      onClick={() => {
+                        if (confirm("Abandon quest? You will lose progress.")) {
+                          resetPlayState("Quest abandoned.");
+                        }
+                      }}
+                    >
+                      Abandon Quest
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Quest Complete - Ready to Claim */}
+              {playId && isKeyFound && (
+                <div className="quest-complete">
+                  <div className="quest-complete__header">Quest Complete!</div>
+                  <div className="quest-complete__message">
+                    You found the key! Claim your reward now.
+                  </div>
+                  <button
+                    className="game-btn game-btn--primary game-btn--large"
+                    onClick={handleClaimOnChain}
+                    disabled={isWalletBusy}
+                  >
+                    {isClaimBusy ? "Claiming..." : "Claim Reward"}
+                  </button>
+                </div>
+              )}
+
+              {/* Available Quests */}
+              {!playId && (
+                <>
+                  {/* Free Quest */}
+                  <div className="quest-card quest-card--free">
+                    <div className="quest-card__header">
+                      <div className="quest-card__title">
+                        <span>Free Quest</span>
+                      </div>
+                      <div className="quest-card__badge quest-card__badge--free">
+                        FREE
+                      </div>
+                    </div>
+                    <div className="quest-card__description">
+                      Practice run with basic rewards. Perfect for beginners!
+                    </div>
+                    <div className="quest-card__stats">
+                      <div className="quest-stat">
+                        <span className="quest-stat__label">Plays Today:</span>
+                        <span className="quest-stat__value">
+                          {characterFreePlays}/2
+                        </span>
+                      </div>
+                      <div className="quest-stat">
+                        <span className="quest-stat__label">Reward:</span>
+                        <span className="quest-stat__value flex items-center gap-1">
+                          <img
+                            alt="PLOT"
+                            className="w-3 h-3"
+                            src="https://ik.imagekit.io/huubao/chunk_coin.png"
+                          />
+                          2 PLOT
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      className="game-btn game-btn--quest game-btn--quest-free"
+                      onClick={() => handlePlayOnChain("v1")}
+                      disabled={
+                        isWalletBusy ||
+                        !account?.address ||
+                        characterFreePlays >= 2
+                      }
+                    >
+                      {isPlayBusy && playMode === "v1" ? (
+                        "Starting..."
+                      ) : characterFreePlays >= 2 ? (
+                        "Daily Limit Reached"
+                      ) : (
+                        <>
+                          <Play size={14} /> Free Quest
+                        </>
+                      )}
+                    </button>
+                    {characterFreePlays >= 2 && (
+                      <div className="quest-card__note">
+                        Reset at next epoch (~24h)
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Premium Quest */}
+                  <div className="quest-card quest-card--premium">
+                    <div className="quest-card__header">
+                      <div className="quest-card__title">
+                        <span>Premium Quest</span>
+                      </div>
+                      <div className="quest-card__badge quest-card__badge--premium">
+                        PREMIUM
+                      </div>
+                    </div>
+                    <div className="quest-card__description">
+                      Enhanced rewards for experienced adventurers. Higher
+                      stakes, bigger rewards!
+                    </div>
+                    <div className="quest-card__stats">
+                      <div className="quest-stat">
+                        <span className="quest-stat__label">Plays Today:</span>
+                        <span className="quest-stat__value">
+                          {characterDailyPlays}/3
+                        </span>
+                      </div>
+                      <div className="quest-stat">
+                        <span className="quest-stat__label">Reward:</span>
+                        <span className="quest-stat__value flex items-center gap-1">
+                          <img
+                            alt="PLOT"
+                            className="w-3 h-3"
+                            src="https://ik.imagekit.io/huubao/chunk_coin.png"
+                          />
+                          2-15 PLOT
+                        </span>
+                      </div>
+                      <div className="quest-stat">
+                        <span className="quest-stat__label">Cost:</span>
+                        <span className="quest-stat__value quest-stat__value--cost flex items-center gap-1">
+                          <img
+                            alt="PLOT"
+                            className="w-3 h-3"
+                            src="https://ik.imagekit.io/huubao/chunk_coin.png"
+                          />
+                          5 PLOT
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      className="game-btn game-btn--quest game-btn--quest-premium text-nowrap flex flex-col"
+                      onClick={() => handlePlayOnChain("v2")}
+                      disabled={
+                        isWalletBusy ||
+                        !account?.address ||
+                        characterDailyPlays >= 3
+                      }
+                    >
+                      {isPlayBusy && playMode === "v2" ? (
+                        "Starting..."
+                      ) : characterDailyPlays >= 3 ? (
+                        "Daily Limit Reached"
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-1">
+                            <Play size={14} /> Premium Quest
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            {" "}
+                            (
+                            <img
+                              alt="PLOT"
+                              className="w-3 h-3 inline-block"
+                              src="https://ik.imagekit.io/huubao/chunk_coin.png"
+                            />
+                            5 PLOT)
+                          </div>
+                        </>
+                      )}
+                    </button>
+                    {characterDailyPlays >= 3 && (
+                      <div className="quest-card__note">
+                        Reset at next epoch (~24h)
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Restore Session */}
+                  <div className="quest-restore flex justify-center items-center">
+                    <button
+                      className="game-btn game-btn--restore flex justify-center items-center gap-2"
+                      onClick={() => setShowRestoreModal(true)}
+                    >
+                      <RefreshCw size={12} /> Restore Previous Quest
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* Messages */}
+              {playNotice && (
+                <div className="game-info__note">{playNotice}</div>
+              )}
+              {playError && <div className="game-info__error">{playError}</div>}
+              {claimError && (
+                <div className="game-info__error">{claimError}</div>
+              )}
+            </div>
+          </aside>
+        )}
+
+        {/* Info Panel */}
+        {activePanel === "info" && (
+          <aside className="game-panel">
+            <div className="game-panel__header">
+              <span>Info</span>
+              <button onClick={() => setActivePanel(null)}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="game-panel__body">
+              {/* Map Status */}
+              {isMapLoading && (
+                <div className="game-info__note">Loading world...</div>
+              )}
+              {loadedPLOTs !== null && (
+                <div className="game-info__note">
+                  Loaded {loadedPLOTs} PLOTs.
+                </div>
+              )}
+              {worldListError && (
+                <div className="game-info__error">{worldListError}</div>
+              )}
+              {mapLoadError && (
+                <div className="game-info__error">{mapLoadError}</div>
+              )}
+
+              {/* Controls */}
+              <div className="game-info__title">Controls</div>
+              <div className="game-info__card">
+                <span>Move</span>
+                <span>W A S D</span>
+              </div>
+              <div className="game-info__card">
+                <span>Attack</span>
+                <span>Space</span>
+              </div>
+
+              {/* Network Status */}
+              <div className="game-info__title">Network</div>
+              <div className="game-info__card">
+                <span>Status</span>
+                <span>{difficultyInfo.networkStatus}</span>
+              </div>
+              <div className="game-info__card">
+                <span>Validators</span>
+                <span>{difficultyInfo.validatorStatus}</span>
+              </div>
+              <div className="game-info__card">
+                <span>Difficulty</span>
+                <span>{difficultyInfo.effectiveDifficulty.toFixed(1)}/9</span>
+              </div>
+            </div>
+          </aside>
+        )}
       </div>
       {
         /* Death Screen Overlay - Pixel Art Style */
@@ -2073,47 +2046,31 @@ export default function GamePage() {
                 <X size={16} />
               </button>
             </div>
-            <div className="game-modal__body">
-              <p>Select a world and game mode.</p>
-              <div className="game-field">
-                <label>World</label>
-                <select
-                  value={selectedWorldId}
-                  onChange={(e) => setSelectedWorldId(e.target.value)}
+            <div
+              className="game-modal__body"
+              style={{
+                padding: "0",
+                maxHeight: "700px",
+                overflow: "auto",
+                background: "transparent",
+              }}
+            >
+              <WorldSelector
+                worlds={worldOptions}
+                onSelectWorld={(id) => {
+                  setSelectedWorldId(id);
+                  setWorldId(id);
+                  void loadWorldMap(id);
+                }}
+              />
+              {(mapLoadError || worldListError) && (
+                <div
+                  className="game-world-bar__error"
+                  style={{ margin: "20px", marginTop: "0" }}
                 >
-                  {worldOptions.length === 0 && (
-                    <option value="">No world available</option>
-                  )}
-                  {worldOptions.map((world) => (
-                    <option key={world.id} value={world.id}>
-                      {world.name}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  className="game-btn"
-                  style={{ marginTop: "8px" }}
-                  onClick={() => {
-                    if (!selectedWorldId) {
-                      setMapLoadError("Please select a world.");
-                      return;
-                    }
-                    setWorldId(selectedWorldId);
-                    void loadWorldMap(selectedWorldId);
-                  }}
-                  disabled={isMapLoading || !selectedWorldId}
-                >
-                  {isMapLoading ? "Loading..." : "Load World"}
-                </button>
-                {mapStatus && (
-                  <div className="game-world-bar__status">{mapStatus}</div>
-                )}
-                {(mapLoadError || worldListError) && (
-                  <div className="game-world-bar__error">
-                    {mapLoadError || worldListError}
-                  </div>
-                )}
-              </div>
+                  {mapLoadError || worldListError}
+                </div>
+              )}
               {!mapReady && (
                 <div className="game-start-loading">
                   <div className="game-loading-spinner" />

@@ -1,10 +1,10 @@
 .upgrade-page {
   position: relative;
   min-height: 100vh;
-  color: #e9f5ff;
-  background: radial-gradient(circle at 20% 20%, #12324c, #0b1c2c 52%, #07101c 100%);
+  color: var(--ghost-cream);
+  background: linear-gradient(180deg, var(--ghost-dark) 0%, var(--ghost-dark-2) 55%, var(--ghost-teal) 100%);
   overflow: hidden;
-  font-family: var(--font-sans, "Space Grotesk", "Segoe UI", sans-serif);
+  font-family: var(--font-sans);
   padding: 28px min(4vw, 48px) 40px;
 }
 
@@ -27,13 +27,13 @@
 .upgrade-bg__halo--a {
   top: -120px;
   left: -60px;
-  background: #1b9adf;
+  background: var(--ghost-mint);
 }
 
 .upgrade-bg__halo--b {
   bottom: -180px;
   right: -120px;
-  background: #7b5bff;
+  background: var(--ghost-pink);
 }
 
 .upgrade-bg__grid {
@@ -66,40 +66,49 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(126, 184, 232, 0.35);
-  background: rgba(11, 29, 46, 0.8);
-  color: #b5d5ff;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(20, 40, 60, 0.6);
+  color: var(--ghost-cream);
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  transition: all 0.1s ease;
 }
 
 .upgrade-back:hover {
   transform: translateY(-1px);
-  border-color: #78c7ff;
-  color: #e9f5ff;
+  border-color: rgba(255, 255, 255, 0.6);
+  color: var(--ghost-cream);
+  box-shadow: 0 10px 20px rgba(6, 14, 18, 0.25);
 }
 
 .upgrade-heading h1 {
   margin: 4px 0;
   font-size: clamp(28px, 3vw, 36px);
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
+  color: var(--ghost-cream);
+  font-family: var(--font-mono);
+  font-weight: 700;
 }
 
 .upgrade-kicker {
   margin: 0;
-  color: #7eb8e8;
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 1px;
   font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 700;
 }
 
 .upgrade-sub {
   margin: 6px 0 0;
   max-width: 580px;
-  color: #c5d9ef;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-sans);
 }
 
 .upgrade-top__right {
@@ -483,11 +492,13 @@
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 0.4;
     transform: scale(0.98);
   }
+
   50% {
     opacity: 0.9;
     transform: scale(1.02);
@@ -498,6 +509,7 @@
   0% {
     transform: rotate(0deg) translateX(38%) rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg) translateX(38%) rotate(-360deg);
   }
@@ -507,6 +519,7 @@
   from {
     background-position: 0 0;
   }
+
   to {
     background-position: -1536px 0;
   }

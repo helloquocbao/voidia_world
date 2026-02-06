@@ -1,238 +1,212 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { WalletHeader } from "../components";
 import "./LandingPage.css";
 
-const features = [
-  {
-    title: "🏔️ Stone Plots",
-    description:
-      "Mint 5×5 rock tiles as NFTs. Build floating islands in the sky.",
-  },
-  {
-    title: "🎨 Carve & Paint",
-    description:
-      "Edit tiles live on-chain. Every pixel you place is truly yours.",
-  },
-  {
-    title: "⚔️ Play & Earn",
-    description:
-      "Explore on-chain worlds. Find hidden keys and claim plot rewards.",
-  },
-];
-
-const gameFeatures = [
-  {
-    icon: "🌍",
-    title: "On-Chain Worlds",
-    description:
-      "Every map plot lives permanently on Sui blockchain. Trade or expand your territory.",
-  },
-  {
-    icon: "🎮",
-    title: "Adventure Mode",
-    description:
-      "WASD movement, combat system. Explore worlds built by the community.",
-  },
-  {
-    icon: <img src="https://ik.imagekit.io/huubao/chunk_coin.png" alt="logo" className="w-12 h-12 mt-3" />,
-    title: "Token Rewards",
-    description:
-      "Find hidden keys, claim PLOT tokens, and earn while you play.",
-  },
-  {
-    icon: "🔧",
-    title: "Map Editor",
-    description:
-      "Powerful tile editor with decoration layers. Design your dream world.",
-  },
-];
-
 export default function LandingPage() {
   return (
-    <div className="landing">
-      <div className="landing__bg">
-        <span className="landing__sky" />
-        <span className="landing__sun" />
-        <span className="landing__cloud landing__cloud--a" />
-        <span className="landing__cloud landing__cloud--b" />
-        <span className="landing__cloud landing__cloud--c" />
-        <span className="landing__mist" />
-      </div>
-
-      <div className="landing__content">
-        {/* Navigation */}
-        <header
-          className="landing__nav landing__reveal"
-          style={{ "--delay": "0s" }}
-        >
-          <div className="brand">
-            <img src="https://ik.imagekit.io/huubao/chunk_coin.png" alt="logo" className="w-12 h-12" />
-            <div>
-              <div className="brand__name">Voidia World</div>
-              <div className="brand__tag">Sky Adventures on Sui</div>
-            </div>
+    <div className="landing landing--ghost">
+      {/* Hero Section */}
+      <section className="ghost-hero">
+        <div className="ghost-hero__bg">
+          <div className="floating-elements">
+            <span className="crystal crystal--1"></span>
+            <span className="crystal crystal--2"></span>
+            <span className="crystal crystal--3"></span>
+            <span className="crystal crystal--4"></span>
+            <span className="lantern lantern--1"></span>
+            <span className="lantern lantern--2"></span>
+            <span className="ghost-float ghost-float--1"></span>
+            <span className="ghost-float ghost-float--2"></span>
+            <span className="ghost-float ghost-float--3"></span>
+            <span className="star star--1"></span>
+            <span className="star star--2"></span>
+            <span className="star star--3"></span>
+            <span className="star star--4"></span>
+            <span className="star star--5"></span>
           </div>
+          <div className="ghost-hero__hills">
+            <span className="hill hill--back"></span>
+            <span className="hill hill--mid"></span>
+            <span className="hill hill--front"></span>
+          </div>
+        </div>
 
-          <nav className="landing__links">
-            <Link to="/editor">Editor</Link>
-            <Link to="/game">Play Now</Link>
-            <Link to="/upgrade">Upgrade</Link>
-            <Link to="/presale">Presale</Link>
-            <Link to="/marketplace">Marketplace</Link>
+        <header className="ghost-nav">
+          <div className="ghost-logo">
+            <span className="ghost-logo__box">
+              TR
+              <br />
+              EE
+            </span>
+          </div>
+          <nav className="ghost-nav__links">
+            <Link to="/game">Play</Link>
+            <Link to="/marketplace">Shop</Link>
+            <Link to="/presale">Token</Link>
           </nav>
-
           <WalletHeader />
         </header>
 
-        {/* Hero Section */}
-        <section className="landing__hero">
-          <div className="hero__copy">
-            <div
-              className="hero__badge landing__reveal"
-              style={{ "--delay": "0.1s" }}
-            >
-              <span className="badge__dot" />
-              <span>Powered by Sui Blockchain</span>
+        <div className="ghost-hero__content">
+          <div className="ghost-hero__left">
+            <div className="ghost-hero__title-wrapper">
+              <h1 className="ghost-hero__title">
+                <span className="title-running">RUNNING</span>
+                <span className="title-ghost">GHOST</span>
+              </h1>
+              <p className="ghost-hero__subtitle">Nightly Journey</p>
             </div>
-
-            <h1
-              className="hero__title landing__reveal"
-              style={{ "--delay": "0.15s" }}
-            >
-              Build your <span className="hero__accent">sky world</span>, one
-              plot at a time.
-            </h1>
-
-            <p
-              className="hero__subtitle landing__reveal"
-              style={{ "--delay": "0.2s" }}
-            >
-              Claim rocky plots, carve tiles, and trade them as NFTs. Every
-              update lands on Sui and appears instantly in the game loop. Your
-              creativity, permanently on-chain.
+            <p className="ghost-hero__lead">
+              A gentle night run through dream towns with friendly ghosts,
+              glowing candies, and floating islands.
             </p>
-
-            <div
-              className="hero__cta landing__reveal"
-              style={{ "--delay": "0.25s" }}
-            >
-              <Link className="btn btn--solid" to="/game">
-                🎮 Launch Game
+            <div className="ghost-hero__actions">
+              <Link to="/game" className="ghost-hero__button">
+                Play Now
               </Link>
-              <Link className="btn btn--ghost" to="/editor">
-                🔧 Open Editor
-              </Link>
-            </div>
-
-            <div
-              className="hero__features landing__reveal"
-              style={{ "--delay": "0.3s" }}
-            >
-              {features.map((feature) => (
-                <div key={feature.title} className="feature">
-                  <div className="feature__title">{feature.title}</div>
-                  <div className="feature__desc">{feature.description}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div
-            className="hero__panel landing__reveal"
-            style={{ "--delay": "0.2s" }}
-          >
-            <div className="panel__header">
-              <div>
-                <div className="panel__eyebrow">Character Preview</div>
-                <div className="panel__title">Your Hero Awaits</div>
-              </div>
-              <div className="panel__tag">Sui</div>
-            </div>
-
-            <div className="panel__preview">
-              {/* Character animation is in CSS */}
-            </div>
-
-            <div className="panel__highlights">
-              <div className="panel__highlight">
-                <span className="highlight__icon">⛏️</span>
-                <span>5×5 PLOT Tiles</span>
-              </div>
-              <div className="panel__highlight">
-                <span className="highlight__icon">🔗</span>
-                <span>Fully On-Chain</span>
-              </div>
-              <div className="panel__highlight">
-                <span className="highlight__icon">💰</span>
-                <span>Earn PLOT Tokens</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Features Grid Section */}
-        <section
-          className="landing__features landing__reveal"
-          style={{ "--delay": "0.35s" }}
-        >
-          <div className="features__header">
-            <h2 className="features__title">Why Voidia World?</h2>
-            <p className="features__subtitle">
-              A new kind of gaming experience where players truly own their
-              world.
-            </p>
-          </div>
-          <div className="features__grid">
-            {gameFeatures.map((feature) => (
-              <div key={feature.title} className="feature-card">
-                <div className="feature-card__icon flex justify-center">{feature.icon}</div>
-                <div className="feature-card__title">{feature.title}</div>
-                <div className="feature-card__desc">{feature.description}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section
-          className="landing__cta landing__reveal"
-          style={{ "--delay": "0.4s" }}
-        >
-          <div className="cta__content">
-            <h2 className="cta__title">Ready to Build?</h2>
-            <p className="cta__subtitle">
-              Connect your wallet and start creating your piece of the sky
-              world.
-            </p>
-            <div className="cta__actions">
-              <Link className="btn btn--solid" to="/game">
-                Start Playing
-              </Link>
-              <Link className="btn btn--ghost" to="/editor">
-                Create Maps
+              <Link
+                to="/marketplace"
+                className="ghost-hero__button ghost-hero__button--ghost"
+              >
+                Visit Shop
               </Link>
             </div>
           </div>
-        </section>
-
-        {/* Footer */}
-        <footer
-          className="landing__footer landing__reveal"
-          style={{ "--delay": "0.45s" }}
-        >
-          <div>Build together. Own your world. Play on Sui.</div>
-          <div className="landing__foot-links">
-            <Link to="/editor">Editor</Link>
-            <Link to="/game">Play</Link>
-            <Link to="/marketplace">Marketplace</Link>
+          <div className="ghost-hero__right">
+            <div className="hero-illustration">
+              <div className="hero-island">
+                <div className="hero-island__grass"></div>
+                <div className="hero-island__stone"></div>
+              </div>
+              <div className="hero-ghost hero-ghost--big"></div>
+              <div className="hero-ghost hero-ghost--small"></div>
+              <div className="hero-ghost hero-ghost--tiny"></div>
+              <div className="hero-candy hero-candy--1"></div>
+              <div className="hero-candy hero-candy--2"></div>
+            </div>
           </div>
-        </footer>
-      </div>
+        </div>
+      </section>
+
+      {/* Story Section */}
+      <section className="ghost-story">
+        <div className="ghost-story__grid">
+          <div className="ghost-story__text">
+            <h2 className="section-title section-title--story">
+              <span className="title-star">*</span>
+              STORY
+              <span className="title-star">*</span>
+            </h2>
+
+            <div className="ghost-story__content">
+              <p>
+                <strong>RUNNING GHOST: Nightly Journey</strong> is a story about
+                mischievous ghosts living in Cemetery Island. Every night, when
+                the sun goes down, the ghosts go to "Dream Towns" where their
+                favorite candies and soul-stones are abundant.
+              </p>
+              <p>
+                However, there is a very scary Grim Reaper whose mission is to
+                keep the ghosts out of the Dream Towns. If the ghosts are cut by
+                the Grim Reaper's scythe, they will be temporarily scattered.
+                Even so, the ghosts still want to go to the Dream Towns
+                collecting candies while trying to avoid the Grim Reaper.
+              </p>
+            </div>
+          </div>
+
+          <div className="cemetery-island">
+            <div className="cemetery-island__image">
+              <div className="floating-island-scene">
+                <div className="island-base"></div>
+                <div className="island-grass-top"></div>
+                <div className="island-trees"></div>
+                <div className="island-ghost"></div>
+              </div>
+            </div>
+            <div className="cemetery-island__label">
+              <span>Cemetery Island</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Character Section */}
+      <section className="ghost-character">
+        <div className="ghost-character__header">
+          <h2 className="section-title section-title--character">
+            <span className="title-star">*</span>
+            CHARACTER
+            <span className="title-star">*</span>
+          </h2>
+          <p className="ghost-character__subtitle">
+            Meet the night crew and the gentle spirits you will rescue along the
+            way.
+          </p>
+        </div>
+
+        <div className="character-card">
+          <div className="character-card__header">
+            <span className="character-card__label">The Ghosts</span>
+          </div>
+
+          <div className="character-card__content">
+            <div className="character-card__image">
+              <div className="ghost-group">
+                <div className="ghost-main"></div>
+                <div className="ghost-companion ghost-companion--1"></div>
+                <div className="ghost-companion ghost-companion--2"></div>
+              </div>
+            </div>
+
+            <div className="character-card__text">
+              <p>
+                There are many ghosts with their own interesting stories that
+                you will meet on your nightly journey, gather with them and
+                explore the dream towns together. Especially, at some certain
+                points in the towns, you will be able to encounter the ancient
+                ghosts sealed inside the fairy stones.
+              </p>
+              <p>
+                Rescue those ghosts, invite them to live on your Cemetery Island
+                and grow the land together.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="first-ideas">
+          <h3 className="first-ideas__title">The first ideas of "the Ghost"</h3>
+          <div className="first-ideas__gallery">
+            <div className="idea-sketch idea-sketch--1"></div>
+            <div className="idea-sketch idea-sketch--2"></div>
+            <div className="idea-sketch idea-sketch--3"></div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="ghost-cta">
+        <div className="ghost-cta__content">
+          <h2>Ready to Begin Your Journey?</h2>
+          <p>Join the ghosts on their nightly adventure!</p>
+          <Link to="/game" className="ghost-cta__button">
+            Play Now
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="ghost-footer">
+        <div className="ghost-footer__content">
+          <p>(c) 2026 Running Ghost: Nightly Journey. All rights reserved.</p>
+          <div className="ghost-footer__links">
+            <a href="#">Twitter</a>
+            <a href="#">Discord</a>
+            <a href="#">Telegram</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
-
-
-
-

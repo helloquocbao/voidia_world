@@ -363,6 +363,9 @@ class WorldScene extends Phaser.Scene {
       frameWidth: 64,
       frameHeight: 64,
     });
+
+    // Background image
+    this.load.image("background", "/backgroup.png");
   }
 
   create() {
@@ -413,16 +416,15 @@ class WorldScene extends Phaser.Scene {
     );
 
     // Solid background so player always sees something even if textures fail
-    this.add
-      .rectangle(
-        this.worldBounds.width / 2,
-        this.worldBounds.height / 2,
-        this.worldBounds.width,
-        this.worldBounds.height,
-        0x0f1f33,
-        1,
-      )
-      .setDepth(-5);
+    // Use background image to cover the entire camera view
+    const bg = this.add.image(0, 0, "background");
+    bg.setOrigin(0, 0);
+    bg.setDisplaySize(
+      Math.max(this.worldBounds.width, this.scale.width * 2),
+      Math.max(this.worldBounds.height, this.scale.height * 2),
+    );
+    bg.setDepth(-10);
+    bg.setScrollFactor(0); // Fixed to camera, doesn't scroll with world
 
     this.drawTiles();
     this.createAnimations();
@@ -459,13 +461,10 @@ class WorldScene extends Phaser.Scene {
     this.player.play("player-idle");
     this.player.setData("facing", 1);
 
-    this.cameras.main.setBounds(
-      this.worldBounds.x,
-      this.worldBounds.y,
-      this.worldBounds.width,
-      this.worldBounds.height,
-    );
-    this.cameras.main.startFollow(this.player, true, 0.15, 0.15);
+    // Don't set camera bounds - let camera freely follow player to keep them centered
+    // even when map is smaller than the viewport
+    // Camera follows player, keeping player at exact center (lerp = 1 for instant follow)
+    this.cameras.main.startFollow(this.player, true, 1, 1);
     // Auto-zoom: show ~9 tiles across; clamp 1.3–2.2 (better for small sprite)
     const longestSide = Math.max(this.mapWidth, this.mapHeight);
     const autoZoom = Math.min(2.2, Math.max(1.3, 9 / longestSide));

@@ -1,8 +1,8 @@
 .presale {
   position: relative;
   min-height: 100vh;
-  color: #eaf1ff;
-  background: #0b1021;
+  color: var(--ghost-cream);
+  background: linear-gradient(180deg, var(--ghost-dark) 0%, var(--ghost-dark-2) 55%, var(--ghost-teal) 100%);
   overflow: hidden;
   font-family: var(--font-sans);
 }
@@ -10,11 +10,7 @@
 .presale__bg {
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(900px at 10% 20%, rgba(68, 129, 255, 0.12), transparent),
-    radial-gradient(700px at 90% 10%, rgba(42, 179, 166, 0.12), transparent),
-    radial-gradient(1200px at 50% 70%, rgba(255, 122, 24, 0.08), transparent),
-    linear-gradient(180deg, #0b1021 0%, #0c142a 30%, #0f1e3b 100%);
+  background: linear-gradient(180deg, var(--ghost-dark) 0%, var(--ghost-dark-2) 55%, var(--ghost-teal) 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -30,7 +26,7 @@
 .stage-bar__track {
   position: relative;
   height: 14px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -40,8 +36,8 @@
   top: 0;
   left: 0;
   height: 100%;
-  background: linear-gradient(90deg, #2ab3a6, #ff7a18);
-  box-shadow: 0 8px 24px rgba(42, 179, 166, 0.35);
+  background: linear-gradient(90deg, var(--ghost-mint), var(--ghost-moss));
+  box-shadow: 0 8px 24px rgba(111, 178, 143, 0.35);
 }
 
 .stage-bar__dot {
@@ -51,7 +47,7 @@
   height: 18px;
   margin-top: -9px;
   border-radius: 50%;
-  border: 2px solid #0b1021;
+  border: 2px solid rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.2);
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.16);
   transform: translateX(-50%);
@@ -59,13 +55,13 @@
 
 .stage-bar__dot--done,
 .stage-bar__dot--current {
-  background: #2ab3a6;
-  box-shadow: 0 0 0 2px rgba(42, 179, 166, 0.45);
+  background: var(--ghost-mint);
+  box-shadow: 0 0 0 2px rgba(169, 215, 191, 0.45);
 }
 
 .stage-bar__dot--current {
-  border-color: #ff7a18;
-  box-shadow: 0 0 0 2px rgba(255, 122, 24, 0.45);
+  border-color: var(--ghost-star);
+  box-shadow: 0 0 0 2px rgba(255, 232, 166, 0.45);
 }
 
 .stage-bar__labels {
@@ -639,18 +635,22 @@
     flex-wrap: wrap;
     gap: 12px;
   }
+
   .stage-bar {
     padding: 12px 0 4px;
   }
+
   .stage-bar__labels {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .presale__links {
     order: 3;
     width: 100%;
     justify-content: center;
     flex-wrap: wrap;
   }
+
   .presale__hero {
     grid-template-columns: 1fr;
   }
@@ -660,9 +660,11 @@
   .presale__content {
     padding: 12px 16px 72px;
   }
+
   .hero__actions {
     flex-direction: column;
   }
+
   .presale__links a {
     padding: 8px 12px;
   }

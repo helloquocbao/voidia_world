@@ -44,7 +44,7 @@ const TILE_NAMES = [
 ];
 
 // Lấy động danh sách decorations từ folder (Vite import.meta.glob)
-const decoModules = import.meta.glob("/public/sprites/decorations/*.png", {
+const decoModules = import.meta.glob("/sprites/decorations/*.png", {
   eager: true,
   query: "?url",
   import: "default",
@@ -170,4 +170,3 @@ export function isDecoBlocking(id: number) {
 export function canWalkAt(tileId: number, decoId: number = 0) {
   return isWalkableTile(tileId) && isDecoWalkable(decoId);
 }
-

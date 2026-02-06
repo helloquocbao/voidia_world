@@ -1,32 +1,31 @@
-/* ===== DARK GAMING EDITOR PAGE ===== */
+/* ===== PIXEL EDITOR PAGE ===== */
 .editor-page {
   position: relative;
   overflow: hidden;
   min-height: 100vh;
-  color: var(--land-text);
-  --land-bg-dark: #0a1929;
-  --land-bg-mid: #0d2137;
-  --land-bg-light: #1a3a5c;
-  --land-accent: #59b7ff;
-  --land-accent-glow: rgba(89, 183, 255, 0.4);
-  --land-accent-2: #f6a44b;
-  --land-accent-2-glow: rgba(246, 164, 75, 0.4);
-  --land-text: #e8f4ff;
-  --land-text-muted: #7eb8e8;
-  --land-border: rgba(126, 184, 232, 0.2);
-  --land-card: rgba(13, 33, 55, 0.9);
+  color: var(--ghost-cream);
+  --land-bg-dark: var(--ghost-dark);
+  --land-bg-mid: var(--ghost-dark-2);
+  --land-bg-light: var(--ghost-teal);
+  --land-accent: var(--ghost-mint);
+  --land-accent-glow: rgba(169, 215, 191, 0.35);
+  --land-accent-2: var(--ghost-moss);
+  --land-accent-2-glow: rgba(111, 178, 143, 0.35);
+  --land-text: var(--ghost-cream);
+  --land-text-muted: rgba(255, 255, 255, 0.7);
+  --land-border: rgba(255, 255, 255, 0.14);
+  --land-card: rgba(20, 40, 60, 0.6);
   --ink: var(--land-text);
   --muted: var(--land-text-muted);
   --stroke: var(--land-border);
   --accent: var(--land-accent-2);
   --accent-2: var(--land-accent);
   --card: var(--land-card);
-  background: linear-gradient(
-    180deg,
-    var(--land-bg-dark) 0%,
-    var(--land-bg-mid) 50%,
-    var(--land-bg-dark) 100%
-  );
+  background: linear-gradient(180deg,
+      var(--land-bg-dark) 0%,
+      var(--land-bg-mid) 55%,
+      var(--land-bg-light) 100%);
+  font-family: var(--font-sans);
 }
 
 /* Animated background elements */
@@ -35,8 +34,8 @@
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(126, 184, 232, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(126, 184, 232, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent);
   pointer-events: none;
@@ -48,16 +47,12 @@
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(
-      ellipse 80% 50% at 50% 0%,
-      rgba(89, 183, 255, 0.08),
-      transparent
-    ),
-    radial-gradient(
-      ellipse 60% 40% at 80% 20%,
-      rgba(89, 183, 255, 0.05),
-      transparent
-    );
+    radial-gradient(ellipse 80% 50% at 50% 0%,
+      rgba(169, 215, 191, 0.12),
+      transparent),
+    radial-gradient(ellipse 60% 40% at 80% 20%,
+      rgba(111, 178, 143, 0.08),
+      transparent);
   pointer-events: none;
   z-index: 0;
 }
@@ -191,7 +186,7 @@
 }
 
 /* ===== CONNECT BUTTON OVERRIDE ===== */
-.editor-nav > div button,
+.editor-nav>div button,
 .editor-nav button {
   font-family: var(--font-mono) !important;
   font-size: 12px !important;
@@ -210,7 +205,7 @@
   cursor: pointer !important;
 }
 
-.editor-nav > div button:hover,
+.editor-nav>div button:hover,
 .editor-nav button:hover {
   transform: translateY(-2px) !important;
   box-shadow:
@@ -274,8 +269,7 @@
 .editor-layout {
   display: grid;
   grid-template-columns:
-    minmax(240px, 320px) minmax(0, 1fr)
-    minmax(240px, 320px);
+    minmax(240px, 320px) minmax(0, 1fr) minmax(240px, 320px);
   gap: 24px;
   align-items: start;
 }
@@ -476,7 +470,8 @@
   box-shadow: none;
 }
 
-.btn--primary, .btn-active-PLOT {
+.btn--primary,
+.btn-active-PLOT {
   background: linear-gradient(135deg, var(--land-accent), #3d8fd1);
   border: 2px solid var(--land-accent);
   color: var(--land-bg-dark);
@@ -596,11 +591,9 @@
   overflow: auto;
   border-radius: 16px;
   border: 1px solid var(--land-border);
-  background: linear-gradient(
-    180deg,
-    rgba(26, 58, 92, 0.5) 0%,
-    rgba(13, 33, 55, 0.8) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(26, 58, 92, 0.5) 0%,
+      rgba(13, 33, 55, 0.8) 100%);
   padding: 12px;
   box-shadow:
     0 10px 40px rgba(0, 0, 0, 0.4),
@@ -680,6 +673,7 @@
   from {
     filter: brightness(1);
   }
+
   to {
     filter: brightness(1.08);
   }
@@ -813,11 +807,9 @@
   padding: 12px;
   border-radius: 16px;
   border: 1px solid var(--land-border);
-  background: linear-gradient(
-    180deg,
-    rgba(26, 58, 92, 0.5) 0%,
-    rgba(13, 33, 55, 0.8) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(26, 58, 92, 0.5) 0%,
+      rgba(13, 33, 55, 0.8) 100%);
   box-shadow:
     0 10px 40px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
@@ -1040,4 +1032,3 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(89, 183, 255, 0.4);
 }
-

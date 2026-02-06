@@ -1,19 +1,20 @@
-/* ===== WALLET HEADER COMPONENT ===== */
+/* ===== WALLET HEADER COMPONENT - PIXEL STYLE ===== */
 .wallet-header {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .wallet-header__balance {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  border-radius: 10px;
-  background: rgba(89, 183, 255, 0.1);
-  border: 1px solid rgba(89, 183, 255, 0.3);
-  font-family: var(--font-mono);
+  padding: 6px 12px;
+  border-radius: 0;
+  background: #d4a574;
+  border: 3px solid #5a3d1a;
+  font-family: "Arial", monospace;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
 }
 
 .wallet-header__icon {
@@ -22,17 +23,17 @@
 }
 
 .wallet-header__value {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  color: #59b7ff;
+  color: #2c1810;
 }
 
 .wallet-header__label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #7eb8e8;
+  font-size: 10px;
+  font-weight: 700;
+  color: #5a3d1a;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 1px;
 }
 
 /* Loading Skeleton */
@@ -40,12 +41,10 @@
   display: inline-block;
   width: 40px;
   height: 14px;
-  background: linear-gradient(
-    90deg,
-    rgba(89, 183, 255, 0.2) 0%,
-    rgba(89, 183, 255, 0.4) 50%,
-    rgba(89, 183, 255, 0.2) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(89, 183, 255, 0.2) 0%,
+      rgba(89, 183, 255, 0.4) 50%,
+      rgba(89, 183, 255, 0.2) 100%);
   background-size: 200% 100%;
   border-radius: 4px;
   animation: shimmer 1.5s infinite;
@@ -55,6 +54,7 @@
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
@@ -62,28 +62,27 @@
 
 /* Connect Button Override */
 .wallet-header button {
-  font-family: var(--font-mono) !important;
+  font-family: "Arial", monospace !important;
   font-size: 12px !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.1em !important;
-  padding: 12px 20px !important;
-  border-radius: 10px !important;
-  background: linear-gradient(135deg, #59b7ff, #3d8fd1) !important;
-  border: 2px solid #59b7ff !important;
-  color: #0a1929 !important;
-  box-shadow: 
-    0 4px 20px rgba(89, 183, 255, 0.4),
-    inset 0 2px 0 rgba(255, 255, 255, 0.2) !important;
-  transition: all 0.3s ease !important;
+  letter-spacing: 1px !important;
+  padding: 8px 16px !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, #daa520 0%, #cd853f 100%) !important;
+  border: 3px solid #5a3d1a !important;
+  color: #2c1810 !important;
+  box-shadow:
+    4px 4px 0 rgba(0, 0, 0, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.3) !important;
+  transition: all 0.1s ease !important;
   cursor: pointer !important;
 }
 
 .wallet-header button:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 
-    0 8px 30px rgba(89, 183, 255, 0.5),
-    inset 0 2px 0 rgba(255, 255, 255, 0.3) !important;
+  transform: translate(1px, 1px) !important;
+  box-shadow:
+    3px 3px 0 rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Responsive */
@@ -91,24 +90,24 @@
   .wallet-header {
     gap: 10px;
   }
-  
+
   .wallet-header__balance {
     padding: 6px 10px;
   }
-  
+
   .wallet-header__icon {
     width: 14px;
     height: 14px;
   }
-  
+
   .wallet-header__value {
     font-size: 12px;
   }
-  
+
   .wallet-header__label {
     font-size: 9px;
   }
-  
+
   .wallet-header button {
     padding: 8px 14px !important;
     font-size: 10px !important;
