@@ -1,12 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import Phaser from "phaser";
 import { BossFightScene } from "../game/BossFightScene";
-import { WalletHeader } from "../components";
+import { WalletHeader, RewardsModal } from "../components";
+import { useClaimReward, useRewardBalance } from "../hooks";
+import { SignedClaimPayload, MatchResult } from "../services/bossApi";
 import "./BossFightPage.css";
 
 const SERVER_URL = "ws://localhost:3001/ws";
+
+interface MatchEndPayload {
+  result: MatchResult;
+  myDamage: number;
+  myScore: number;
+}
 
 export default function BossFightPage() {
   const account = useCurrentAccount();
@@ -16,6 +24,17 @@ export default function BossFightPage() {
   const [serverStatus, setServerStatus] = useState<
     "checking" | "online" | "offline"
   >("checking");
+
+  // Match end state
+  const [matchEndData, setMatchEndData] = useState<MatchEndPayload | null>(
+    null,
+  );
+  const [showRewardNotification, setShowRewardNotification] = useState(false);
+  const [isRewardsModalOpen, setIsRewardsModalOpen] = useState(false);
+
+  // Hooks
+  const { claimWithPayload } = useClaimReward();
+  const { refetch: refetchBalance } = useRewardBalance();
 
   // Check server status
   useEffect(() => {
@@ -35,6 +54,30 @@ export default function BossFightPage() {
     checkServer();
     const interval = setInterval(checkServer, 5000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Listen for match end events from Phaser scene
+  useEffect(() => {
+    const handleMatchEnd = (event: CustomEvent<MatchEndPayload>) => {
+      setMatchEndData(event.detail);
+      setShowRewardNotification(true);
+
+      // Auto-hide after 10 seconds
+      setTimeout(() => {
+        setShowRewardNotification(false);
+      }, 10000);
+    };
+
+    window.addEventListener(
+      "boss-fight-match-end",
+      handleMatchEnd as EventListener,
+    );
+    return () => {
+      window.removeEventListener(
+        "boss-fight-match-end",
+        handleMatchEnd as EventListener,
+      );
+    };
   }, []);
 
   // Initialize Phaser game
@@ -95,6 +138,19 @@ export default function BossFightPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Handle claim from modal
+  const handleClaim = useCallback(
+    async (rewardId: string, signedPayload: SignedClaimPayload) => {
+      const result = await claimWithPayload(rewardId, signedPayload);
+      if (result.success) {
+        refetchBalance();
+      } else {
+        throw new Error(result.error);
+      }
+    },
+    [claimWithPayload, refetchBalance],
+  );
+
   return (
     <div className="boss-fight-page">
       <WalletHeader />
@@ -125,6 +181,41 @@ export default function BossFightPage() {
         </div>
       )}
 
+      {/* Match End Reward Notification */}
+      {showRewardNotification && matchEndData && (
+        <div className="reward-notification">
+          <div className="reward-notification__content">
+            <div className="reward-notification__header">
+              {matchEndData.result.isVictory ? "🎉 Victory!" : "💀 Defeat"}
+            </div>
+            <div className="reward-notification__stats">
+              <span>⚔️ Damage: {matchEndData.myDamage.toLocaleString()}</span>
+              <span>🏆 Score: {matchEndData.myScore.toLocaleString()}</span>
+            </div>
+            <div className="reward-notification__message">
+              Rewards are ready to claim!
+            </div>
+            <div className="reward-notification__actions">
+              <button
+                className="claim-btn"
+                onClick={() => {
+                  setShowRewardNotification(false);
+                  setIsRewardsModalOpen(true);
+                }}
+              >
+                🎁 Claim Rewards
+              </button>
+              <button
+                className="dismiss-btn"
+                onClick={() => setShowRewardNotification(false)}
+              >
+                Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="boss-fight-info">
         <div className="info-card">
           <h3>How to Play</h3>
@@ -144,6 +235,13 @@ export default function BossFightPage() {
           </ul>
         </div>
       </div>
+
+      {/* Rewards Modal */}
+      <RewardsModal
+        isOpen={isRewardsModalOpen}
+        onClose={() => setIsRewardsModalOpen(false)}
+        onClaim={handleClaim}
+      />
     </div>
   );
 }

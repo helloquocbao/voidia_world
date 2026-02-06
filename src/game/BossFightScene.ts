@@ -434,6 +434,21 @@ export class BossFightScene extends Phaser.Scene {
     const isVictory = result.isVictory;
     const message = isVictory ? "🎉 VICTORY!" : "💀 DEFEATED";
 
+    // Emit custom event for React to handle
+    const myContrib = result.contributions.find(
+      (c) => c.playerId === this.gameClient?.playerId,
+    );
+
+    window.dispatchEvent(
+      new CustomEvent("boss-fight-match-end", {
+        detail: {
+          result,
+          myDamage: myContrib?.damage || 0,
+          myScore: myContrib?.damage || 0, // Using damage as score for now
+        },
+      }),
+    );
+
     // Show result
     const overlay = this.add
       .rectangle(
@@ -463,9 +478,6 @@ export class BossFightScene extends Phaser.Scene {
       .setDepth(201);
 
     // Show contributions
-    const myContrib = result.contributions.find(
-      (c) => c.playerId === this.gameClient?.playerId,
-    );
     if (myContrib) {
       this.add
         .text(
@@ -486,6 +498,18 @@ export class BossFightScene extends Phaser.Scene {
         this.cameras.main.height / 2 + 60,
         `Duration: ${(result.duration / 1000).toFixed(1)}s`,
         { fontSize: "18px", color: "#aaaaaa" },
+      )
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(201);
+
+    // Reward hint
+    this.add
+      .text(
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2 + 100,
+        "🎁 Rewards ready! Check the claim button.",
+        { fontSize: "16px", color: "#00ff88" },
       )
       .setOrigin(0.5)
       .setScrollFactor(0)

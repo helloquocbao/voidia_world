@@ -13,6 +13,10 @@ export const REWARD_COIN_TYPE = PACKAGE_ID
   : "";
 export const RANDOM_OBJECT_ID = import.meta.env.VITE_RANDOM_OBJECT_ID ?? "0x8";
 
+// Boss Fight Config
+export const BOSS_FIGHT_CONFIG_ID =
+  import.meta.env.VITE_BOSS_FIGHT_CONFIG ?? "";
+
 // Crowdfund / pre-sale config
 export type PresaleTier = {
   id: string;
@@ -25,15 +29,14 @@ export type PresaleTier = {
   notes?: string;
 };
 
-export const PRESALE_WALLET =
-  import.meta.env.VITE_PRESALE_WALLET ?? ""; // address to receive SUI for the drive
+export const PRESALE_WALLET = import.meta.env.VITE_PRESALE_WALLET ?? ""; // address to receive SUI for the drive
 
 export const PRESALE_GOAL_SUI = Number(
-  import.meta.env.VITE_PRESALE_GOAL_SUI ?? 50000
+  import.meta.env.VITE_PRESALE_GOAL_SUI ?? 50000,
 );
 
 export const PRESALE_RAISED_SUI = Number(
-  import.meta.env.VITE_PRESALE_RAISED_SUI ?? 0
+  import.meta.env.VITE_PRESALE_RAISED_SUI ?? 0,
 );
 
 export const PRESALE_TIERS: PresaleTier[] = [
@@ -81,8 +84,7 @@ export const PRESALE_TIERS: PresaleTier[] = [
       "Token bonus (scales with contribution)",
     ],
     tokenBonusWeight: 4, // highest priority when splitting community bonus
-    notes:
-      "More SUI above 350 = larger community bonus share (pro-rata).",
+    notes: "More SUI above 350 = larger community bonus share (pro-rata).",
   },
 ];
 
