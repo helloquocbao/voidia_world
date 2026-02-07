@@ -423,10 +423,12 @@ module voidia_world::world {
 
         if (price > 0) {
             if (pay_value > price) {
-                let change = coin::split(&mut payment, price, ctx);
-                transfer::public_transfer(change, sender);
+                let fee_part = coin::split(&mut payment, price, ctx);
+                voidia_coin::deposit(vault, fee_part);
+                transfer::public_transfer(payment, sender);
+            } else {
+                voidia_coin::deposit(vault, payment);
             };
-            voidia_coin::deposit(vault, payment);
         } else if (pay_value > 0) {
             transfer::public_transfer(payment, sender);
         } else {
@@ -570,9 +572,12 @@ module voidia_world::world {
         let pay_value = coin::value(&payment);
         assert!(pay_value >= price && price > 0, E_INVALID_PRICE);
 
-        if (pay_value > price) {
-            let change = coin::split(&mut payment, price, ctx);
-            transfer::public_transfer(change, buyer);
+        let payment_for_seller = if (pay_value > price) {
+            let exact_payment = coin::split(&mut payment, price, ctx);
+            transfer::public_transfer(payment, buyer);  // trả lại tiền thừa
+            exact_payment
+        } else {
+            payment
         };
 
         if (!df::exists_(&world.id, SellerPayoutKey { owner: seller })) {
@@ -580,7 +585,7 @@ module voidia_world::world {
             df::add(&mut world.id, SellerPayoutKey { owner: seller }, payout);
         };
         let payout_obj: &mut SellerPayout = df::borrow_mut(&mut world.id, SellerPayoutKey { owner: seller });
-        let bal = coin::into_balance(payment);
+        let bal = coin::into_balance(payment_for_seller);
         balance::join(&mut payout_obj.balance, bal);
 
         transfer::public_transfer(plot, buyer);

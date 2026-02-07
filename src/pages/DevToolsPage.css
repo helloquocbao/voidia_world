@@ -1,0 +1,244 @@
+.dev-tools-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+    color: #fff;
+    padding-bottom: 60px;
+}
+
+.dev-tools-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.back-link {
+    display: inline-block;
+    color: #79d5ff;
+    text-decoration: none;
+    margin-bottom: 20px;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.back-link:hover {
+    color: #a8e5ff;
+}
+
+.dev-tools-title {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.dev-tools-subtitle {
+    color: #888;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.warning-box {
+    background: rgba(255, 193, 7, 0.15);
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 20px;
+    color: #ffc107;
+    text-align: center;
+}
+
+.warning-box ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 12px;
+    text-align: left;
+}
+
+.warning-box li {
+    font-size: 12px;
+    margin: 4px 0;
+    font-family: monospace;
+}
+
+.mint-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.mint-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.mint-card:hover {
+    border-color: rgba(121, 213, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.mint-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.mint-icon {
+    font-size: 2rem;
+}
+
+.mint-card h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.mint-desc {
+    color: #aaa;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.mint-input-group {
+    margin-bottom: 16px;
+}
+
+.mint-input-group label {
+    display: block;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 6px;
+}
+
+.mint-input-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.mint-input-group input:focus {
+    border-color: #79d5ff;
+}
+
+.mint-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mint-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.mint-btn-token {
+    background: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%);
+    color: #1a1a2e;
+}
+
+.mint-btn-token:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(243, 156, 18, 0.4);
+}
+
+.mint-btn-stone {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    color: #fff;
+}
+
+.mint-btn-stone:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(155, 89, 182, 0.4);
+}
+
+.config-info {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.config-info h3 {
+    margin: 0 0 16px 0;
+    font-size: 1rem;
+    color: #888;
+}
+
+.config-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.config-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.config-label {
+    font-size: 12px;
+    color: #666;
+}
+
+.config-value {
+    font-size: 11px;
+    color: #79d5ff;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px 10px;
+    border-radius: 4px;
+    word-break: break-all;
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-weight: 500;
+    animation: slideUp 0.3s ease;
+    z-index: 1000;
+}
+
+.toast-success {
+    background: #27ae60;
+    color: #fff;
+}
+
+.toast-error {
+    background: #e74c3c;
+    color: #fff;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+@media (max-width: 600px) {
+    .mint-sections {
+        grid-template-columns: 1fr;
+    }
+}

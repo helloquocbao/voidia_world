@@ -10,6 +10,7 @@ import BossFightPage from "./pages/BossFightPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import MatchHistoryPage from "./pages/MatchHistoryPage";
 import PlayerStatsPage from "./pages/PlayerStatsPage";
+import DevToolsPage from "./pages/DevToolsPage";
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
       <Route path="/presale" element={<PresalePage />} />
       <Route path="/upgrade" element={<UpgradePage />} />
       <Route path="/portfolio" element={<PortfolioPage />} />
+      <Route path="/dev" element={<DevToolsPage />} />
     </Routes>
   );
 }

@@ -38,7 +38,7 @@ import "./GamePage.css";
 
 const TILE_SIZE = 32;
 const PLOT_SIZE = 5;
-const PLAY_FEE = 5n;
+const PLAY_FEE = 8n;
 const PLAY_STATE_KEY = "PLAY_STATE";
 const PLAY_TARGET_KEY = "PLAY_TARGET";
 
@@ -918,7 +918,11 @@ export default function GamePage() {
           ],
         });
       } else {
-        // Play V2: Paid play (requires 5 PLOT)
+        // Play V2: Paid play (requires 8 VOIDIA)
+        // Split exact amount to avoid wallet showing full coin outflow
+        const [feeCoin] = tx.splitCoins(tx.object(playableCoin.coinObjectId), [
+          tx.pure.u64(8),
+        ]);
         tx.moveCall({
           target: `${PACKAGE_ID}::world::play_v2`,
           arguments: [
@@ -926,7 +930,7 @@ export default function GamePage() {
             tx.object(REWARD_VAULT_ID),
             tx.object(POWER_STONE_VAULT_ID),
             tx.object(characterId),
-            tx.object(playableCoin.coinObjectId),
+            feeCoin,
           ],
         });
       }

@@ -77,16 +77,39 @@ function truncateAddress(address: string, startLen = 6, endLen = 4): string {
 // Helper function to get status class based on message content
 function getStatusClass(message: string): string {
   const lower = message.toLowerCase();
-  if (lower.includes("✅") || lower.includes("success") || lower.includes("complete") || lower.includes("confirmed")) {
+  if (
+    lower.includes("✅") ||
+    lower.includes("success") ||
+    lower.includes("complete") ||
+    lower.includes("confirmed")
+  ) {
     return "marketplace-status marketplace-status--success";
   }
-  if (lower.includes("failed") || lower.includes("error") || lower.includes("❌") || lower.includes("cannot") || lower.includes("no ")) {
+  if (
+    lower.includes("failed") ||
+    lower.includes("error") ||
+    lower.includes("❌") ||
+    lower.includes("cannot") ||
+    lower.includes("no ")
+  ) {
     return "marketplace-status marketplace-status--error";
   }
-  if (lower.includes("please") || lower.includes("must") || lower.includes("warning") || lower.includes("price")) {
+  if (
+    lower.includes("please") ||
+    lower.includes("must") ||
+    lower.includes("warning") ||
+    lower.includes("price")
+  ) {
     return "marketplace-status marketplace-status--warning";
   }
-  if (lower.includes("...") || lower.includes("loading") || lower.includes("submitting") || lower.includes("syncing") || lower.includes("preparing") || lower.includes("waiting")) {
+  if (
+    lower.includes("...") ||
+    lower.includes("loading") ||
+    lower.includes("submitting") ||
+    lower.includes("syncing") ||
+    lower.includes("preparing") ||
+    lower.includes("waiting")
+  ) {
     return "marketplace-status marketplace-status--loading";
   }
   return "marketplace-status";
@@ -407,12 +430,18 @@ export default function Marketplace() {
         coins.data[0];
 
       const tx = new Transaction();
+
+      // Split exact amount to avoid wallet showing full coin outflow
+      const [paymentCoin] = tx.splitCoins(tx.object(coin.coinObjectId), [
+        tx.pure.u64(listing.price),
+      ]);
+
       tx.moveCall({
         target: `${PACKAGE_ID}::world::buy_Plot`,
         arguments: [
           tx.object(listing.worldId),
           tx.object(listing.PlotId),
-          tx.object(coin.coinObjectId),
+          paymentCoin,
         ],
       });
 
@@ -673,7 +702,11 @@ export default function Marketplace() {
         {/* Navigation */}
         <header className="marketplace-nav">
           <Link to="/" className="brand">
-            <img src="https://ik.imagekit.io/huubao/chunk_coin.png" alt="logo" className="w-12 h-12" />
+            <img
+              src="https://ik.imagekit.io/huubao/chunk_coin.png"
+              alt="logo"
+              className="w-12 h-12"
+            />
             <div>
               <div className="brand__name">Voidia World</div>
               <div className="brand__tag">Sky Adventures on Sui</div>
@@ -698,9 +731,8 @@ export default function Marketplace() {
             </div>
 
             <h1>
-              Trade{" "}
-              <span className="marketplace-hero__accent">Plot Lands</span> on
-              Sui
+              Trade <span className="marketplace-hero__accent">Plot Lands</span>{" "}
+              on Sui
             </h1>
 
             <p className="marketplace-hero__subtitle">
@@ -1017,7 +1049,9 @@ export default function Marketplace() {
               </div>
 
               {listingStatus && (
-                <div className={getStatusClass(listingStatus)}>{listingStatus}</div>
+                <div className={getStatusClass(listingStatus)}>
+                  {listingStatus}
+                </div>
               )}
 
               <div className="marketplace-modal__body">
@@ -1085,11 +1119,11 @@ export default function Marketplace() {
                                 placeholder="Price (Plot)"
                               />
                               <button
-                                className={
-                                  `${listedPlotIds.has(Plot.PlotId)
+                                className={`${
+                                  listedPlotIds.has(Plot.PlotId)
                                     ? "btn--secondary"
-                                    : "btn--primary"} flex items-center justify-center gap-2`
-                                }
+                                    : "btn--primary"
+                                } flex items-center justify-center gap-2`}
                                 onClick={() => handleListPlot(Plot)}
                                 disabled={
                                   isPending || listedPlotIds.has(Plot.PlotId)
@@ -1332,7 +1366,3 @@ function parseBalanceAmount(value: unknown): number {
   }
   return 0;
 }
-
-
-
-

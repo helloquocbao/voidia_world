@@ -8,6 +8,8 @@ export const REWARD_VAULT_ID = import.meta.env.VITE_REWARD_VAULT;
 export const POWER_STONE_VAULT_ID =
   import.meta.env.VITE_POWER_STONE_VAULT ?? "";
 export const TREASURY_CAP_ID = import.meta.env.VITE_TREASURY_CAP;
+export const POWER_STONE_TREASURY_CAP_ID =
+  import.meta.env.VITE_POWER_STONE_TREASURY_CAP ?? "";
 export const REWARD_COIN_TYPE = PACKAGE_ID
   ? `${PACKAGE_ID}::voidia_coin::VOIDIA_COIN`
   : "";

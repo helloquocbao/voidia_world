@@ -81,8 +81,7 @@ export default function EditorGame() {
   const [loadedPLOTs, setLoadedPLOTs] = useState<number | null>(null);
 
   // Default image URL for claimed PLOTs
-  const DEFAULT_PLOT_IMAGE_URL =
-    "https://ik.imagekit.io/huubao/image_PLOT.png";
+  const DEFAULT_PLOT_IMAGE_URL = "https://ik.imagekit.io/huubao/image_PLOT.png";
   const [isPLOTModalOpen, setIsPLOTModalOpen] = useState(false);
   const [hoveredPlotKey, setHoveredPlotKey] = useState("");
   const [hoveredplotId, setHoveredplotId] = useState("");
@@ -90,8 +89,7 @@ export default function EditorGame() {
   const [isClaimHelpOpen, setIsClaimHelpOpen] = useState(false);
 
   // Compute current PLOT price for UI display
-  const claimPLOTPrice =
-    (loadedPLOTs ?? 0) < 20 ? (loadedPLOTs ?? 0) * 5 : 100;
+  const claimPLOTPrice = (loadedPLOTs ?? 0) < 20 ? (loadedPLOTs ?? 0) * 5 : 100;
 
   // World creation params
   const [worldName, setWorldName] = useState<string>("");
@@ -174,18 +172,21 @@ export default function EditorGame() {
   const adminOwnerLabel = adminCapOwner
     ? shortAddress(adminCapOwner)
     : "unknown";
-  const walletLabel = walletAddress ? shortAddress(walletAddress) : "not connected";
-  const createWorldBlockReason = !WORLD_REGISTRY_ID || !ADMIN_CAP_ID
-    ? "Thiếu WORLD_REGISTRY_ID hoặc ADMIN_CAP_ID trong .env"
-    : !isConnected
-      ? "Kết nối ví admin để tạo world"
-      : !isAdmin
-        ? `Cần ví admin (${adminOwnerLabel})`
-        : !worldName.trim()
-          ? "Nhập tên world"
-          : worldName.trim().length > 64
-            ? "Tên world tối đa 64 ký tự"
-            : null;
+  const walletLabel = walletAddress
+    ? shortAddress(walletAddress)
+    : "not connected";
+  const createWorldBlockReason =
+    !WORLD_REGISTRY_ID || !ADMIN_CAP_ID
+      ? "Thiếu WORLD_REGISTRY_ID hoặc ADMIN_CAP_ID trong .env"
+      : !isConnected
+        ? "Kết nối ví admin để tạo world"
+        : !isAdmin
+          ? `Cần ví admin (${adminOwnerLabel})`
+          : !worldName.trim()
+            ? "Nhập tên world"
+            : worldName.trim().length > 64
+              ? "Tên world tối đa 64 ký tự"
+              : null;
   const canCreateWorld = !createWorldBlockReason && !isBusy;
   const isOwnerMatch = (owner?: string) =>
     Boolean(
@@ -268,9 +269,7 @@ export default function EditorGame() {
   const activePLOTLabel = activePlotKey
     ? activePlotKey.replace(",", ", ")
     : "none";
-  const activePLOTOwner = activePlotKey
-    ? plotOwners[activePlotKey]
-    : undefined;
+  const activePLOTOwner = activePlotKey ? plotOwners[activePlotKey] : undefined;
   const canSaveActivePLOT =
     Boolean(activePlotKey) && isOwnerMatch(activePLOTOwner);
 
@@ -653,28 +652,35 @@ export default function EditorGame() {
     }
   }
 
-  async function refreshWorldAndMap(options?: { flyToNewest?: boolean } | React.MouseEvent) {
+  async function refreshWorldAndMap(
+    options?: { flyToNewest?: boolean } | React.MouseEvent,
+  ) {
     // Handle both direct calls with options and event handler calls
-    const flyToNewest = options && 'flyToNewest' in options ? options.flyToNewest : false;
-    
+    const flyToNewest =
+      options && "flyToNewest" in options ? options.flyToNewest : false;
+
     if (worldIdValue) {
       // Add delay to ensure blockchain data is updated
       if (flyToNewest) {
         setNotice("Waiting for blockchain to update...");
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         setNotice("Loading updated world data...");
       }
-      
+
       const result = await loadWorldMap(worldIdValue);
-      
+
       // Fly to newest PLOT if requested
       if (flyToNewest && result.newestPlotKey) {
         const owner = result.owners[result.newestPlotKey];
-        const isMyPLOT = owner && (owner === userId || (walletAddress && owner === walletAddress));
-        
+        const isMyPLOT =
+          owner &&
+          (owner === userId || (walletAddress && owner === walletAddress));
+
         if (isMyPLOT) {
           console.log("Flying to newest PLOT:", result.newestPlotKey);
-          setNotice(`PLOT claimed successfully! Flying to ${result.newestPlotKey}...`);
+          setNotice(
+            `PLOT claimed successfully! Flying to ${result.newestPlotKey}...`,
+          );
           // Small delay to ensure UI is updated
           setTimeout(() => flyToPLOT(result.newestPlotKey!), 300);
         }
@@ -684,7 +690,9 @@ export default function EditorGame() {
     }
   }
 
-  async function loadWorldMap(targetWorldId: string): Promise<{ owners: plotOwners; newestPlotKey?: string }> {
+  async function loadWorldMap(
+    targetWorldId: string,
+  ): Promise<{ owners: plotOwners; newestPlotKey?: string }> {
     setMapLoadError("");
     setIsMapLoading(true);
     setLoadedPLOTs(null);
@@ -701,10 +709,7 @@ export default function EditorGame() {
         return { owners: {} };
       }
 
-      const PLOTEntries = await resolvePLOTEntries(
-        targetWorldId,
-        fieldEntries,
-      );
+      const PLOTEntries = await resolvePLOTEntries(targetWorldId, fieldEntries);
       console.log("Resolved PLOT entries:", PLOTEntries);
 
       if (PLOTEntries.length === 0) {
@@ -731,7 +736,7 @@ export default function EditorGame() {
         .fill(0)
         .map(() => Array(width).fill(0));
       const newOwners: plotOwners = {};
-      
+
       // Track newest PLOT by version
       let newestVersion = 0;
       let newestPlotKey: string | undefined;
@@ -770,7 +775,7 @@ export default function EditorGame() {
         if (owner) {
           const PlotKey = makePlotKey(entry.cx, entry.cy);
           newOwners[PlotKey] = owner;
-          
+
           // Track newest PLOT by version
           if (entry.version > newestVersion) {
             newestVersion = entry.version;
@@ -787,7 +792,7 @@ export default function EditorGame() {
       setplotOwners(newOwners);
       setLoadedPLOTs(PLOTEntries.length);
       setNotice(`Loaded ${PLOTEntries.length} PLOTs from chain.`);
-      
+
       return { owners: newOwners, newestPlotKey };
     } catch (error) {
       setMapLoadError(error instanceof Error ? error.message : String(error));
@@ -959,8 +964,8 @@ export default function EditorGame() {
       async (tx) => {
         let paymentCoin;
 
-        if (coins.data.length > 0) {
-          // Merge all coins into one if needed and use it
+        if (PLOTPrice > 0 && coins.data.length > 0) {
+          // Merge all coins into one if needed
           const allCoinIds = coins.data.map((c) => c.coinObjectId);
           if (allCoinIds.length > 1) {
             const [firstCoin, ...restCoins] = allCoinIds;
@@ -968,10 +973,17 @@ export default function EditorGame() {
               tx.object(firstCoin),
               restCoins.map((id) => tx.object(id)),
             );
-            paymentCoin = tx.object(firstCoin);
-          } else {
-            paymentCoin = tx.object(allCoinIds[0]);
           }
+          // Split exact amount to avoid wallet showing full coin outflow
+          [paymentCoin] = tx.splitCoins(tx.object(allCoinIds[0]), [
+            tx.pure.u64(PLOTPrice),
+          ]);
+        } else if (coins.data.length > 0) {
+          // Free plot but has coins - create zero coin
+          paymentCoin = tx.moveCall({
+            target: "0x2::coin::zero",
+            typeArguments: [REWARD_COIN_TYPE],
+          });
         } else {
           // No coins - create a zero coin (only works for first PLOT which is free)
           paymentCoin = tx.moveCall({
@@ -1130,9 +1142,9 @@ export default function EditorGame() {
     setPlayKey(keyHex);
 
     await runTx(
-      "Play (5 coins)",
+      "Play (8 coins)",
       async (tx) => {
-        // Get fee coin (PLAY_FEE = 5)
+        // Get fee coin (PLAY_FEE = 8)
         const coins = await suiClient.getCoins({
           owner: account!.address,
           coinType: REWARD_COIN_TYPE,
@@ -1144,17 +1156,18 @@ export default function EditorGame() {
 
         // Merge all coins if needed
         const allCoinIds = coins.data.map((c) => c.coinObjectId);
-        let feeCoin;
         if (allCoinIds.length > 1) {
           const [firstCoin, ...restCoins] = allCoinIds;
           tx.mergeCoins(
             tx.object(firstCoin),
             restCoins.map((id) => tx.object(id)),
           );
-          feeCoin = tx.object(firstCoin);
-        } else {
-          feeCoin = tx.object(allCoinIds[0]);
         }
+
+        // Split exact amount to avoid wallet showing full coin outflow
+        const [feeCoin] = tx.splitCoins(tx.object(allCoinIds[0]), [
+          tx.pure.u64(8),
+        ]);
 
         tx.moveCall({
           target: `${PACKAGE_ID}::world::play_v2`,
@@ -1281,7 +1294,11 @@ export default function EditorGame() {
       <div className="editor-shell">
         <header className="editor-nav">
           <Link to="/" className="brand">
-            <img src="https://ik.imagekit.io/huubao/chunk_coin.png" alt="logo" className="w-12 h-12" />
+            <img
+              src="https://ik.imagekit.io/huubao/chunk_coin.png"
+              alt="logo"
+              className="w-12 h-12"
+            />
             <div>
               <div className="brand__name">Voidia World</div>
               <div className="brand__tag">Sky Adventures on Sui</div>
@@ -1656,8 +1673,8 @@ export default function EditorGame() {
             <div className="panel">
               <div className="panel__title">World setup</div>
               <p className="panel__desc">
-                Tạo shared world object bằng AdminCap. Chỉ ví sở hữu AdminCap mới
-                thực thi được.
+                Tạo shared world object bằng AdminCap. Chỉ ví sở hữu AdminCap
+                mới thực thi được.
               </p>
               <div className="panel__rows">
                 <div>
@@ -1971,7 +1988,9 @@ export default function EditorGame() {
                   onClick={saveActivePLOTOnChain}
                   disabled={isBusy || !isConnected || !canSaveActivePLOT}
                 >
-                  {busyAction === "Save PLOT" || isUploading ? "Saving..." : "Save PLOT"}
+                  {busyAction === "Save PLOT" || isUploading
+                    ? "Saving..."
+                    : "Save PLOT"}
                 </button>
                 <button className="btn btn--outline" onClick={closePLOTModal}>
                   Cancel
@@ -2182,7 +2201,8 @@ function normalizeMoveVector(value: unknown): unknown[] {
   }
   const fields = normalizeMoveFields(value);
   if (Array.isArray(fields.vec)) return fields.vec;
-  if (typeof fields.bytes === "string") return normalizeMoveVector(fields.bytes);
+  if (typeof fields.bytes === "string")
+    return normalizeMoveVector(fields.bytes);
   if (Array.isArray(fields.value)) return fields.value;
   return [];
 }
@@ -2268,11 +2288,12 @@ async function resolvePLOTEntries(
       const fieldFields = normalizeMoveFields(content.fields);
       const plotId = extractObjectId(fieldFields.value);
       if (!plotId) return null;
-      
+
       // Get version from object metadata
       const version = fieldObject.data?.version;
-      const versionNumber = typeof version === 'string' ? parseInt(version, 10) : 0;
-      
+      const versionNumber =
+        typeof version === "string" ? parseInt(version, 10) : 0;
+
       return { ...coords, plotId, version: versionNumber };
     }),
   );
@@ -2289,8 +2310,11 @@ async function resolvePLOTEntries(
       }> => result.status === "fulfilled",
     )
     .map((result) => result.value)
-    .filter((entry): entry is { cx: number; cy: number; plotId: string; version: number } =>
-      Boolean(entry),
+    .filter(
+      (
+        entry,
+      ): entry is { cx: number; cy: number; plotId: string; version: number } =>
+        Boolean(entry),
     );
 }
 
@@ -2353,7 +2377,3 @@ function DecoButton({
     </button>
   );
 }
-
-
-
-
