@@ -1,7 +1,7 @@
 .boss-fight-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    color: white;
+    background: linear-gradient(180deg, #7ec8e3 0%, #5eb5d3 40%, #4a9fc2 100%);
+    color: #2c3e50;
 }
 
 .boss-fight-header {
@@ -9,29 +9,30 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px 24px;
-    background: rgba(0, 0, 0, 0.3);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.85);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
 }
 
 .boss-fight-header h1 {
     margin: 0;
     font-size: 24px;
+    color: #2c3e50;
 }
 
 .back-button {
-    color: #3399ff;
+    color: #2c3e50;
     text-decoration: none;
     font-size: 16px;
     padding: 8px 16px;
     border-radius: 8px;
-    background: rgba(51, 153, 255, 0.1);
-    border: 1px solid rgba(51, 153, 255, 0.3);
+    background: rgba(255, 193, 7, 0.2);
+    border: 2px solid rgba(255, 193, 7, 0.5);
     transition: all 0.2s;
 }
 
 .back-button:hover {
-    background: rgba(51, 153, 255, 0.2);
-    border-color: rgba(51, 153, 255, 0.5);
+    background: rgba(255, 193, 7, 0.3);
+    border-color: rgba(255, 193, 7, 0.8);
 }
 
 .server-status {
@@ -41,7 +42,7 @@
     font-size: 14px;
     padding: 8px 16px;
     border-radius: 8px;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.8);
 }
 
 .status-indicator {
@@ -52,11 +53,11 @@
 }
 
 .status-indicator.checking {
-    background: #ffaa00;
+    background: #ffc107;
 }
 
 .status-indicator.online {
-    background: #00ff00;
+    background: #6cb33f;
     animation: none;
 }
 

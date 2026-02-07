@@ -3,18 +3,18 @@
   position: relative;
   overflow: hidden;
   min-height: 100vh;
-  color: var(--ghost-cream);
-  --land-bg-dark: var(--ghost-dark);
-  --land-bg-mid: var(--ghost-dark-2);
-  --land-bg-light: var(--ghost-teal);
-  --land-accent: var(--ghost-mint);
-  --land-accent-glow: rgba(169, 215, 191, 0.35);
-  --land-accent-2: var(--ghost-moss);
-  --land-accent-2-glow: rgba(111, 178, 143, 0.35);
-  --land-text: var(--ghost-cream);
-  --land-text-muted: rgba(255, 255, 255, 0.7);
-  --land-border: rgba(255, 255, 255, 0.14);
-  --land-card: rgba(20, 40, 60, 0.6);
+  color: var(--text-dark, #2c3e50);
+  --land-bg-dark: var(--sky-dark, #3d8ab0);
+  --land-bg-mid: var(--sky-mid, #5eb5d3);
+  --land-bg-light: var(--sky-light, #7ec8e3);
+  --land-accent: var(--grass-mid, #6cb33f);
+  --land-accent-glow: rgba(108, 179, 63, 0.35);
+  --land-accent-2: var(--gold-mid, #ffc107);
+  --land-accent-2-glow: rgba(255, 193, 7, 0.35);
+  --land-text: var(--text-dark, #2c3e50);
+  --land-text-muted: var(--text-mid, #4a5568);
+  --land-border: rgba(0, 0, 0, 0.12);
+  --land-card: rgba(255, 255, 255, 0.85);
   --ink: var(--land-text);
   --muted: var(--land-text-muted);
   --stroke: var(--land-border);
@@ -22,9 +22,9 @@
   --accent-2: var(--land-accent);
   --card: var(--land-card);
   background: linear-gradient(180deg,
-      var(--land-bg-dark) 0%,
+      var(--land-bg-light) 0%,
       var(--land-bg-mid) 55%,
-      var(--land-bg-light) 100%);
+      var(--land-bg-dark) 100%);
   font-family: var(--font-sans);
 }
 
@@ -34,8 +34,8 @@
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent);
   pointer-events: none;
@@ -48,10 +48,10 @@
   inset: 0;
   background:
     radial-gradient(ellipse 80% 50% at 50% 0%,
-      rgba(169, 215, 191, 0.12),
+      rgba(255, 255, 255, 0.15),
       transparent),
     radial-gradient(ellipse 60% 40% at 80% 20%,
-      rgba(111, 178, 143, 0.08),
+      rgba(108, 179, 63, 0.1),
       transparent);
   pointer-events: none;
   z-index: 0;

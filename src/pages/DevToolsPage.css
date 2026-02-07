@@ -1,7 +1,7 @@
 .dev-tools-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
-    color: #fff;
+    background: linear-gradient(180deg, #7ec8e3 0%, #5eb5d3 40%, #4a9fc2 100%);
+    color: #2c3e50;
     padding-bottom: 60px;
 }
 
@@ -13,7 +13,7 @@
 
 .back-link {
     display: inline-block;
-    color: #79d5ff;
+    color: #2c3e50;
     text-decoration: none;
     margin-bottom: 20px;
     font-size: 14px;
@@ -21,17 +21,18 @@
 }
 
 .back-link:hover {
-    color: #a8e5ff;
+    color: #c73e3e;
 }
 
 .dev-tools-title {
     font-size: 2rem;
     margin-bottom: 8px;
     text-align: center;
+    color: #2c3e50;
 }
 
 .dev-tools-subtitle {
-    color: #888;
+    color: #4a5568;
     text-align: center;
     margin-bottom: 30px;
 }
@@ -66,15 +67,16 @@
 }
 
 .mint-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.9);
+    border: 3px solid rgba(0, 0, 0, 0.1);
     border-radius: 16px;
     padding: 24px;
     transition: transform 0.2s, border-color 0.2s;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .mint-card:hover {
-    border-color: rgba(121, 213, 255, 0.3);
+    border-color: #ffc107;
     transform: translateY(-2px);
 }
 
@@ -92,10 +94,11 @@
 .mint-card h2 {
     margin: 0;
     font-size: 1.25rem;
+    color: #2c3e50;
 }
 
 .mint-desc {
-    color: #aaa;
+    color: #4a5568;
     font-size: 14px;
     margin-bottom: 20px;
 }
@@ -107,7 +110,7 @@
 .mint-input-group label {
     display: block;
     font-size: 13px;
-    color: #888;
+    color: #4a5568;
     margin-bottom: 6px;
 }
 
@@ -115,16 +118,16 @@
     width: 100%;
     padding: 12px 16px;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(0, 0, 0, 0.3);
-    color: #fff;
+    border: 2px solid rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.9);
+    color: #2c3e50;
     font-size: 16px;
     outline: none;
     transition: border-color 0.2s;
 }
 
 .mint-input-group input:focus {
-    border-color: #79d5ff;
+    border-color: #ffc107;
 }
 
 .mint-btn {
@@ -164,8 +167,8 @@
 }
 
 .config-info {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.85);
+    border: 2px solid rgba(0, 0, 0, 0.1);
     border-radius: 12px;
     padding: 20px;
 }
@@ -173,7 +176,7 @@
 .config-info h3 {
     margin: 0 0 16px 0;
     font-size: 1rem;
-    color: #888;
+    color: #4a5568;
 }
 
 .config-list {
@@ -190,13 +193,13 @@
 
 .config-label {
     font-size: 12px;
-    color: #666;
+    color: #4a5568;
 }
 
 .config-value {
     font-size: 11px;
-    color: #79d5ff;
-    background: rgba(0, 0, 0, 0.3);
+    color: #3d8ab0;
+    background: rgba(126, 200, 227, 0.2);
     padding: 6px 10px;
     border-radius: 4px;
     word-break: break-all;

@@ -1,14 +1,22 @@
-/* ===== MARKETPLACE PAGE - PIXEL STYLE ===== */
+/* ===== MARKETPLACE PAGE - CYBERPUNK THEME ===== */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Raleway:wght@600&display=swap');
+
 .marketplace-page {
+  --primary-dark: #062047;
+  --primary-blue: #002B6A;
+  --primary-light: #09336F;
+  --white: #FFFFFF;
+  --gray-light: #F4F4F4;
+  --neon-pink: #ff00ff;
+  --neon-cyan: #00ffff;
+  --accent-gold: #fcb045;
+
   position: relative;
   min-height: 100vh;
-  color: var(--ghost-cream);
-  background: linear-gradient(180deg,
-      var(--ghost-dark) 0%,
-      var(--ghost-dark-2) 45%,
-      var(--ghost-teal) 100%);
+  color: var(--white);
+  background: var(--primary-dark);
   overflow-x: hidden;
-  font-family: var(--font-sans);
+  font-family: 'Inter', sans-serif;
 }
 
 /* ===== ANIMATED BACKGROUND ===== */
@@ -18,14 +26,29 @@
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
+  background:
+    linear-gradient(180deg, transparent 0%, rgba(6, 32, 71, 0.9) 100%),
+    linear-gradient(135deg,
+      rgba(255, 0, 128, 0.15) 0%,
+      rgba(0, 255, 255, 0.1) 50%,
+      rgba(128, 0, 255, 0.15) 100%);
+}
+
+.marketplace-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(255, 0, 128, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(0, 200, 255, 0.15) 0%, transparent 50%);
 }
 
 .marketplace-bg__sky {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(169, 215, 191, 0.12), transparent),
-    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(255, 255, 255, 0.08), transparent);
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0, 255, 255, 0.1), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(255, 0, 255, 0.08), transparent);
 }
 
 .marketplace-bg__glow {
@@ -35,10 +58,10 @@
   top: -200px;
   right: 10%;
   background: radial-gradient(circle,
-      rgba(169, 215, 191, 0.18) 0%,
-      rgba(169, 215, 191, 0.06) 40%,
+      rgba(0, 255, 255, 0.2) 0%,
+      rgba(0, 255, 255, 0.05) 40%,
       transparent 70%);
-  animation: pulse 8s ease-in-out infinite;
+  animation: pulse-cyber 8s ease-in-out infinite;
 }
 
 .marketplace-bg__glow--secondary {
@@ -49,25 +72,25 @@
   left: 5%;
   right: auto;
   background: radial-gradient(circle,
-      rgba(255, 232, 166, 0.12) 0%,
-      rgba(255, 232, 166, 0.04) 40%,
+      rgba(255, 0, 255, 0.15) 0%,
+      rgba(255, 0, 255, 0.05) 40%,
       transparent 70%);
   animation-delay: 4s;
 }
 
 /* Grid pattern overlay */
-.marketplace-bg::before {
+.marketplace-bg::after {
   content: "";
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent);
 }
 
-@keyframes pulse {
+@keyframes pulse-cyber {
 
   0%,
   100% {
@@ -76,8 +99,8 @@
   }
 
   50% {
-    opacity: 0.7;
-    transform: scale(1.05);
+    opacity: 0.6;
+    transform: scale(1.1);
   }
 }
 
@@ -85,13 +108,13 @@
 .marketplace-content {
   position: relative;
   z-index: 1;
-  max-width: 1280px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 60px;
   display: flex;
   flex-direction: column;
   gap: 48px;
-  padding-bottom: 80px;
+  padding-bottom: 100px;
 }
 
 /* ===== NAVIGATION ===== */
@@ -102,154 +125,146 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 20px 0;
-  background: rgba(15, 31, 53, 0.72);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 24px;
+  padding: 20px 60px;
+  background: rgba(6, 32, 71, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .marketplace-nav .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 
 .marketplace-nav .reward-balance {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: rgba(20, 40, 60, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 18px;
-  font-family: var(--font-sans);
-  box-shadow: 0 12px 24px rgba(6, 14, 18, 0.25);
+  gap: 10px;
+  padding: 10px 18px;
+  background: rgba(0, 255, 255, 0.08);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.15);
 }
 
 .marketplace-nav .reward-balance__icon {
   font-size: 18px;
+  color: var(--neon-cyan);
 }
 
 .marketplace-nav .reward-balance__value {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--land-accent);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  color: var(--neon-cyan);
+  letter-spacing: 0.05em;
 }
 
 .marketplace-nav .reward-balance__label {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--land-text-muted);
-  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .marketplace-nav .brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .marketplace-nav .brand__mark {
   width: 48px;
   height: 48px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--ghost-mint), var(--ghost-moss));
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 12px 24px rgba(6, 14, 18, 0.3);
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), 0 0 40px rgba(255, 0, 255, 0.2);
   display: grid;
   place-items: center;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 1px;
-  color: #0f2430;
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-size: 20px;
+  letter-spacing: 0.05em;
+  color: var(--primary-dark);
 }
 
 .marketplace-nav .brand__name {
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 1px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--land-text);
-  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3);
+  color: var(--white);
 }
 
 .marketplace-nav .brand__tag {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 1px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--land-text-muted);
-  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .marketplace-nav__links {
   display: flex;
-  gap: 12px;
-  font-family: var(--font-mono);
+  gap: 16px;
+  font-family: 'Bebas Neue', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  font-size: 10px;
-  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-size: 16px;
 }
 
 .marketplace-nav__links a {
-  padding: 8px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(20, 40, 60, 0.5);
-  color: var(--ghost-cream);
-  transition: all 0.1s ease;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
   text-decoration: none;
-  box-shadow: 0 10px 20px rgba(6, 14, 18, 0.25);
 }
 
 .marketplace-nav__links a:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--ghost-cream);
-  transform: translateY(-1px);
-  box-shadow: 0 14px 26px rgba(6, 14, 18, 0.35);
+  border-color: rgba(0, 255, 255, 0.4);
+  background: rgba(0, 255, 255, 0.1);
+  color: var(--white);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
 }
 
 /* ===== CONNECT BUTTON OVERRIDE ===== */
 .marketplace-nav>div button,
 .marketplace-nav button {
-  font-family: var(--font-mono) !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
+  font-family: 'Bebas Neue', sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
   text-transform: uppercase !important;
-  letter-spacing: 1px !important;
-  padding: 10px 18px !important;
-  border-radius: 999px !important;
-  background: linear-gradient(135deg, var(--ghost-mint), var(--ghost-moss)) !important;
-  border: 1px solid rgba(255, 255, 255, 0.45) !important;
-  color: #0f2430 !important;
-  box-shadow:
-    0 12px 22px rgba(6, 14, 18, 0.3),
-    inset 0 2px 0 rgba(255, 255, 255, 0.25) !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  letter-spacing: 0.05em !important;
+  padding: 12px 20px !important;
+  border-radius: 8px !important;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)) !important;
+  border: none !important;
+  color: var(--primary-dark) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), 0 0 40px rgba(255, 0, 255, 0.2) !important;
+  transition: all 0.3s ease !important;
   cursor: pointer !important;
 }
 
 .marketplace-nav>div button:hover,
 .marketplace-nav button:hover {
   transform: translateY(-2px) !important;
-  box-shadow:
-    0 16px 28px rgba(6, 14, 18, 0.4) !important;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), 0 0 60px rgba(255, 0, 255, 0.3) !important;
 }
 
 /* ===== HERO SECTION ===== */
 .marketplace-hero {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
-  gap: 40px;
+  gap: 48px;
   align-items: center;
-  padding: 40px 0;
+  padding: 48px 0;
 }
 
 .marketplace-hero__copy {
@@ -262,63 +277,65 @@
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  border: 1px solid rgba(126, 184, 232, 0.2);
-  background: rgba(89, 183, 255, 0.08);
-  font-family: var(--font-mono, monospace);
-  font-size: 11px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  background: rgba(0, 255, 255, 0.08);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--land-text-muted, #7eb8e8);
+  letter-spacing: 0.1em;
+  color: var(--neon-cyan);
   width: fit-content;
   backdrop-filter: blur(10px);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.15);
 }
 
 .marketplace-hero__badge-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #4ade80;
-  box-shadow: 0 0 10px #4ade80, 0 0 20px rgba(74, 222, 128, 0.4);
-  animation: blink 2s ease-in-out infinite;
+  background: var(--neon-cyan);
+  box-shadow: 0 0 10px var(--neon-cyan), 0 0 20px rgba(0, 255, 255, 0.5);
+  animation: blink-cyber 2s ease-in-out infinite;
 }
 
-@keyframes blink {
+@keyframes blink-cyber {
 
   0%,
   100% {
     opacity: 1;
+    box-shadow: 0 0 10px var(--neon-cyan), 0 0 20px rgba(0, 255, 255, 0.5);
   }
 
   50% {
     opacity: 0.5;
+    box-shadow: 0 0 5px var(--neon-cyan);
   }
 }
 
 .marketplace-hero h1 {
   margin: 0;
-  font-size: clamp(2.4rem, 4vw, 3.5rem);
-  line-height: 1.1;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  font-family: var(--font-serif, serif);
-  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 5vw, 72px);
+  line-height: 1.05;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--white);
 }
 
 .marketplace-hero__accent {
-  background: linear-gradient(135deg, var(--land-accent, #59b7ff), #f6a44b);
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: none;
 }
 
 .marketplace-hero__subtitle {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 16px;
   line-height: 1.7;
-  color: var(--land-text-muted, #7eb8e8);
+  color: rgba(255, 255, 255, 0.7);
   max-width: 500px;
 }
 
@@ -334,65 +351,58 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 14px 24px;
-  border-radius: 12px;
-  font-family: var(--font-mono, monospace);
+  padding: 16px 28px;
+  border-radius: 8px;
+  font-family: 'Bebas Neue', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 12px;
-  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-size: 18px;
+  font-weight: 400;
   cursor: pointer;
   transition: all 0.3s ease;
   border: none;
 }
 
 .marketplace-hero__cta .btn--solid {
-  background: linear-gradient(135deg, var(--land-accent, #59b7ff), #3d8fd1);
-  border: 2px solid var(--land-accent, #59b7ff);
-  color: var(--land-bg-dark, #0a1929);
-  box-shadow:
-    0 4px 20px rgba(89, 183, 255, 0.4),
-    inset 0 2px 0 rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  color: var(--primary-dark);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), 0 0 40px rgba(255, 0, 255, 0.2);
 }
 
 .marketplace-hero__cta .btn--solid:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow:
-    0 8px 30px rgba(89, 183, 255, 0.5),
-    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), 0 0 60px rgba(255, 0, 255, 0.3);
 }
 
 .marketplace-hero__cta .btn--solid:disabled {
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .marketplace-hero__cta .btn--ghost {
-  background: transparent;
-  border: 2px solid rgba(126, 184, 232, 0.3);
-  color: var(--land-text, #e8f4ff);
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: var(--white);
 }
 
 .marketplace-hero__cta .btn--ghost:hover:not(:disabled) {
-  border-color: var(--land-accent, #59b7ff);
-  background: rgba(89, 183, 255, 0.1);
-  box-shadow: 0 0 20px rgba(89, 183, 255, 0.3);
+  border-color: var(--neon-cyan);
+  background: rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
 }
 
 .marketplace-hero__cta .btn--ghost:disabled {
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 /* ===== STATS PANEL ===== */
 .marketplace-hero__panel {
-  background: rgba(13, 33, 55, 0.9);
-  border-radius: 24px;
-  border: 1px solid rgba(126, 184, 232, 0.2);
+  background: rgba(6, 32, 71, 0.9);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 255, 255, 0.2);
   padding: 28px;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.1), 0 20px 60px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(20px);
 }
 
@@ -409,22 +419,21 @@
 }
 
 .marketplace-stats__title {
-  font-family: var(--font-mono, monospace);
+  font-family: 'Bebas Neue', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  font-size: 10px;
-  color: var(--land-text-muted, #7eb8e8);
+  letter-spacing: 0.1em;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .marketplace-stats__tag {
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 6px;
-  background: rgba(89, 183, 255, 0.15);
-  border: 1px solid rgba(89, 183, 255, 0.3);
-  font-family: var(--font-mono, monospace);
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--land-accent, #59b7ff);
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
+  color: var(--neon-cyan);
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -436,50 +445,60 @@
 }
 
 .marketplace-stat {
-  padding: 16px;
+  padding: 18px;
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(126, 184, 232, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.marketplace-stat:hover {
+  border-color: rgba(0, 255, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
 }
 
 .marketplace-stat__label {
-  font-family: var(--font-mono, monospace);
-  font-size: 10px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--land-text-muted, #7eb8e8);
-  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 8px;
 }
 
 .marketplace-stat__value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--land-text, #e8f4ff);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--white);
+  letter-spacing: 0.02em;
 }
 
 .marketplace-stat__value--accent {
-  color: var(--land-accent, #59b7ff);
+  color: var(--neon-cyan);
 }
 
 .marketplace-wallet-info {
-  padding: 16px;
+  padding: 18px;
   border-radius: 12px;
-  background: rgba(89, 183, 255, 0.08);
-  border: 1px solid rgba(89, 183, 255, 0.2);
+  background: rgba(255, 0, 255, 0.05);
+  border: 1px solid rgba(255, 0, 255, 0.2);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .marketplace-wallet-info__icon {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--land-accent, #59b7ff), #3d8fd1);
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
+  color: var(--primary-dark);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
 }
 
 .marketplace-wallet-info__details {
@@ -488,17 +507,17 @@
 }
 
 .marketplace-wallet-info__label {
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--land-text-muted, #7eb8e8);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .marketplace-wallet-info__address {
-  font-family: var(--font-mono, monospace);
+  font-family: 'JetBrains Mono', monospace;
   font-size: 14px;
-  font-weight: 600;
-  color: var(--land-text, #e8f4ff);
+  font-weight: 500;
+  color: var(--neon-pink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -508,62 +527,72 @@
 .marketplace-section {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
 }
 
 .marketplace-section__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 20px;
 }
 
 .marketplace-section__title {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  font-family: var(--font-serif, serif);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  color: var(--white);
 }
 
 .marketplace-section__title-icon {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
-  background: rgba(89, 183, 255, 0.15);
-  border: 1px solid rgba(89, 183, 255, 0.3);
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
+  color: var(--neon-cyan);
 }
 
 .marketplace-section__actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 /* ===== PAYOUTS ===== */
 .marketplace-section--payouts {
-  gap: 32px;
+  gap: 36px;
 }
 
 .marketplace-payouts {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
-  gap: 24px;
+  gap: 28px;
 }
 
 .marketplace-payout-card,
 .marketplace-payout-feed {
-  background: rgba(13, 33, 55, 0.85);
-  border-radius: 22px;
-  border: 1px solid rgba(126, 184, 232, 0.18);
-  padding: 24px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  background: rgba(6, 32, 71, 0.85);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 28px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  transition: all 0.3s ease;
+}
+
+.marketplace-payout-card:hover,
+.marketplace-payout-feed:hover {
+  border-color: rgba(0, 255, 255, 0.3);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.1), 0 20px 50px rgba(0, 0, 0, 0.4);
 }
 
 .marketplace-payout-card__header,
@@ -572,129 +601,138 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .marketplace-payout-card__eyebrow,
 .marketplace-payout-feed__eyebrow {
-  font-size: 10px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: rgba(126, 184, 232, 0.7);
-  margin-bottom: 6px;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 8px;
 }
 
 .marketplace-payout-card__title,
 .marketplace-payout-feed__title {
   margin: 0;
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--land-text, #e8f4ff);
-  font-family: var(--font-serif, serif);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--white);
+  letter-spacing: 0.02em;
 }
 
 .marketplace-payout-card__badge {
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(89, 183, 255, 0.15);
-  border: 1px solid rgba(89, 183, 255, 0.35);
-  font-size: 10px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--land-accent, #59b7ff);
-  font-family: var(--font-mono, monospace);
+  color: var(--neon-cyan);
 }
 
 .marketplace-payout-card__balance {
-  padding: 18px 20px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(89, 183, 255, 0.15), rgba(246, 164, 75, 0.08));
-  border: 1px solid rgba(126, 184, 232, 0.2);
-  margin-bottom: 20px;
+  padding: 20px 24px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.05));
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  margin-bottom: 24px;
 }
 
 .marketplace-payout-card__balance-label {
-  font-size: 10px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgba(126, 184, 232, 0.7);
-  margin-bottom: 8px;
-  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 10px;
 }
 
 .marketplace-payout-card__balance-value {
-  font-size: 1.9rem;
-  font-weight: 700;
-  color: #f6a44b;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px;
+  font-weight: 400;
+  color: var(--neon-pink);
+  letter-spacing: 0.02em;
 }
 
 .marketplace-payout-card__balance-meta {
-  margin-top: 8px;
-  font-size: 12px;
-  color: rgba(232, 244, 255, 0.6);
-  font-family: var(--font-mono, monospace);
+  margin-top: 10px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .marketplace-payout-steps {
   display: grid;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 14px;
+  margin-bottom: 24px;
 }
 
 .marketplace-payout-step {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(126, 184, 232, 0.12);
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.3s ease;
 }
 
 .marketplace-payout-step__icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  background: rgba(89, 183, 255, 0.2);
-  border: 1px solid rgba(89, 183, 255, 0.3);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--land-accent, #59b7ff);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .marketplace-payout-step__title {
-  font-weight: 600;
-  color: var(--land-text, #e8f4ff);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--white);
   margin-bottom: 4px;
+  letter-spacing: 0.02em;
 }
 
 .marketplace-payout-step__text {
-  font-size: 12px;
-  color: rgba(232, 244, 255, 0.6);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
 }
 
 .marketplace-payout-step.is-complete {
-  border-color: rgba(74, 222, 128, 0.4);
-  background: rgba(74, 222, 128, 0.12);
+  border-color: rgba(0, 255, 255, 0.4);
+  background: rgba(0, 255, 255, 0.08);
 }
 
 .marketplace-payout-step.is-complete .marketplace-payout-step__icon {
-  color: #4ade80;
-  border-color: rgba(74, 222, 128, 0.5);
-  background: rgba(74, 222, 128, 0.2);
+  color: var(--neon-cyan);
+  border-color: rgba(0, 255, 255, 0.5);
+  background: rgba(0, 255, 255, 0.15);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
 }
 
 .marketplace-payout-step.is-active {
-  border-color: rgba(246, 164, 75, 0.4);
-  background: rgba(246, 164, 75, 0.12);
+  border-color: rgba(255, 0, 255, 0.4);
+  background: rgba(255, 0, 255, 0.08);
 }
 
 .marketplace-payout-step.is-active .marketplace-payout-step__icon {
-  color: #f6a44b;
-  border-color: rgba(246, 164, 75, 0.5);
-  background: rgba(246, 164, 75, 0.2);
+  color: var(--neon-pink);
+  border-color: rgba(255, 0, 255, 0.5);
+  background: rgba(255, 0, 255, 0.15);
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
 }
 
 .marketplace-payout-card__actions {
@@ -714,113 +752,117 @@
 }
 
 .marketplace-payout-feed__count {
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: rgba(126, 184, 232, 0.1);
-  border: 1px solid rgba(126, 184, 232, 0.2);
-  font-family: var(--font-mono, monospace);
-  font-size: 11px;
-  color: rgba(232, 244, 255, 0.7);
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
+  color: var(--neon-cyan);
+  letter-spacing: 0.05em;
 }
 
 .marketplace-payout-feed__list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .marketplace-payout-feed__item {
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(126, 184, 232, 0.12);
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.marketplace-payout-feed__item:hover {
+  border-color: rgba(255, 0, 255, 0.3);
+  background: rgba(255, 0, 255, 0.05);
 }
 
 .marketplace-payout-feed__item-main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
 }
 
 .marketplace-payout-feed__label {
-  font-size: 10px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: rgba(126, 184, 232, 0.7);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .marketplace-payout-feed__value {
-  font-family: var(--font-mono, monospace);
-  font-size: 12px;
-  color: var(--land-text, #e8f4ff);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--white);
 }
 
 .marketplace-payout-feed__item-meta {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   font-size: 12px;
-  color: rgba(232, 244, 255, 0.6);
-  font-family: var(--font-mono, monospace);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .marketplace-empty--compact {
-  padding: 32px 16px;
+  padding: 36px 20px;
 }
 
 .btn--ghost {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 10px;
-  font-family: var(--font-mono, monospace);
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-family: 'Bebas Neue', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 11px;
-  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-size: 16px;
+  font-weight: 400;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: transparent;
-  border: 1px solid rgba(126, 184, 232, 0.3);
-  color: var(--land-text-muted, #7eb8e8);
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: var(--white);
 }
 
 .btn--ghost:hover:not(:disabled) {
-  border-color: var(--land-accent, #59b7ff);
-  background: rgba(89, 183, 255, 0.1);
-  color: var(--land-text, #e8f4ff);
-  box-shadow: 0 0 20px rgba(89, 183, 255, 0.2);
+  border-color: var(--neon-cyan);
+  background: rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
 }
 
 .btn--ghost:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* ===== STATUS MESSAGE - ENHANCED ===== */
+/* ===== STATUS MESSAGE - CYBERPUNK ===== */
 .marketplace-status {
-  padding: 16px 20px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, rgba(89, 183, 255, 0.12), rgba(89, 183, 255, 0.05));
-  border: 1px solid rgba(89, 183, 255, 0.3);
-  color: #93c5fd;
+  padding: 18px 24px;
+  border-radius: 12px;
+  background: rgba(0, 255, 255, 0.08);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  color: var(--neon-cyan);
   font-size: 14px;
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 12px;
-  backdrop-filter: blur(8px);
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  gap: 14px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
   animation: statusFadeIn 0.3s ease-out;
-  margin: 10px 28px 0 28px;
+  margin: 12px 60px 0 60px;
 }
 
 @keyframes statusFadeIn {
@@ -837,9 +879,9 @@
 
 .marketplace-status::before {
   content: "";
-  width: 20px;
-  height: 20px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2393c5fd' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E");
+  width: 22px;
+  height: 22px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E");
   background-size: contain;
   background-repeat: no-repeat;
   flex-shrink: 0;
@@ -847,49 +889,53 @@
 
 /* Success Status */
 .marketplace-status--success {
-  background: linear-gradient(135deg, rgba(74, 222, 128, 0.15), rgba(74, 222, 128, 0.05));
-  border-color: rgba(74, 222, 128, 0.4);
-  color: #86efac;
+  background: rgba(0, 255, 255, 0.1);
+  border-color: rgba(0, 255, 255, 0.5);
+  color: var(--neon-cyan);
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
 }
 
 .marketplace-status--success::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2386efac' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'/%3E%3Cpath d='M22 4 12 14.01l-3-3'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'/%3E%3Cpath d='M22 4 12 14.01l-3-3'/%3E%3C/svg%3E");
 }
 
 /* Error Status */
 .marketplace-status--error {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
+  background: rgba(255, 0, 128, 0.1);
+  border-color: rgba(255, 0, 128, 0.5);
+  color: #ff80bf;
+  box-shadow: 0 0 25px rgba(255, 0, 128, 0.2);
 }
 
 .marketplace-status--error::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fca5a5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m15 9-6 6'/%3E%3Cpath d='m9 9 6 6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff80bf' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m15 9-6 6'/%3E%3Cpath d='m9 9 6 6'/%3E%3C/svg%3E");
 }
 
 /* Warning Status */
 .marketplace-status--warning {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.05));
-  border-color: rgba(251, 191, 36, 0.4);
-  color: #fde68a;
+  background: rgba(255, 200, 0, 0.1);
+  border-color: rgba(255, 200, 0, 0.5);
+  color: #ffd966;
+  box-shadow: 0 0 25px rgba(255, 200, 0, 0.15);
 }
 
 .marketplace-status--warning::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fde68a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffd966' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
 }
 
 /* Loading Status */
 .marketplace-status--loading {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(168, 85, 247, 0.05));
-  border-color: rgba(168, 85, 247, 0.4);
-  color: #d8b4fe;
+  background: rgba(255, 0, 255, 0.08);
+  border-color: rgba(255, 0, 255, 0.4);
+  color: var(--neon-pink);
+  box-shadow: 0 0 25px rgba(255, 0, 255, 0.15);
 }
 
 .marketplace-status--loading::before {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(216, 180, 254, 0.3);
-  border-top-color: #d8b4fe;
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(255, 0, 255, 0.3);
+  border-top-color: var(--neon-pink);
   border-radius: 50%;
   background: none;
   animation: statusSpin 0.8s linear infinite;
@@ -903,7 +949,7 @@
 
 /* Loading text shimmer animation */
 .marketplace-status--loading .status-text {
-  background: linear-gradient(90deg, #d8b4fe, #f0abfc, #d8b4fe);
+  background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan), var(--neon-pink));
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -923,37 +969,37 @@
 /* ===== GRID LAYOUTS ===== */
 .marketplace-grid {
   display: grid;
-  gap: 20px;
+  gap: 24px;
 }
 
 .marketplace-grid--owned {
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
 .marketplace-grid--listings {
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
 /* ===== OWNED PLOT CARD ===== */
 .marketplace-owned-card {
-  background: rgba(13, 33, 55, 0.8);
-  border-radius: 20px;
-  border: 1px solid rgba(126, 184, 232, 0.15);
+  background: rgba(6, 32, 71, 0.85);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
   transition: all 0.3s ease;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35);
 }
 
 .marketplace-owned-card:hover {
-  border-color: rgba(89, 183, 255, 0.4);
+  border-color: rgba(0, 255, 255, 0.4);
   transform: translateY(-4px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.15), 0 20px 60px rgba(0, 0, 0, 0.4);
 }
 
 .marketplace-owned-card__preview {
   position: relative;
   aspect-ratio: 16/10;
-  background: linear-gradient(135deg, rgba(89, 183, 255, 0.2), rgba(246, 164, 75, 0.2));
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(255, 0, 255, 0.15));
   overflow: hidden;
 }
 
@@ -970,34 +1016,36 @@
   align-items: center;
   justify-content: center;
   font-size: 48px;
-  opacity: 0.5;
+  opacity: 0.4;
+  color: var(--neon-cyan);
 }
 
 .marketplace-owned-card__coords {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 6px 12px;
+  top: 14px;
+  right: 14px;
+  padding: 8px 14px;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(10px);
-  font-family: var(--font-mono, monospace);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--land-text, #e8f4ff);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--neon-cyan);
+  border: 1px solid rgba(0, 255, 255, 0.3);
 }
 
 .marketplace-owned-card__body {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .marketplace-owned-card__info {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .marketplace-owned-card__row {
@@ -1007,17 +1055,18 @@
 }
 
 .marketplace-owned-card__label {
-  font-size: 11px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--land-text-muted, #7eb8e8);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .marketplace-owned-card__value {
-  font-family: var(--font-mono, monospace);
-  font-size: 12px;
-  color: var(--land-text, #e8f4ff);
-  max-width: 140px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--white);
+  max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1026,17 +1075,17 @@
 .marketplace-owned-card__actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .marketplace-price-input {
   width: 100%;
-  padding: 12px 16px;
+  padding: 14px 18px;
   border-radius: 10px;
-  border: 1px solid rgba(126, 184, 232, 0.2);
-  background: rgba(0, 0, 0, 0.3);
-  color: var(--land-text, #e8f4ff);
-  font-family: var(--font-mono, monospace);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--white);
+  font-family: 'JetBrains Mono', monospace;
   font-size: 14px;
   transition: all 0.3s ease;
   box-sizing: border-box;
@@ -1044,28 +1093,28 @@
 
 .marketplace-price-input:focus {
   outline: none;
-  border-color: var(--land-accent, #59b7ff);
-  box-shadow: 0 0 0 3px rgba(89, 183, 255, 0.15);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
 }
 
 .marketplace-price-input::placeholder {
-  color: rgba(126, 184, 232, 0.5);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 /* ===== LISTING CARD ===== */
 .marketplace-listing-card {
-  background: rgba(13, 33, 55, 0.8);
-  border-radius: 20px;
-  border: 1px solid rgba(126, 184, 232, 0.15);
+  background: rgba(6, 32, 71, 0.85);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
   transition: all 0.3s ease;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35);
 }
 
 .marketplace-listing-card:hover {
-  border-color: rgba(89, 183, 255, 0.4);
+  border-color: rgba(255, 0, 255, 0.4);
   transform: translateY(-4px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 30px rgba(255, 0, 255, 0.15), 0 20px 60px rgba(0, 0, 0, 0.4);
 }
 
 .marketplace-listing-card__preview {
@@ -1075,16 +1124,16 @@
 }
 
 .marketplace-listing-card__body {
-  padding: 18px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .marketplace-listing-card__info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .marketplace-listing-card__row {
@@ -1094,17 +1143,18 @@
 }
 
 .marketplace-listing-card__label {
-  font-size: 10px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--land-text-muted, #7eb8e8);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .marketplace-listing-card__value {
-  font-family: var(--font-mono, monospace);
-  font-size: 12px;
-  color: var(--land-text, #e8f4ff);
-  max-width: 120px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--white);
+  max-width: 130px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1114,78 +1164,80 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: rgba(89, 183, 255, 0.1);
-  border: 1px solid rgba(89, 183, 255, 0.2);
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: rgba(255, 0, 255, 0.08);
+  border: 1px solid rgba(255, 0, 255, 0.25);
 }
 
 .marketplace-listing-card__price-label {
-  font-size: 11px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--land-text-muted, #7eb8e8);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .marketplace-listing-card__price-value {
-  font-family: var(--font-mono, monospace);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--land-accent, #59b7ff);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--neon-pink);
+  letter-spacing: 0.02em;
 }
 
 /* ===== BUTTONS ===== */
 .btn--primary {
   width: 100%;
-  padding: 14px 20px;
-  border-radius: 12px;
-  font-family: var(--font-mono, monospace);
+  padding: 16px 24px;
+  border-radius: 10px;
+  font-family: 'Bebas Neue', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 12px;
-  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-size: 18px;
+  font-weight: 400;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, var(--land-accent, #59b7ff), #3d8fd1);
-  border: 2px solid var(--land-accent, #59b7ff);
-  color: var(--land-bg-dark, #0a1929);
-  box-shadow: 0 4px 15px rgba(89, 183, 255, 0.3);
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  border: none;
+  color: var(--primary-dark);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), 0 0 40px rgba(255, 0, 255, 0.2);
 }
 
 .btn--primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(89, 183, 255, 0.4);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), 0 0 60px rgba(255, 0, 255, 0.3);
 }
 
 .btn--primary:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .btn--secondary {
   width: 100%;
-  padding: 14px 20px;
-  border-radius: 12px;
-  font-family: var(--font-mono, monospace);
+  padding: 16px 24px;
+  border-radius: 10px;
+  font-family: 'Bebas Neue', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 12px;
-  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-size: 18px;
+  font-weight: 400;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: rgba(246, 164, 75, 0.15);
-  border: 1px solid rgba(246, 164, 75, 0.4);
-  color: #f6a44b;
+  background: rgba(255, 0, 255, 0.1);
+  border: 2px solid rgba(255, 0, 255, 0.4);
+  color: var(--neon-pink);
 }
 
 .btn--secondary:hover:not(:disabled) {
-  background: rgba(246, 164, 75, 0.25);
-  border-color: #f6a44b;
-  box-shadow: 0 0 20px rgba(246, 164, 75, 0.2);
+  background: rgba(255, 0, 255, 0.2);
+  border-color: var(--neon-pink);
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
 }
 
 .btn--secondary:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -1195,19 +1247,22 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 24px;
-  color: var(--land-text-muted, #7eb8e8);
+  padding: 72px 28px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .marketplace-empty__icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-  opacity: 0.5;
+  font-size: 56px;
+  margin-bottom: 20px;
+  opacity: 0.4;
   width: fit-content;
+  color: var(--neon-cyan);
 }
 
 .marketplace-empty__text {
-  font-size: 16px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.05em;
   margin: 0;
 }
 
@@ -1216,8 +1271,8 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
+  background: rgba(6, 32, 71, 0.9);
+  backdrop-filter: blur(15px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1236,17 +1291,17 @@
 }
 
 .marketplace-modal {
-  background: rgba(13, 33, 55, 0.98);
-  border-radius: 24px;
-  border: 1px solid rgba(126, 184, 232, 0.3);
+  background: rgba(6, 32, 71, 0.98);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 255, 255, 0.3);
   width: 100%;
   max-width: 900px;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
   box-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.6),
-    0 0 60px rgba(89, 183, 255, 0.1);
+    0 0 40px rgba(0, 255, 255, 0.15),
+    0 25px 80px rgba(0, 0, 0, 0.6);
   animation: slideUp 0.3s ease;
 }
 
@@ -1266,46 +1321,47 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 28px;
-  border-bottom: 1px solid rgba(126, 184, 232, 0.15);
+  padding: 24px 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .marketplace-modal__title {
   margin: 0;
-  font-size: 1.4rem;
-  font-weight: 700;
-  font-family: var(--font-serif, serif);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: var(--land-text, #e8f4ff);
+  gap: 14px;
+  color: var(--white);
 }
 
 .marketplace-modal__close {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 10px;
-  border: 1px solid rgba(126, 184, 232, 0.2);
-  background: rgba(126, 184, 232, 0.05);
-  color: var(--land-text-muted, #7eb8e8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 18px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .marketplace-modal__close:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #ef4444;
+  background: rgba(255, 0, 128, 0.15);
+  border-color: rgba(255, 0, 128, 0.4);
+  color: #ff80bf;
 }
 
 .marketplace-modal__body {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 28px;
+  padding: 28px 32px;
 }
 
 .marketplace-modal__body::-webkit-scrollbar {
@@ -1318,31 +1374,42 @@
 }
 
 .marketplace-modal__body::-webkit-scrollbar-thumb {
-  background: rgba(89, 183, 255, 0.3);
+  background: rgba(0, 255, 255, 0.3);
   border-radius: 4px;
 }
 
 .marketplace-modal__body::-webkit-scrollbar-thumb:hover {
-  background: rgba(89, 183, 255, 0.5);
+  background: rgba(0, 255, 255, 0.5);
 }
 
 .marketplace-modal__footer {
-  padding: 20px 28px;
-  border-top: 1px solid rgba(126, 184, 232, 0.15);
+  padding: 24px 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 14px;
 }
 
 .marketplace-grid--modal {
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
 /* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .marketplace-nav {
+    padding: 16px 30px;
+  }
+
+  .marketplace-content {
+    padding: 0 30px;
+    padding-bottom: 80px;
+  }
+}
+
 @media (max-width: 900px) {
   .marketplace-hero {
     grid-template-columns: 1fr;
-    gap: 30px;
+    gap: 36px;
   }
 
   .marketplace-stats__grid {
@@ -1352,17 +1419,28 @@
   .marketplace-payouts {
     grid-template-columns: 1fr;
   }
+
+  .marketplace-nav {
+    padding: 16px 24px;
+  }
+
+  .marketplace-content {
+    padding: 0 24px;
+    padding-bottom: 80px;
+  }
 }
 
 @media (max-width: 600px) {
   .marketplace-content {
-    padding: 0 16px;
-    gap: 32px;
+    padding: 0 20px;
+    gap: 36px;
+    padding-bottom: 72px;
   }
 
   .marketplace-nav {
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 16px;
+    padding: 16px 20px;
   }
 
   .marketplace-nav__links {
@@ -1370,7 +1448,7 @@
   }
 
   .marketplace-hero h1 {
-    font-size: 1.8rem;
+    font-size: 36px;
   }
 
   .marketplace-hero__cta {
@@ -1393,6 +1471,10 @@
     align-items: flex-start;
   }
 
+  .marketplace-section__title {
+    font-size: 28px;
+  }
+
   .marketplace-payout-inputs {
     flex-direction: column;
     align-items: stretch;
@@ -1402,15 +1484,8 @@
     flex-direction: column;
     align-items: flex-start;
   }
-}
 
-.marketplace-status--neutral {
-  background: rgba(89, 183, 255, 0.1);
-  border-color: rgba(89, 183, 255, 0.3);
-  color: rgba(232, 244, 255, 0.8);
-}
-
-.marketplace-status--neutral::before {
-  content: "i";
-  font-family: var(--font-mono, monospace);
+  .marketplace-status {
+    margin: 12px 20px 0 20px;
+  }
 }

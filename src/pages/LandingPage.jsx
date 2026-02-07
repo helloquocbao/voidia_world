@@ -3,209 +3,321 @@ import { WalletHeader } from "../components";
 import "./LandingPage.css";
 
 export default function LandingPage() {
-  return (
-    <div className="landing landing--ghost">
-      {/* Hero Section */}
-      <section className="ghost-hero">
-        <div className="ghost-hero__bg">
-          <div className="floating-elements">
-            <span className="crystal crystal--1"></span>
-            <span className="crystal crystal--2"></span>
-            <span className="crystal crystal--3"></span>
-            <span className="crystal crystal--4"></span>
-            <span className="lantern lantern--1"></span>
-            <span className="lantern lantern--2"></span>
-            <span className="ghost-float ghost-float--1"></span>
-            <span className="ghost-float ghost-float--2"></span>
-            <span className="ghost-float ghost-float--3"></span>
-            <span className="star star--1"></span>
-            <span className="star star--2"></span>
-            <span className="star star--3"></span>
-            <span className="star star--4"></span>
-            <span className="star star--5"></span>
-          </div>
-          <div className="ghost-hero__hills">
-            <span className="hill hill--back"></span>
-            <span className="hill hill--mid"></span>
-            <span className="hill hill--front"></span>
-          </div>
-        </div>
+  // News data
+  const newsItems = [
+    {
+      id: 1,
+      date: "13 Feb 2024",
+      title: "Introducing Voidia Extraction DLC",
+      tag: "announcement",
+    },
+    {
+      id: 2,
+      date: "13 Feb 2024",
+      title: "Introducing Voidia Extraction DLC",
+      tag: "patch notes",
+    },
+    {
+      id: 3,
+      date: "13 Feb 2024",
+      title: "Introducing Voidia Extraction DLC",
+      tag: "patch notes",
+    },
+    {
+      id: 4,
+      date: "13 Feb 2024",
+      title: "Introducing Voidia Extraction DLC",
+      tag: "patch notes",
+    },
+  ];
 
-        <header className="ghost-nav">
-          <div className="ghost-logo">
-            <span className="ghost-logo__box">
-              TR
-              <br />
-              EE
-            </span>
+  // Roadmap data
+  const roadmapItems = [
+    {
+      month: "September",
+      title: "Phase 1 Launch",
+      description:
+        "Lorem ipsum dolor sit amet consectetur. In sed luctus elit elementum cras cursus risus. Proin consequat eget pretium parturient. Vivamus euismod ut commodo imperdiet ultrices a.",
+    },
+    {
+      month: "August",
+      title: "Beta Testing",
+      description: "Lorem ipsum dolor sit amet consectetur. In sed luctus",
+    },
+    {
+      month: "July",
+      title: "Alpha Release",
+      description:
+        "Lorem ipsum dolor sit amet consectetur. In sed luctus elit elementum cras cursus risus. Proin consequat eget pretium parturient. Vivamus euismod ut commodo imperdiet ultrices a.",
+    },
+  ];
+
+  return (
+    <div className="landing landing--cyber">
+      {/* Hero Section */}
+      <section className="cyber-hero">
+        <div className="cyber-hero__bg"></div>
+
+        {/* Navigation */}
+        <header className="cyber-nav">
+          <div className="cyber-logo">
+            <span className="cyber-logo__icon">V</span>
           </div>
-          <nav className="ghost-nav__links">
+
+          <nav className="cyber-nav__links">
+            <Link to="/" className="active">
+              Home
+            </Link>
             <Link to="/game">Play</Link>
             <Link to="/boss-fight">Boss Fight</Link>
-            <Link to="/marketplace">Shop</Link>
+            <Link to="/marketplace">Store</Link>
             <Link to="/presale">Token</Link>
           </nav>
-          <WalletHeader />
+
+          <div className="cyber-nav__right">
+            <Link to="/game" className="cyber-btn cyber-btn--primary">
+              Join the Community
+            </Link>
+
+            <div className="cyber-online">
+              <span className="cyber-online__count">7411</span>
+              <span className="cyber-online__label">Total Online</span>
+            </div>
+
+            <WalletHeader />
+          </div>
         </header>
 
-        <div className="ghost-hero__content">
-          <div className="ghost-hero__left">
-            <div className="ghost-hero__title-wrapper">
-              <h1 className="ghost-hero__title">
-                <span className="title-running">RUNNING</span>
-                <span className="title-ghost">GHOST</span>
-              </h1>
-              <p className="ghost-hero__subtitle">Nightly Journey</p>
+        {/* Hero Content */}
+        <div className="cyber-hero__content">
+          <h1 className="cyber-hero__title">
+            <span>Welcome to</span>
+            <span className="highlight">VOIDIA WORLD</span>
+          </h1>
+          <p className="cyber-hero__tagline">Hardcore , Immersive , Unique</p>
+
+          <div className="cyber-hero__actions">
+            <Link to="/about" className="cyber-btn cyber-btn--solid">
+              Watch
+            </Link>
+            <Link to="/game" className="cyber-btn cyber-btn--outline">
+              Get Started
+            </Link>
+          </div>
+        </div>
+
+        {/* Decorative Logo */}
+        <div className="cyber-hero__logo-bg">
+          <span className="cyber-logo-large">V</span>
+        </div>
+      </section>
+
+      {/* Latest News Section */}
+      <section className="cyber-news">
+        <div className="cyber-news__header">
+          <h2 className="cyber-section-title">Latest News</h2>
+          <div className="cyber-news__filters">
+            <button className="filter-btn active">Announcement</button>
+            <button className="filter-btn">Patch Notes</button>
+            <button className="filter-btn">Patch Notes</button>
+            <button className="filter-btn">Patch Notes</button>
+          </div>
+        </div>
+
+        <div className="cyber-news__grid">
+          {newsItems.map((item) => (
+            <div key={item.id} className="news-card">
+              <div className="news-card__image">
+                <div className="news-card__logo">V</div>
+              </div>
+              <div className="news-card__content">
+                <span className="news-card__tag">{item.tag}</span>
+                <span className="news-card__date">{item.date}</span>
+                <h3 className="news-card__title">{item.title}</h3>
+                <Link to="/news" className="news-card__link">
+                  Read More <span className="arrow">→</span>
+                </Link>
+              </div>
             </div>
-            <p className="ghost-hero__lead">
-              A gentle night run through dream towns with friendly ghosts,
-              glowing candies, and floating islands.
+          ))}
+        </div>
+
+        <button className="cyber-btn cyber-btn--outline cyber-btn--large">
+          Load More
+        </button>
+      </section>
+
+      {/* Who Will You Become Section */}
+      <section className="cyber-become">
+        <div className="cyber-become__bg"></div>
+
+        <h2 className="cyber-section-title">Who Will You Become</h2>
+
+        <div className="cyber-become__content">
+          <div className="become-card">
+            <h3 className="become-card__title">Become Criminal</h3>
+            <p className="become-card__subtitle">
+              Lorem ipsum dolor sit amet consectetur. Lorem leo dictum dictum
+              tellus amet.
             </p>
-            <div className="ghost-hero__actions">
-              <Link to="/game" className="ghost-hero__button">
-                Play Now
+            <p className="become-card__description">
+              Lorem ipsum dolor sit amet consectetur. Congue nulla praesent
+              ultrices nunc lacus. Neque turpis enim morbi a tempus pulvinar
+              vitae eleifend vulputate. Nec laoreet pellentesque interdum cursus
+              volutpat ultrices. Pellentesque sed maecenas curabitur aliquet
+              pellentesque praesent vitae in donec.
+            </p>
+            <div className="become-card__actions">
+              <Link to="/about" className="cyber-btn cyber-btn--solid">
+                Watch
               </Link>
-              <Link
-                to="/marketplace"
-                className="ghost-hero__button ghost-hero__button--ghost"
-              >
-                Visit Shop
+              <Link to="/game" className="cyber-btn cyber-btn--outline">
+                Get Started
               </Link>
             </div>
           </div>
-          <div className="ghost-hero__right">
-            <div className="hero-illustration">
-              <div className="hero-island">
-                <div className="hero-island__grass"></div>
-                <div className="hero-island__stone"></div>
-              </div>
-              <div className="hero-ghost hero-ghost--big"></div>
-              <div className="hero-ghost hero-ghost--small"></div>
-              <div className="hero-ghost hero-ghost--tiny"></div>
-              <div className="hero-candy hero-candy--1"></div>
-              <div className="hero-candy hero-candy--2"></div>
-            </div>
+
+          <div className="cyber-become__logo">
+            <span>V</span>
           </div>
         </div>
       </section>
 
-      {/* Story Section */}
-      <section className="ghost-story">
-        <div className="ghost-story__grid">
-          <div className="ghost-story__text">
-            <h2 className="section-title section-title--story">
-              <span className="title-star">*</span>
-              STORY
-              <span className="title-star">*</span>
-            </h2>
+      {/* City Background Section */}
+      <section className="cyber-city">
+        <div className="cyber-city__bg"></div>
+      </section>
 
-            <div className="ghost-story__content">
-              <p>
-                <strong>RUNNING GHOST: Nightly Journey</strong> is a story about
-                mischievous ghosts living in Cemetery Island. Every night, when
-                the sun goes down, the ghosts go to "Dream Towns" where their
-                favorite candies and soul-stones are abundant.
-              </p>
-              <p>
-                However, there is a very scary Grim Reaper whose mission is to
-                keep the ghosts out of the Dream Towns. If the ghosts are cut by
-                the Grim Reaper's scythe, they will be temporarily scattered.
-                Even so, the ghosts still want to go to the Dream Towns
-                collecting candies while trying to avoid the Grim Reaper.
-              </p>
-            </div>
-          </div>
+      {/* Roadmap Section */}
+      <section className="cyber-roadmap">
+        <div className="cyber-roadmap__bg"></div>
 
-          <div className="cemetery-island">
-            <div className="cemetery-island__image">
-              <div className="floating-island-scene">
-                <div className="island-base"></div>
-                <div className="island-grass-top"></div>
-                <div className="island-trees"></div>
-                <div className="island-ghost"></div>
+        <div className="cyber-roadmap__header">
+          <span className="cyber-roadmap__label">Roadmap</span>
+          <h2 className="cyber-section-title">Planned Updates</h2>
+        </div>
+
+        <div className="cyber-roadmap__timeline">
+          <div className="timeline-line"></div>
+
+          {roadmapItems.map((item, index) => (
+            <div key={index} className="timeline-item">
+              <div className="timeline-item__month">{item.month}</div>
+              <div className="timeline-item__content">
+                <p>{item.description}</p>
               </div>
             </div>
-            <div className="cemetery-island__label">
-              <span>Cemetery Island</span>
-            </div>
-          </div>
+          ))}
+
+          <div className="timeline-arrow">↓</div>
+        </div>
+
+        {/* Decorative Logo */}
+        <div className="cyber-roadmap__logo">
+          <span>V</span>
         </div>
       </section>
 
-      {/* Character Section */}
-      <section className="ghost-character">
-        <div className="ghost-character__header">
-          <h2 className="section-title section-title--character">
-            <span className="title-star">*</span>
-            CHARACTER
-            <span className="title-star">*</span>
-          </h2>
-          <p className="ghost-character__subtitle">
-            Meet the night crew and the gentle spirits you will rescue along the
-            way.
-          </p>
-        </div>
+      {/* Media Gallery Section */}
+      <section className="cyber-media">
+        <h2 className="cyber-section-title">Roadmap</h2>
 
-        <div className="character-card">
-          <div className="character-card__header">
-            <span className="character-card__label">The Ghosts</span>
-          </div>
-
-          <div className="character-card__content">
-            <div className="character-card__image">
-              <div className="ghost-group">
-                <div className="ghost-main"></div>
-                <div className="ghost-companion ghost-companion--1"></div>
-                <div className="ghost-companion ghost-companion--2"></div>
+        <div className="cyber-media__grid">
+          <div className="media-card media-card--video">
+            <div className="media-card__overlay">
+              <span className="media-card__label">The Official Trailer</span>
+              <h3 className="media-card__title">VOIDIA: NEWCOMERS</h3>
+              <div className="media-card__cta">
+                <span>Watch Now</span>
+                <div className="media-card__underline"></div>
               </div>
             </div>
+          </div>
 
-            <div className="character-card__text">
-              <p>
-                There are many ghosts with their own interesting stories that
-                you will meet on your nightly journey, gather with them and
-                explore the dream towns together. Especially, at some certain
-                points in the towns, you will be able to encounter the ancient
-                ghosts sealed inside the fairy stones.
-              </p>
-              <p>
-                Rescue those ghosts, invite them to live on your Cemetery Island
-                and grow the land together.
-              </p>
+          <div className="media-card media-card--video">
+            <div className="media-card__overlay">
+              <span className="media-card__label">The Official Trailer</span>
+              <h3 className="media-card__title">VOIDIA: NEWCOMERS</h3>
+              <div className="media-card__cta">
+                <span>Watch Now</span>
+                <div className="media-card__underline"></div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="first-ideas">
-          <h3 className="first-ideas__title">The first ideas of "the Ghost"</h3>
-          <div className="first-ideas__gallery">
-            <div className="idea-sketch idea-sketch--1"></div>
-            <div className="idea-sketch idea-sketch--2"></div>
-            <div className="idea-sketch idea-sketch--3"></div>
+          <div className="media-card media-card--wide">
+            <div className="media-card__overlay">
+              <span className="media-card__label">The Official Trailer</span>
+              <h3 className="media-card__title">VOIDIA: NEWCOMERS</h3>
+              <div className="media-card__cta">
+                <span>Watch Now</span>
+                <div className="media-card__underline"></div>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="ghost-cta">
-        <div className="ghost-cta__content">
-          <h2>Ready to Begin Your Journey?</h2>
-          <p>Join the ghosts on their nightly adventure!</p>
-          <Link to="/game" className="ghost-cta__button">
-            Play Now
-          </Link>
+          <div className="media-card media-card--info">
+            <div className="media-info">
+              <span className="media-info__label">Getting Started</span>
+              <h4 className="media-info__title">How to Start Playing</h4>
+              <p className="media-info__match">Main VS Vitality</p>
+              <p className="media-info__date">17:15 July 30 2024</p>
+              <button className="cyber-btn cyber-btn--outline cyber-btn--small">
+                Watch Tutorial
+              </button>
+            </div>
+          </div>
+
+          <div className="media-card media-card--play">
+            <div className="play-btn">
+              <span>▶</span>
+            </div>
+          </div>
+
+          <div className="media-card media-card--play">
+            <div className="play-btn">
+              <span>▶</span>
+            </div>
+          </div>
+
+          <div className="media-card media-card--full">
+            <div className="media-card__overlay">
+              <span className="media-card__label">The Official Trailer</span>
+              <h3 className="media-card__title">VOIDIA: NEWCOMERS</h3>
+              <div className="media-card__cta">
+                <span>Watch Now</span>
+                <div className="media-card__underline"></div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="ghost-footer">
-        <div className="ghost-footer__content">
-          <p>(c) 2026 Running Ghost: Nightly Journey. All rights reserved.</p>
-          <div className="ghost-footer__links">
-            <a href="#">Twitter</a>
-            <a href="#">Discord</a>
-            <a href="#">Telegram</a>
-          </div>
+      <footer className="cyber-footer">
+        <h2 className="cyber-footer__title">
+          Be Part of the VOIDIA WORLD World
+        </h2>
+
+        <div className="cyber-footer__social">
+          <a href="#" className="social-icon">
+            <span>📸</span>
+          </a>
+          <a href="#" className="social-icon">
+            <span>f</span>
+          </a>
+          <a href="#" className="social-icon">
+            <span>in</span>
+          </a>
+          <a href="#" className="social-icon">
+            <span>𝕏</span>
+          </a>
+          <a href="#" className="social-icon">
+            <span>▶</span>
+          </a>
+          <a href="#" className="social-icon">
+            <span>🎮</span>
+          </a>
         </div>
       </footer>
     </div>

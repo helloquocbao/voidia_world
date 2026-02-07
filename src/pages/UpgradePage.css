@@ -1,8 +1,8 @@
 .upgrade-page {
   position: relative;
   min-height: 100vh;
-  color: var(--ghost-cream);
-  background: linear-gradient(180deg, var(--ghost-dark) 0%, var(--ghost-dark-2) 55%, var(--ghost-teal) 100%);
+  color: var(--text-dark, #2c3e50);
+  background: linear-gradient(180deg, var(--sky-light, #7ec8e3) 0%, var(--sky-mid, #5eb5d3) 55%, var(--sky-deep, #4a9fc2) 100%);
   overflow: hidden;
   font-family: var(--font-sans);
   padding: 28px min(4vw, 48px) 40px;
@@ -27,20 +27,20 @@
 .upgrade-bg__halo--a {
   top: -120px;
   left: -60px;
-  background: var(--ghost-mint);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .upgrade-bg__halo--b {
   bottom: -180px;
   right: -120px;
-  background: var(--ghost-pink);
+  background: rgba(255, 193, 7, 0.3);
 }
 
 .upgrade-bg__grid {
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 120px 120px;
   mask-image: radial-gradient(ellipse at center, black 60%, transparent 80%);
   opacity: 0.4;

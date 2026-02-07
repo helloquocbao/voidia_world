@@ -1,7 +1,7 @@
 .leaderboard-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
-    color: #ffffff;
+    background: linear-gradient(180deg, #7ec8e3 0%, #5eb5d3 40%, #4a9fc2 100%);
+    color: #2c3e50;
 }
 
 .leaderboard-header {
@@ -9,16 +9,17 @@
     align-items: center;
     justify-content: space-between;
     padding: 20px 40px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
 }
 
 .leaderboard-header h1 {
     margin: 0;
     font-size: 1.8rem;
+    color: #2c3e50;
 }
 
 .back-button {
-    color: #888;
+    color: #4a5568;
     text-decoration: none;
     padding: 8px 16px;
     border-radius: 8px;
@@ -26,8 +27,8 @@
 }
 
 .back-button:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: rgba(255, 255, 255, 0.5);
+    color: #2c3e50;
 }
 
 .leaderboard-controls {

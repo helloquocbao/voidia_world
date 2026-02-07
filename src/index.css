@@ -2,45 +2,67 @@
 
 
 :root {
-  color-scheme: dark;
-  --ghost-dark: #0f2430;
-  --ghost-dark-2: #162f3b;
-  --ghost-night: #1c3a48;
-  --ghost-teal: #2f5d66;
-  --ghost-moss: #6fb28f;
-  --ghost-mint: #a9d7bf;
-  --ghost-cream: #f2efe4;
-  --ghost-star: #ffe8a6;
-  --ghost-pink: #ffb4c8;
-  --ghost-shadow: rgba(6, 14, 18, 0.35);
-  --ghost-border: rgba(255, 255, 255, 0.12);
-  --ghost-surface: rgba(20, 40, 60, 0.6);
+  color-scheme: light;
 
-  --bg: var(--ghost-dark);
-  --bg-2: var(--ghost-dark-2);
-  --bg-3: var(--ghost-teal);
-  --ink: var(--ghost-cream);
-  --muted: rgba(255, 255, 255, 0.7);
-  --accent: var(--ghost-mint);
-  --accent-2: var(--ghost-moss);
-  --card: var(--ghost-surface);
-  --stroke: var(--ghost-border);
-  --shadow: var(--ghost-shadow);
+  /* Tiny Swords Theme - Sky & Fantasy Colors */
+  --sky-light: #7ec8e3;
+  --sky-mid: #5eb5d3;
+  --sky-deep: #4a9fc2;
+  --sky-dark: #3d8ab0;
+
+  --grass-light: #8fd14f;
+  --grass-mid: #6cb33f;
+  --grass-dark: #4a8f2f;
+
+  --gold-light: #ffe066;
+  --gold-mid: #ffc107;
+  --gold-dark: #e6a800;
+
+  --wood-light: #c4a574;
+  --wood-mid: #a68b5b;
+  --wood-dark: #7a6542;
+
+  --stone-light: #a8b5c4;
+  --stone-mid: #8494a8;
+  --stone-dark: #5c6b7a;
+
+  --cream: #fff9e6;
+  --white: #ffffff;
+  --text-dark: #2c3e50;
+  --text-mid: #4a5568;
+  --text-light: #718096;
+
+  --red-accent: #c73e3e;
+  --red-dark: #a63030;
+
+  /* Semantic variables */
+  --bg: var(--sky-mid);
+  --bg-2: var(--sky-deep);
+  --bg-3: var(--sky-dark);
+  --ink: var(--text-dark);
+  --muted: var(--text-mid);
+  --accent: var(--grass-mid);
+  --accent-2: var(--gold-mid);
+  --card: rgba(255, 255, 255, 0.85);
+  --card-hover: rgba(255, 255, 255, 0.95);
+  --stroke: rgba(0, 0, 0, 0.12);
+  --shadow: rgba(44, 62, 80, 0.25);
+
   --font-sans: "Baloo 2", "Segoe UI", sans-serif;
   --font-serif: "Patrick Hand", "Baloo 2", cursive;
   --font-mono: "Fredoka One", "Baloo 2", sans-serif;
 
-  --land-bg-dark: var(--ghost-dark);
-  --land-bg-mid: var(--ghost-dark-2);
-  --land-bg-light: var(--ghost-teal);
-  --land-accent: var(--ghost-mint);
-  --land-accent-glow: rgba(169, 215, 191, 0.35);
-  --land-accent-2: var(--ghost-moss);
-  --land-accent-2-glow: rgba(111, 178, 143, 0.35);
-  --land-text: var(--ghost-cream);
-  --land-text-muted: rgba(255, 255, 255, 0.7);
-  --land-border: var(--ghost-border);
-  --land-card: var(--ghost-surface);
+  --land-bg-dark: var(--sky-dark);
+  --land-bg-mid: var(--sky-mid);
+  --land-bg-light: var(--sky-light);
+  --land-accent: var(--grass-mid);
+  --land-accent-glow: rgba(108, 179, 63, 0.35);
+  --land-accent-2: var(--gold-mid);
+  --land-accent-2-glow: rgba(255, 193, 7, 0.35);
+  --land-text: var(--text-dark);
+  --land-text-muted: var(--text-mid);
+  --land-border: rgba(0, 0, 0, 0.15);
+  --land-card: var(--card);
 }
 
 *,
@@ -54,7 +76,7 @@ body {
   min-height: 100vh;
   font-family: var(--font-sans);
   color: var(--ink);
-  background: linear-gradient(180deg, var(--ghost-dark) 0%, var(--ghost-dark-2) 55%, var(--ghost-teal) 100%);
+  background: linear-gradient(180deg, var(--sky-light) 0%, var(--sky-mid) 40%, var(--sky-deep) 100%);
 }
 
 h1,
@@ -63,6 +85,7 @@ h3,
 .pixel-title {
   font-family: var(--font-mono);
   letter-spacing: 0.03em;
+  color: var(--text-dark);
 }
 
 a {
@@ -76,32 +99,32 @@ button {
 
 /* Custom wallet button styling */
 .wallet-connect-btn button {
-  background: linear-gradient(135deg, var(--ghost-mint), var(--ghost-moss)) !important;
-  color: #0f2430 !important;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-mid)) !important;
+  color: var(--text-dark) !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
-  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  border: 2px solid var(--gold-dark) !important;
   box-shadow:
-    0 10px 22px rgba(22, 47, 59, 0.35),
-    inset 0 2px 0 rgba(255, 255, 255, 0.3) !important;
+    0 4px 12px rgba(255, 193, 7, 0.35),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4) !important;
   padding: 10px 18px !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease !important;
   font-family: var(--font-mono) !important;
   letter-spacing: 1px !important;
-  border-radius: 999px !important;
+  border-radius: 8px !important;
 }
 
 .wallet-connect-btn button:hover {
   transform: translateY(-2px) !important;
   box-shadow:
-    0 14px 26px rgba(22, 47, 59, 0.45),
-    inset 0 2px 0 rgba(255, 255, 255, 0.35) !important;
+    0 6px 16px rgba(255, 193, 7, 0.5),
+    inset 0 2px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 /* ===== GLOBAL SCROLLBAR STYLING ===== */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(169, 215, 191, 0.6) transparent;
+  scrollbar-color: rgba(108, 179, 63, 0.6) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -114,13 +137,13 @@ button {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(169, 215, 191, 0.5);
+  background: rgba(108, 179, 63, 0.5);
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(169, 215, 191, 0.8);
+  background: rgba(108, 179, 63, 0.8);
 }
 
 *::-webkit-scrollbar-corner {
